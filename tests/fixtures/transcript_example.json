@@ -1,0 +1,32 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "seg-001",
+      "speaker_cluster_id": "spk-a",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 3.5,
+      "text": "Hello, what brings you in today?",
+      "words": null
+    },
+    {
+      "id": "seg-002",
+      "speaker_cluster_id": "spk-b",
+      "role": "patient",
+      "start_seconds": 4.0,
+      "end_seconds": 9.0,
+      "text": "I have had a cough for three days.",
+      "words": [
+        {"word": "I", "start_seconds": 4.0, "end_seconds": 4.2, "approximate": true},
+        {"word": "have", "start_seconds": 4.2, "end_seconds": 4.6, "approximate": true},
+        {"word": "had", "start_seconds": 4.6, "end_seconds": 5.0, "approximate": true},
+        {"word": "a", "start_seconds": 5.0, "end_seconds": 5.2, "approximate": true},
+        {"word": "cough", "start_seconds": 5.2, "end_seconds": 5.9, "approximate": true},
+        {"word": "for", "start_seconds": 5.9, "end_seconds": 6.3, "approximate": true},
+        {"word": "three", "start_seconds": 6.3, "end_seconds": 6.9, "approximate": true},
+        {"word": "days.", "start_seconds": 6.9, "end_seconds": 7.6, "approximate": true}
+      ]
+    }
+  ]
+}
