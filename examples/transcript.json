@@ -7,7 +7,7 @@
       "role": "clinician",
       "start_seconds": 0,
       "end_seconds": 12,
-      "text": "This is a fictional demonstration visit with fictional participants. Welcome back. Tell me what brought you in today and what you were hoping we could help with."
+      "text": "[Fictional demonstration visit; all participants are fictional.] Good morning. What brings you in today?"
     },
     {
       "id": "s2",
@@ -15,7 +15,7 @@
       "role": "patient",
       "start_seconds": 13,
       "end_seconds": 29,
-      "text": "I have had a cough for four days. It keeps interrupting my sleep, and I wanted someone to check it before I go back to work. I brought my medicine list along."
+      "text": "I have had a cough for four days. It keeps waking me up, and I am supposed to be back at work tomorrow. I thought I had better get it checked. I brought my medicine list too."
     },
     {
       "id": "s3",
@@ -23,7 +23,7 @@
       "role": "clinician",
       "start_seconds": 30,
       "end_seconds": 39,
-      "text": "Thanks for bringing the list. We will go through it together. Have you had any fever with this illness?"
+      "text": "Thanks, let me take a look at that. Have you had any fever since the cough started?"
     },
     {
       "id": "s4",
@@ -31,7 +31,7 @@
       "role": "patient",
       "start_seconds": 40,
       "end_seconds": 49,
-      "text": "I have not had any fever during these four days. I checked at home because I wondered about that too."
+      "text": "No fever. I checked a couple of times at home because I wondered about that too."
     },
     {
       "id": "s5",
@@ -39,7 +39,7 @@
       "role": "clinician",
       "start_seconds": 50,
       "end_seconds": 60,
-      "text": "Before I examine you, tell me about the conditions you already manage and any relevant illnesses in your family."
+      "text": "And how has your health been otherwise? Any ongoing conditions I should know about?"
     },
     {
       "id": "s6",
@@ -47,7 +47,7 @@
       "role": "patient",
       "start_seconds": 61,
       "end_seconds": 70,
-      "text": "I have asthma. That is something I still manage, and the previous clinic has the older records if you need them."
+      "text": "I have asthma. I used to go to the clinic across town, but this office is much easier to get to from work."
     },
     {
       "id": "s7",
@@ -55,7 +55,7 @@
       "role": "patient",
       "start_seconds": 71,
       "end_seconds": 83,
-      "text": "My father has diabetes. He lives in another town, so we usually talk about his appointments on the phone. That part of the history is about him."
+      "text": "My father has diabetes. He has been telling me I should find a regular doctor instead of just coming in when I am sick."
     },
     {
       "id": "s8",
@@ -63,7 +63,7 @@
       "role": "clinician",
       "start_seconds": 84,
       "end_seconds": 94,
-      "text": "I will keep your history separate from your family history. Which medicine on that list are you continuing to use?"
+      "text": "It is helpful to know about your family too. What medicines are you taking at the moment?"
     },
     {
       "id": "s9",
@@ -71,7 +71,7 @@
       "role": "patient",
       "start_seconds": 95,
       "end_seconds": 105,
-      "text": "I still use albuterol. It is the same medicine from my previous clinic, and I brought the inhaler so you can look at the label."
+      "text": "I still use albuterol. I brought the inhaler with me because I can never remember everything on the label. Here it is."
     },
     {
       "id": "s10",
@@ -79,7 +79,7 @@
       "role": "clinician",
       "start_seconds": 106,
       "end_seconds": 116,
-      "text": "That is helpful. We also need to check allergies before discussing anything new. What reactions have you had to medicines?"
+      "text": "Thank you, that helps. Before we talk about treatment, have you ever had a reaction to a medicine?"
     },
     {
       "id": "s11",
@@ -87,7 +87,7 @@
       "role": "patient",
       "start_seconds": 117,
       "end_seconds": 130,
-      "text": "I am allergic to sulfa; it gave me a rash years ago. I remember being told to mention it at appointments, although I cannot remember the name on the bottle."
+      "text": "I am allergic to sulfa; it gave me a rash years ago. I cannot remember the name on the bottle, but I remember the rash. It was miserable."
     },
     {
       "id": "s12",
@@ -95,7 +95,7 @@
       "role": "clinician",
       "start_seconds": 131,
       "end_seconds": 137,
-      "text": "Thank you. What about penicillin specifically?"
+      "text": "Do you have an allergy to penicillin as well?"
     },
     {
       "id": "s13",
@@ -103,7 +103,7 @@
       "role": "patient",
       "start_seconds": 138,
       "end_seconds": 146,
-      "text": "I am not allergic to penicillin. I want that distinction to be clear when you write the list."
+      "text": "I am not allergic to penicillin. I have taken that before without any trouble."
     },
     {
       "id": "s14",
@@ -111,7 +111,7 @@
       "role": "clinician",
       "start_seconds": 147,
       "end_seconds": 155,
-      "text": "Let me check your measurements while you are seated, then I will listen to your chest. Please rest your arm here."
+      "text": "All right. Rest your arm here while I check your blood pressure. Then I will listen to your chest."
     },
     {
       "id": "s15",
@@ -119,7 +119,7 @@
       "role": "clinician",
       "start_seconds": 156,
       "end_seconds": 163,
-      "text": "Your blood pressure is 126 over 78 mmHg. I will put that measurement in the visit record."
+      "text": "Your blood pressure is 126 over 78. You can relax your arm now."
     },
     {
       "id": "s16",
@@ -127,7 +127,7 @@
       "role": "clinician",
       "start_seconds": 164,
       "end_seconds": 170,
-      "text": "Your heart rate is 84 beats per minute. Now I will finish the examination."
+      "text": "Your heart rate is 84 beats per minute. Take a few slow breaths for me."
     },
     {
       "id": "s17",
@@ -135,7 +135,7 @@
       "role": "patient",
       "start_seconds": 171,
       "end_seconds": 177,
-      "text": "All right. I appreciate you taking time to explain what you are recording."
+      "text": "Okay. The coughing is mostly what is bothering me. I just want to get some sleep."
     },
     {
       "id": "s18",
@@ -143,7 +143,7 @@
       "role": "clinician",
       "start_seconds": 178,
       "end_seconds": 190,
-      "text": "My assessment today is acute bronchitis, unspecified. That is the working assessment I am recording from this visit, and we can review it at follow-up."
+      "text": "I think this is acute bronchitis. That would explain the cough. It can take a while to settle down, even when you are starting to feel better."
     },
     {
       "id": "s19",
@@ -151,7 +151,7 @@
       "role": "clinician",
       "start_seconds": 191,
       "end_seconds": 200,
-      "text": "I have ruled out pneumonia today. Please contact the clinic again if things change after you leave."
+      "text": "I do not think this is pneumonia. If things get worse, please call us so we can check you again."
     },
     {
       "id": "s20",
@@ -159,7 +159,7 @@
       "role": "patient",
       "start_seconds": 201,
       "end_seconds": 207,
-      "text": "Can we talk through the medicine plan before I go? I want to be sure I have understood it."
+      "text": "Would an antibiotic help? I was hoping there might be something I could take."
     },
     {
       "id": "s21",
@@ -167,7 +167,7 @@
       "role": "clinician",
       "start_seconds": 208,
       "end_seconds": 218,
-      "text": "Amoxicillin is something we discussed, but I am not ordering amoxicillin today. I want the visit summary to reflect that distinction."
+      "text": "We could try amoxicillin, but I don't think you need an antibiotic. I would leave that for now."
     },
     {
       "id": "s22",
@@ -175,7 +175,7 @@
       "role": "clinician",
       "start_seconds": 219,
       "end_seconds": 231,
-      "text": "I am starting acetaminophen, 500 mg by mouth every eight hours as needed. This is the new medicine order I am proposing at this visit."
+      "text": "Start acetaminophen 500 milligrams by mouth every eight hours as needed. Let me write that down so you have the instructions at home."
     },
     {
       "id": "s23",
@@ -183,7 +183,7 @@
       "role": "patient",
       "start_seconds": 232,
       "end_seconds": 239,
-      "text": "Thank you. Having a written summary will help me remember the discussion when I get home."
+      "text": "Thanks. I was worried I would forget what we talked about as soon as I walked out."
     },
     {
       "id": "s24",
@@ -191,7 +191,7 @@
       "role": "clinician",
       "start_seconds": 240,
       "end_seconds": 250,
-      "text": "We will review the medicine and allergy entries before any record is finalized. Please arrange follow-up with the front desk. That concludes this fictional demonstration visit."
+      "text": "You are welcome. Check with the front desk about a follow-up before you leave, and call if you have questions. [End of fictional demonstration.]"
     }
   ]
 }

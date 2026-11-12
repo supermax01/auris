@@ -66,6 +66,14 @@ _UNIT_NAMES = {
     "inch": "[in_i]",
     "inches": "[in_i]",
 }
+# Quantity.unit is for people; Quantity.code remains the exact UCUM spelling.
+_UNIT_DISPLAYS = {
+    "mm[Hg]": "mmHg",
+    "Cel": "°C",
+    "[degF]": "°F",
+    "[lb_av]": "lb",
+    "[in_i]": "in",
+}
 _NUMBER = r"[+-]?(?:\d+(?:\.\d+)?|\.\d+)"
 _DATETIME = TypeAdapter(IntakeDateTime)
 
@@ -224,7 +232,7 @@ def build_vital(
                 "code": fixed(profile, f"Observation.component:{name}.code"),
                 "valueQuantity": {
                     "value": value,
-                    "unit": unit,
+                    "unit": _UNIT_DISPLAYS.get(unit, unit),
                     "system": fixed(profile, f"Observation.component:{name}.value[x].system"),
                     "code": unit,
                 },
@@ -234,7 +242,7 @@ def build_vital(
     else:
         resource["valueQuantity"] = {
             "value": values[0],
-            "unit": unit,
+            "unit": _UNIT_DISPLAYS.get(unit, unit),
             "system": fixed(profile, f"{quantity_path}.system"),
             "code": unit,
         }

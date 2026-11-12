@@ -64,7 +64,7 @@ class Mapper:
             raise ValueError("evidence result does not belong to this assertion and transcript")
         identifier = resource_id(self.transcript.content_hash, position, assertion.kind)
         consistency = check_consistency(assertion, aligned, self.transcript, self._synonyms)
-        built = self._build(assertion, identifier)
+        built = self._build(assertion, identifier, aligned)
         reasons = [str(reason) for reason in review_reasons(assertion)]
         reasons.extend((*built.reasons, *built.flags, *consistency.review_reasons))
         if consistency.failures:
@@ -117,7 +117,9 @@ class Mapper:
         )
         return self.terminology.synonyms(text, system)
 
-    def _build(self, assertion: AssertionBase, identifier: str) -> BuildResult:
+    def _build(
+        self, assertion: AssertionBase, identifier: str, evidence: AssertionEvidenceResult
+    ) -> BuildResult:
         kind = assertion.kind
         if kind == "symptom":
             return build_symptom()
@@ -196,7 +198,9 @@ class Mapper:
                 )
             case "explicit_new_order":
                 assert isinstance(assertion, ExplicitNewOrderAssertion)
-                return build_order(assertion, identifier, self.anchors, self.terminology)
+                return build_order(
+                    assertion, identifier, self.anchors, self.terminology, evidence, self.transcript
+                )
             case "allergy_statement":
                 assert isinstance(assertion, AllergyStatementAssertion)
                 return build_allergy(assertion, identifier, self.anchors, self.terminology)

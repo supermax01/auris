@@ -73,6 +73,24 @@ def test_missing_pulse_ox_coding_is_detected(map_case):
         check_resource(resource)
 
 
+def test_complete_spoken_dosage_is_text_only_and_conformant(map_case):
+    _, _, outcome = map_case("new-order")
+    assert outcome.resource["dosageInstruction"] == [
+        {"text": "500 milligrams by mouth three times a day"}
+    ]
+    check_resource(outcome.resource)
+
+
+def test_bp_human_display_does_not_change_fixed_ucum_contract(map_case):
+    _, _, outcome = map_case("blood-pressure")
+    for component in outcome.resource["component"]:
+        quantity = component["valueQuantity"]
+        assert quantity["unit"] == "mmHg"
+        assert quantity["code"] == "mm[Hg]"
+        assert quantity["system"] == "http://unitsofmeasure.org"
+    check_resource(outcome.resource)
+
+
 def test_load_required_unit_sets_from_verified_package(tmp_path, units):
     members = {"package/" + f.name: f.read_bytes() for f in FIXTURES.glob("ValueSet-*.json")}
     data = make_fake_package_bytes({"name": "hl7.fhir.r4.core", "version": "4.0.1"}, members)

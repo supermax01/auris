@@ -5,7 +5,7 @@ from __future__ import annotations
 import html
 import re
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -38,10 +38,14 @@ class NoteItem(BaseModel):
     label: str
     reasons: tuple[str, ...]
     in_ledger: bool
+    section: Literal["S", "O", "A", "P", "D"]
+    reference: str
 
-    def line(self, *, reasons: bool = False) -> str:
-        explanation = f" — {'; '.join(self.reasons)}" if reasons and self.reasons else ""
-        return f"- {self.fact} {self.receipts} — {self.label}{explanation}"
+    def line(self) -> str:
+        return f"- {self.reference} — {self.fact} {self.receipts} — {self.label}"
+
+    def review_line(self) -> str:
+        return f"- {self.reference} {self.receipts} — {self.label} — {'; '.join(self.reasons)}"
 
 
 def _text(value: object) -> str:
@@ -75,14 +79,14 @@ def _fact(outcome: MappingOutcome) -> str:
             "explicit_new_order": "Proposed order (no record)",
             "vital_sign": "Measurement (no record)",
         }[outcome.kind]
-        if ledger.get("experiencer") == "family_member":
-            prefix = "Family history (not the patient's condition)"
-        elif ledger.get("experiencer") in ("other", "unknown", None):
-            prefix += " (" + str(ledger.get("experiencer") or "unknown") + " experiencer)"
         if ledger.get("medication_intent") == "discussed":
             prefix = "Discussed medicine (not ordered)"
         elif ledger.get("medication_intent") == "continuing":
             prefix = "Continuing medicine (not a new order)"
+        if ledger.get("experiencer") == "family_member":
+            prefix = "Family history (not the patient's condition)"
+        elif ledger.get("experiencer") in ("other", "unknown", None):
+            prefix += " (" + str(ledger.get("experiencer") or "unknown") + " experiencer)"
         quotes = dict.fromkeys(
             item.aligned.aligned_text if item.aligned else item.quote
             for item in outcome.evidence.items
@@ -192,7 +196,9 @@ _REASONS = {
     "refuted": "The ruled-out problem requires clinician confirmation",
     "non_patient_experiencer": "This statement concerns someone other than the patient",
     "patient_experiencer_required": "Cannot create a patient record for another person",
-    "snomed_not_supplied": "Allergy denial stays in the ledger without user-supplied SNOMED",
+    "snomed_not_supplied": (
+        "The installed code set cannot represent this allergy denial as a record"
+    ),
     "clinician_confirmation_required": "Clinician confirmation is required",
     "needs_coding_review": "A clinician must review the coding",
     "uncoded_text_only": "No unambiguous local code; text retained",
@@ -202,6 +208,9 @@ _REASONS = {
     "allergen_text_not_in_quote": "The extracted allergen does not occur in the quote",
     "value_text_number_not_in_quote": "An extracted measurement number does not occur in the quote",
     "dose_text_number_not_in_quote": "An extracted dose number does not occur in the quote",
+    "dosage_text_not_in_quote": (
+        "The dose, route or schedule could not be located verbatim in the quoted evidence"
+    ),
     "merge_conflict": "Overlapping extraction windows disagree",
     "polarity_conflicts_with_quote": "The assertion conflicts with a denial in the quote",
     "negation_not_in_quote": "The extracted denial has no denial cue in the quote",
@@ -240,9 +249,16 @@ def _reasons(outcome: MappingOutcome, validation: ValidationRun) -> tuple[str, .
     reasons.extend(
         failure.value.replace("_", " ").capitalize() for failure in outcome.evidence.failures
     )
+    for name, title in (("reduced_schema", "Extracted form"), ("evidence", "Evidence")):
+        if getattr(outcome.lanes, name) == LaneState.FAIL:
+            reasons.append(f"{title} checks failed")
     if outcome.resource:
         result = validation.for_resource(outcome.resource)
-        for name, title in (("base_r4", "FHIR rules"), ("us_core_profile", "US Core profile")):
+        for name, title in (
+            ("base_r4", "FHIR rules"),
+            ("us_core_profile", "US Core profile"),
+            ("terminology", "Medical coding"),
+        ):
             lane = getattr(result, name)
             if lane.state == LaneState.FAIL:
                 reasons.append(f"{title} checks failed")
@@ -251,29 +267,59 @@ def _reasons(outcome: MappingOutcome, validation: ValidationRun) -> tuple[str, .
                     for issue in lane.issues
                     if issue.severity in ("error", "fatal")
                 )
-            elif lane.state == LaneState.NOT_CHECKED:
+            elif lane.state == LaneState.NOT_CHECKED and name != "terminology":
                 reasons.append(f"{title} not checked: {lane.reason or 'checker unavailable'}")
-    else:
-        reasons.append("Kept in the discussion ledger; no FHIR record emitted")
+    if not reasons:
+        if outcome.export_state == "pending_validation":
+            reasons.append("Validation must be completed for this record")
+        elif outcome.export_state == "needs_review":
+            reasons.append("Clinician review is required")
+        elif outcome.export_state == "validation_failed":
+            reasons.append("Validation checks failed")
     return tuple(dict.fromkeys(_text(reason) for reason in reasons))
+
+
+def _section(outcome: MappingOutcome) -> Literal["S", "O", "A", "P", "D"]:
+    if (outcome.ledger or {}).get("experiencer") == "family_member":
+        return "A"
+    if outcome.kind in ("symptom", "allergy_statement", "allergy_denial"):
+        return "S"
+    if outcome.kind == "vital_sign":
+        return "O"
+    if outcome.kind in (
+        "clinician_assessed_problem",
+        "clinician_ruled_out_problem",
+        "patient_reported_condition",
+    ):
+        return "A"
+    if outcome.kind == "explicit_new_order":
+        return "P"
+    return "D"
 
 
 def note_items(
     outcomes: Sequence[MappingOutcome], transcript: Transcript, validation: ValidationRun
 ) -> tuple[NoteItem, ...]:
-    return tuple(
-        NoteItem(
-            id=outcome.id,
-            kind=outcome.kind,
-            export_state=outcome.export_state,
-            fact=_fact(outcome),
-            receipts=_receipts(outcome, transcript),
-            label=_label(outcome),
-            reasons=_reasons(outcome, validation),
-            in_ledger=outcome.ledger is not None,
+    items: list[NoteItem] = []
+    counts: dict[str, int] = {}
+    for outcome in outcomes:
+        section = _section(outcome)
+        counts[section] = counts.get(section, 0) + 1
+        items.append(
+            NoteItem(
+                id=outcome.id,
+                kind=outcome.kind,
+                export_state=outcome.export_state,
+                fact=_fact(outcome),
+                receipts=_receipts(outcome, transcript),
+                label=_label(outcome),
+                reasons=_reasons(outcome, validation),
+                in_ledger=outcome.ledger is not None,
+                section=section,
+                reference=f"{section}{counts[section]}",
+            )
         )
-        for outcome in outcomes
-    )
+    return tuple(items)
 
 
 def render_note(items: Sequence[NoteItem], metadata: NoteMetadata, *, export_summary: str) -> str:
@@ -292,6 +338,8 @@ def render_note(items: Sequence[NoteItem], metadata: NoteMetadata, *, export_sum
             "Evidence times use aligned audio offsets or segment starts; "
             "segment times are approximate.",
             "",
+            "Review entries refer to the item labels below (S, O, A, P and D).",
+            "",
             _text(export_summary),
             "",
         ]
@@ -299,28 +347,21 @@ def render_note(items: Sequence[NoteItem], metadata: NoteMetadata, *, export_sum
     sections = (
         (
             "S — Subjective (quoted from the transcript; symptoms are not FHIR records in v1)",
-            {"symptom", "allergy_statement", "allergy_denial"},
+            "S",
         ),
-        ("O — Objective", {"vital_sign"}),
-        (
-            "A — Assessment",
-            {
-                "clinician_assessed_problem",
-                "clinician_ruled_out_problem",
-                "patient_reported_condition",
-            },
-        ),
-        ("P — Plan", {"explicit_new_order"}),
+        ("O — Objective", "O"),
+        ("A — Assessment", "A"),
+        ("P — Plan", "P"),
     )
-    for title, kinds in sections:
+    for title, section in sections:
         lines.extend([f"## {title}", ""])
-        lines.extend([item.line() for item in items if item.kind in kinds] or ["not captured"])
+        lines.extend([item.line() for item in items if item.section == section] or ["not captured"])
         lines.append("")
     lines.extend(["## Needs review — not validated", ""])
+    lines.extend([item.review_line() for item in items if item.reasons] or ["not captured"])
+    lines.extend(["", "## Discussed, not captured as records", ""])
     lines.extend(
-        [item.line(reasons=True) for item in items if item.export_state != "final_exportable"]
+        [item.line() for item in items if item.in_ledger and item.section == "D"]
         or ["not captured"]
     )
-    lines.extend(["", "## Discussed, not captured as records", ""])
-    lines.extend([item.line() for item in items if item.in_ledger] or ["not captured"])
     return "\n".join(lines) + "\n"

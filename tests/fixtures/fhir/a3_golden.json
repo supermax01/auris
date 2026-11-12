@@ -328,7 +328,7 @@
           "effectiveDateTime": "2026-11-12T09:00:00-05:00",
           "valueQuantity": {
             "value": 37,
-            "unit": "Cel",
+            "unit": "°C",
             "system": "http://unitsofmeasure.org",
             "code": "Cel"
           }
@@ -846,7 +846,7 @@
               },
               "valueQuantity": {
                 "value": 128,
-                "unit": "mm[Hg]",
+                "unit": "mmHg",
                 "system": "http://unitsofmeasure.org",
                 "code": "mm[Hg]"
               }
@@ -862,7 +862,7 @@
               },
               "valueQuantity": {
                 "value": 82,
-                "unit": "mm[Hg]",
+                "unit": "mmHg",
                 "system": "http://unitsofmeasure.org",
                 "code": "mm[Hg]"
               }
@@ -1601,7 +1601,7 @@
             "role": "clinician",
             "start_seconds": 0.0,
             "end_seconds": 5.0,
-            "text": "I will prescribe amoxicillin 500 milligrams three times a day.",
+            "text": "I will prescribe amoxicillin 500 milligrams by mouth three times a day.",
             "words": null
           }
         ]
@@ -1616,22 +1616,22 @@
         "evidence": [
           {
             "segment_id": "s1",
-            "quote": "I will prescribe amoxicillin 500 milligrams three times a day."
+            "quote": "I will prescribe amoxicillin 500 milligrams by mouth three times a day."
           }
         ],
         "medication_intent": "new_order",
-        "dose_text": "500 milligrams three times a day",
-        "route_text": null,
-        "frequency_text": null
+        "dose_text": "500 milligrams",
+        "route_text": "by mouth",
+        "frequency_text": "three times a day"
       },
       "expected": {
-        "id": "defffa4e-1243-5fa3-a712-5b364ed26f71",
+        "id": "bc45a606-1f08-565a-b7fa-01f16328471d",
         "assertion_position": 0,
         "kind": "explicit_new_order",
         "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest",
         "resource": {
           "resourceType": "MedicationRequest",
-          "id": "defffa4e-1243-5fa3-a712-5b364ed26f71",
+          "id": "bc45a606-1f08-565a-b7fa-01f16328471d",
           "meta": {
             "profile": [
               "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest"
@@ -1662,7 +1662,7 @@
           "authoredOn": "2026-11-12T09:00:00-05:00",
           "dosageInstruction": [
             {
-              "text": "500 milligrams three times a day"
+              "text": "500 milligrams by mouth three times a day"
             }
           ]
         },
@@ -1673,13 +1673,13 @@
           "items": [
             {
               "segment_id": "s1",
-              "quote": "I will prescribe amoxicillin 500 milligrams three times a day.",
+              "quote": "I will prescribe amoxicillin 500 milligrams by mouth three times a day.",
               "aligned": {
                 "segment_id": "s1",
-                "quote": "I will prescribe amoxicillin 500 milligrams three times a day.",
-                "aligned_text": "I will prescribe amoxicillin 500 milligrams three times a day",
+                "quote": "I will prescribe amoxicillin 500 milligrams by mouth three times a day.",
+                "aligned_text": "I will prescribe amoxicillin 500 milligrams by mouth three times a day",
                 "char_start": 0,
-                "char_end": 61,
+                "char_end": 70,
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,

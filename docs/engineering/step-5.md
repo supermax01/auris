@@ -66,12 +66,17 @@ Failed evidence/consistency is labelled an unconfirmed extraction rather
 than transcript-supported. Quotes and diagnostic text are flattened and
 escaped so they cannot inject extra Markdown sections or HTML.
 
-The review block includes every item that is not individually exportable,
-including clean ledger facts with an explanation that no record is emitted.
-This makes review visibility broader than mandatory review. The discussion
-block includes every ledger-backed outcome, including refused mappings.
-Empty sections say `not captured`. Drug-family allergies use the existing
-terminology family's classification and remain text with coding review.
+Each fact appears once in its natural section. Continuing and discussed
+medicines live under **Discussed, not captured as records**, with explicit
+labels distinguishing them from new orders. Other ledger facts already
+shown in SOAP are excluded from that block. The review block contains only
+items with review reasons or failed/pending validation. It uses item
+references (S1, O1, A1, P1, D1, etc.) and plain-language reasons instead of
+repeating the clinical fact. A clean affirmed symptom is not a review task;
+tier-zero coding NOT_CHECKED alone is not an action request. Every fact and
+review reference retains its receipt and validation label. Empty sections
+say `not captured`. Drug-family allergies use the existing terminology
+family's classification and remain text with coding review.
 
 There is no affirmative `validated` label at tier zero. The brief's required
 heading/negative label `not validated` still appears. An affirmative label
@@ -127,6 +132,26 @@ a temporary file and are promoted only after verification; existing
 corrupt artifacts are refused. It respects `AURIS_CACHE` like the run
 command. It installs no runtime or language. The existing runtime must be
 configured through PATH or `AURIS_LLAMA_SERVER`.
+
+## Observed model behaviour (smoke, not accuracy)
+
+Claude's first completed Step 5b real demo used prompt `extraction_v2`
+(SHA-256 `a66c105f84af129589e5047c1eb3b4457a13b527cebee495030cb7f05cffa93e`)
+and model ID `qwen3-8b-q4_k_m` (`Qwen/Qwen3-8B-GGUF`, Q4_K_M).
+It completed in one call: 2,080 input tokens, 1,570 output tokens,
+approximately 53 seconds end to end, with 12 assertions. These are the
+reported smoke-run measurements, not a new run by the Step 5c implementer.
+
+The model omitted the **discussed but not ordered amoxicillin** statement
+in segment **s21** of the original demo transcript. This is a recall miss,
+not an instruction to turn discussion into an order. The same run extracted
+the new order's dose (`500 mg`), route (`by mouth`) and frequency
+(`every eight hours as needed`) separately; the lost schedule in the note
+was a downstream mapper bug. Step 5c fixes that mapper bug and records the
+recall miss without changing the prompt. Prompt changes must be driven by
+development data in the evaluation harness in the next step. This single
+fictional encounter is a low-confidence smoke observation, not accuracy
+evidence; the rewritten transcript below requires a fresh real-model run.
 
 ## Verification
 
@@ -300,3 +325,80 @@ also ran `.venv/bin/ruff format`, `.venv/bin/ruff check --fix`, and:
 That targeted result preceded the last three budget cases, which are included
 in the final full-suite result. Initial checks found formatting issues and
 the two identical-window test fixtures described above; both were corrected.
+
+## Step 5c: demo fidelity and presentation
+
+`dosageInstruction.text` now joins the extracted dose, route and frequency
+pieces in their spoken order, using aligned evidence positions in the
+transcript rather than field order or evidence-list order. Overlapping
+spans are merged so a dose field that already contains the route or
+frequency does not repeat words. Only those verbatim spans are copied,
+separated by spaces; no structured timing, route code or inferred dose is
+added. If all three fields are absent, dosageInstruction is absent. If a
+piece cannot be located verbatim in the aligned evidence, the entire
+assertion stays in the ledger with `dosage_text_not_in_quote` for review;
+it never becomes a partial instruction. The P line reads the same FHIR
+text. This is the complete spoken-instruction interpretation of A3's
+"dose verbatim" rule requested by the owner; no FHIR reference disagrees.
+
+Vital `valueQuantity.unit` is human display (`mmHg`, `°C`, `°F`, `kg`,
+`cm`, `/min`, `%`; also `g`, `lb`, `in` for already-supported units).
+`valueQuantity.code` and `system` retain their exact UCUM values, with no
+numeric conversion. BP components use the same display rule. The note
+reads Quantity.unit directly.
+
+The 24-turn fictional demo still spans 4:10 and covers all nine A3 rows.
+Coaching dialogue and the exact-description "unspecified" suffix are
+removed. The clinician says "I think this is acute bronchitis" and discusses
+amoxicillin without ordering it. The new acetaminophen order states
+"500 milligrams by mouth every eight hours as needed"; the replay supplies
+three separate fields to expose the original fidelity bug. Natural
+"acute bronchitis" remains text-only with coding review under the existing
+exact-match policy. No terminology aliases or prompt changes were added
+to make the demo code or recall better. The active-prompt leakage guard
+passes. The note golden reflects the section/review rules above.
+
+Regression tests cover all eight combinations of present/absent instruction
+fields in all six spoken orders, overlapping fields, reversed evidence
+lists across turns, unsupported pieces kept for review, full note
+instruction fidelity, unique fact placement, action-only review references,
+pending/failed checks, natural bronchitis coding review, and display units.
+Conformance tests retain the fixed UCUM checks and cover complete text-only
+dosage. The official validator integration checks all goldens and compares
+their issues with the recorded Step 3 baseline; it also validates the demo
+and Fahrenheit/pound/inch variants. Terminology remains NOT_CHECKED at
+tier zero. The historical recorded validator output is left intact.
+
+No dependencies were added, no prompt/config was changed, and no real-model
+run was made by the implementer. Claude will rerun the real demo. Advice
+has no assertion kind in the current nine-row schema; adding advice
+extraction or extending the ledger schema remains outside Step 5c.
+
+Step 5c final checks (direct project-venv commands, networking disabled):
+
+```text
+.venv/bin/ruff check
+All checks passed!
+
+.venv/bin/ruff format --check
+83 files already formatted
+
+.venv/bin/pytest -m 'not llm' -q --disable-socket --tb=short -rs
+Validator wall-clock time — goldens + anchors: 6.827s
+Validator wall-clock time — demo + display variants: 6.224s
+Validator wall-clock time — broken resources: 7.233s
+1042 passed, 2 deselected, 1 warning in 22.40s
+
+git diff --check
+(no output; exit 0)
+```
+
+The warning is the existing intentional socket-blocking test. The two
+real-model tests are deselected. Official validation ran, with no new issues
+(including warnings) on the golden clinical resources compared with the
+recorded baseline. Development also used `.venv/bin/ruff format`, local
+Python fixture-editing scripts, and targeted tests. The initial mapper/note
+run found the stale note snapshot and a test's wrong height expectation;
+both were corrected. A subsequent validator/note run passed all 19 tests
+in 22.68s. One overlong review-reason source line was wrapped before the
+final clean lint run. No setup, installation or git-history command ran.

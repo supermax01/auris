@@ -2,6 +2,7 @@
 
 import copy
 import json
+from itertools import permutations, product
 from pathlib import Path
 from uuid import UUID
 
@@ -150,21 +151,21 @@ def test_missing_concept_never_creates_empty_code(map_case, name):
 
 
 @pytest.mark.parametrize(
-    "name,unit,value,expected",
+    "name,unit,value,expected,display",
     [
-        ("body-temperature", "degrees Fahrenheit", "98.6", "[degF]"),
-        ("body-temperature", "Cel", "37.2", "Cel"),
-        ("body-weight", "grams", "2200", "g"),
-        ("body-weight", "pounds", "154", "[lb_av]"),
-        ("body-weight", "kg", "70", "kg"),
-        ("body-height", "inches", "67.5", "[in_i]"),
-        ("body-height", "cm", "172", "cm"),
-        ("heart-rate", "beats per minute", "72", "/min"),
-        ("respiratory-rate", "breaths per minute", "16", "/min"),
-        ("pulse-oximetry", "percent", "98", "%"),
+        ("body-temperature", "degrees Fahrenheit", "98.6", "[degF]", "°F"),
+        ("body-temperature", "Cel", "37.2", "Cel", "°C"),
+        ("body-weight", "grams", "2200", "g", "g"),
+        ("body-weight", "pounds", "154", "[lb_av]", "lb"),
+        ("body-weight", "kg", "70", "kg", "kg"),
+        ("body-height", "inches", "67.5", "[in_i]", "in"),
+        ("body-height", "cm", "172", "cm", "cm"),
+        ("heart-rate", "beats per minute", "72", "/min", "/min"),
+        ("respiratory-rate", "breaths per minute", "16", "/min", "/min"),
+        ("pulse-oximetry", "percent", "98", "%", "%"),
     ],
 )
-def test_supported_units_are_not_converted(map_case, name, unit, value, expected):
+def test_supported_units_are_not_converted(map_case, name, unit, value, expected, display):
     _, _, outcome = map_case(
         name,
         changes={"unit_text": unit, "value_text": value},
@@ -172,7 +173,7 @@ def test_supported_units_are_not_converted(map_case, name, unit, value, expected
     )
     assert outcome.resource["valueQuantity"] == {
         "value": float(value),
-        "unit": expected,
+        "unit": display,
         "system": "http://unitsofmeasure.org",
         "code": expected,
     }
@@ -277,7 +278,7 @@ def test_uncoded_text_is_preserved_and_requires_review(map_case, name, changes, 
     stated = next(iter(changes.values()))
     original = BY_NAME[name]["assertion"]["concept_text"]
     # These are positive coding tests: the changed clinical words must be stated.
-    quote = f"{original}; {stated} 500 milligrams."
+    quote = f"{original}; {stated} 500 milligrams by mouth three times a day."
     _, _, outcome = map_case(name, changes=changes, quote=quote)
     assert outcome.resource[field] == {"text": next(iter(changes.values()))}
     assert outcome.mapper_flags == ("uncoded_text_only",)
@@ -288,7 +289,12 @@ def test_uncoded_text_is_preserved_and_requires_review(map_case, name, changes, 
 def test_order_synonym_and_absent_dose(map_case):
     _, _, outcome = map_case(
         "new-order",
-        changes={"concept_text": "paracetamol", "dose_text": None},
+        changes={
+            "concept_text": "paracetamol",
+            "dose_text": None,
+            "route_text": None,
+            "frequency_text": None,
+        },
         quote="I will prescribe paracetamol.",
     )
     assert outcome.resource["medicationCodeableConcept"]["coding"][0]["code"] == "161"
@@ -296,17 +302,83 @@ def test_order_synonym_and_absent_dose(map_case):
     assert "dosageInstruction" not in outcome.resource
 
 
-def test_dose_is_verbatim_without_synthetic_route_or_frequency(map_case):
-    dose = "  500 milligrams,\nthree times a day  "
+@pytest.mark.parametrize("order", list(permutations(range(3))))
+@pytest.mark.parametrize("stated", list(product((False, True), repeat=3)))
+def test_no_stated_instruction_piece_is_dropped_or_invented(map_case, order, stated):
+    pieces = ("500 milligrams", "by mouth", "every eight hours as needed")
+    instruction = " ".join(pieces[i] for i in order if stated[i])
+    _, _, outcome = map_case(
+        "new-order",
+        changes=dict(
+            zip(
+                ("dose_text", "route_text", "frequency_text"),
+                (piece if present else None for piece, present in zip(pieces, stated, strict=True)),
+                strict=True,
+            )
+        ),
+        quote=f"Start amoxicillin {instruction}.",
+    )
+    if instruction:
+        assert outcome.resource["dosageInstruction"] == [{"text": instruction}]
+        assert all(
+            piece in instruction for piece, present in zip(pieces, stated, strict=True) if present
+        )
+    else:
+        assert "dosageInstruction" not in outcome.resource
+
+
+def test_overlapping_instruction_fields_are_preserved_once(map_case):
+    dose = "500 milligrams by mouth"
     _, _, outcome = map_case(
         "new-order",
         changes={
             "dose_text": dose,
-            "route_text": "by mouth",
+            "route_text": "by mouth three times a day",
             "frequency_text": "three times a day",
         },
     )
-    assert outcome.resource["dosageInstruction"] == [{"text": dose}]
+    assert outcome.resource["dosageInstruction"] == [
+        {"text": "500 milligrams by mouth three times a day"}
+    ]
+
+
+def test_instruction_order_uses_transcript_not_evidence_list_order(map_case):
+    transcript = copy.deepcopy(BY_NAME["new-order"]["transcript"])
+    first = transcript["segments"][0]
+    first["text"] = "Start amoxicillin by mouth."
+    transcript["segments"].append(
+        {
+            **first,
+            "id": "s2",
+            "start_seconds": 6,
+            "end_seconds": 10,
+            "text": "Every eight hours as needed, 500 milligrams.",
+        }
+    )
+    _, _, outcome = map_case(
+        "new-order",
+        transcript=transcript,
+        changes={
+            "dose_text": "500 milligrams",
+            "route_text": "by mouth",
+            "frequency_text": "Every eight hours as needed",
+            "evidence": [
+                {"segment_id": s["id"], "quote": s["text"]}
+                for s in reversed(transcript["segments"])
+            ],
+        },
+    )
+    assert outcome.resource["dosageInstruction"] == [
+        {"text": "by mouth Every eight hours as needed 500 milligrams"}
+    ]
+
+
+@pytest.mark.parametrize("field", ["dose_text", "route_text", "frequency_text"])
+def test_unlocatable_instruction_is_kept_for_review_not_silently_dropped(map_case, field):
+    _, _, outcome = map_case("new-order", changes={field: "not in the quote"})
+    assert outcome.resource is None
+    assert outcome.ledger[field] == "not in the quote"
+    assert "dosage_text_not_in_quote" in outcome.review_reasons
 
 
 def test_multiple_clinician_clusters_refuse_to_choose_intake_prescriber(map_case):

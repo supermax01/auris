@@ -53,14 +53,25 @@ def test_demo_outcomes_and_exact_note(demo_outcomes):
     review = note.split("## Needs review — not validated\n", 1)[1].split("## Discussed", 1)[0]
     ledger = note.split("## Discussed, not captured as records\n", 1)[1]
     for item in items:
-        if item.export_state != "final_exportable":
-            assert item.line(reasons=True) in review
-            assert item.reasons
-        assert (item.line() in ledger) == item.in_ledger
+        assert (item.review_line() in review) == bool(item.reasons)
+        assert note.count(item.fact) == 1
+        assert (item.line() in ledger) == (item.in_ledger and item.section == "D")
+    assert items[0].reasons == () and items[0].reference not in review
+    assert "Symptom:" not in ledger and "Family history" not in ledger
+    assert "Allergy denial:" not in ledger
+    assert "Continuing medicine (not a new order)" in ledger
+    assert "Discussed medicine (not ordered)" in ledger
     assert "drug family, kept as text · needs coding review" in note
     assert "Family history (not the patient's condition)" in note
     assert "Blood pressure 126/78" in note and "Heart rate 84" in note
     assert "name not captured" not in note
+    order = next(o for o in outcomes if o.kind == "explicit_new_order")
+    instruction = order.resource["dosageInstruction"][0]["text"]
+    assert instruction == "500 milligrams by mouth every eight hours as needed"
+    assert instruction in note.split("## P — Plan", 1)[1].split("## Needs review", 1)[0]
+    assessed = next(o for o in outcomes if o.kind == "clinician_assessed_problem")
+    assert assessed.resource["code"] == {"text": "acute bronchitis"}
+    assert "needs_coding_review" in assessed.review_reasons
 
 
 def test_empty_sections_are_explicit():
@@ -181,3 +192,44 @@ def test_structural_failure_reason_is_visible(demo_outcomes):
     assert item.export_state == "validation_failed"
     assert "A required field is absent" in item.reasons
     assert failed.validation_digest == resource_digest(target.resource)
+    note = render_note((item,), metadata(), export_summary="No extracted records exported.")
+    assert note.count(item.fact) == 1 and note.count(item.review_line()) == 1
+
+
+def test_pending_validation_requires_action_but_tier_zero_coding_alone_does_not(demo_outcomes):
+    transcript, _, outcomes, validation = demo_outcomes
+    target = outcomes[7]
+    checked = note_items((target,), transcript, validation)[0]
+    assert checked.reasons == ()
+    pending_run = FakeValidator(failure="fictional checker unavailable").validate([target.resource])
+    pending = apply_validation(target, pending_run)
+    item = note_items((pending,), transcript, pending_run)[0]
+    assert item.export_state == "pending_validation"
+    assert any("not checked" in reason for reason in item.reasons)
+    note = render_note((item,), metadata(), export_summary="No extracted records exported.")
+    assert note.count(item.fact) == 1 and note.count(item.review_line()) == 1
+
+
+@pytest.mark.parametrize(
+    "name,changes,quote,display",
+    [
+        ("blood-pressure", {}, None, "128/82 mmHg"),
+        ("body-temperature", {}, None, "37 °C"),
+        (
+            "body-temperature",
+            {"value_text": "98.6", "unit_text": "degrees Fahrenheit"},
+            "Your temperature is 98.6 degrees Fahrenheit.",
+            "98.6 °F",
+        ),
+        ("body-weight", {}, None, "70 kg"),
+        ("body-height", {}, None, "172 cm"),
+        ("heart-rate", {}, None, "72 /min"),
+        ("respiratory-rate", {}, None, "16 /min"),
+        ("pulse-oximetry", {}, None, "98 %"),
+    ],
+)
+def test_notes_use_human_quantity_display(map_case, name, changes, quote, display):
+    mapper, _, outcome = map_case(name, changes=changes, quote=quote)
+    outcomes, validation = validate_mappings(FakeValidator(), mapper.intake, (outcome,))
+    item = note_items(outcomes, mapper.transcript, validation)[0]
+    assert display in item.fact

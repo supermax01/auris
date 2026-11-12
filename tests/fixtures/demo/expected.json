@@ -54,7 +54,7 @@
         "evidence": [
           {
             "segment_id": "s4",
-            "quote": "I have not had any fever during these four days."
+            "quote": "No fever."
           }
         ]
       },
@@ -219,11 +219,11 @@
         "evidence": [
           {
             "segment_id": "s15",
-            "quote": "Your blood pressure is 126 over 78 mmHg."
+            "quote": "Your blood pressure is 126 over 78."
           }
         ],
         "value_text": "126 over 78",
-        "unit_text": "mmHg",
+        "unit_text": null,
         "stated_time_text": null
       },
       "expected": {
@@ -263,7 +263,7 @@
       "name": "assessed-problem",
       "assertion": {
         "kind": "clinician_assessed_problem",
-        "concept_text": "acute bronchitis, unspecified",
+        "concept_text": "acute bronchitis",
         "polarity": "affirmed",
         "experiencer": "patient",
         "temporality": "current",
@@ -271,14 +271,17 @@
         "evidence": [
           {
             "segment_id": "s18",
-            "quote": "My assessment today is acute bronchitis, unspecified."
+            "quote": "I think this is acute bronchitis."
           }
         ]
       },
       "expected": {
-        "export_state": "final_exportable",
+        "export_state": "needs_review",
         "resource_type": "Condition",
-        "review_reasons": [],
+        "review_reasons": [
+          "needs_coding_review",
+          "uncoded_text_only"
+        ],
         "in_ledger": false
       }
     },
@@ -294,7 +297,7 @@
         "evidence": [
           {
             "segment_id": "s19",
-            "quote": "I have ruled out pneumonia today."
+            "quote": "I do not think this is pneumonia."
           }
         ]
       },
@@ -322,7 +325,7 @@
         "evidence": [
           {
             "segment_id": "s21",
-            "quote": "Amoxicillin is something we discussed, but I am not ordering amoxicillin today."
+            "quote": "We could try amoxicillin, but I don't think you need an antibiotic."
           }
         ],
         "medication_intent": "discussed",
@@ -352,11 +355,11 @@
         "evidence": [
           {
             "segment_id": "s22",
-            "quote": "I am starting acetaminophen, 500 mg by mouth every eight hours as needed."
+            "quote": "Start acetaminophen 500 milligrams by mouth every eight hours as needed."
           }
         ],
         "medication_intent": "new_order",
-        "dose_text": "500 mg by mouth every eight hours as needed",
+        "dose_text": "500 milligrams",
         "route_text": "by mouth",
         "frequency_text": "every eight hours as needed"
       },
