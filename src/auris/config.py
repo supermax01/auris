@@ -49,11 +49,13 @@ class _FrozenModel(BaseModel):
 class FhirPackagePin(_FrozenModel):
     """One pinned FHIR package tarball (PLAN A6/A8: fetched, never bundled)."""
 
-    id: str = Field(min_length=1)
-    version: str = Field(min_length=1)
+    id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    version: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     sha256: str = Field(min_length=1)
     license: str = Field(min_length=1)
     allow_unpinned: bool = False
+    bytes: int | None = Field(default=None, gt=0)
+    required_by: str | None = None
 
     @model_validator(mode="after")
     def _check_pin(self) -> FhirPackagePin:
@@ -83,7 +85,7 @@ class FhirConfig(_FrozenModel):
             if key in seen:
                 raise ValueError(f"duplicate FHIR package pin: {package.id}#{package.version}")
             seen.add(key)
-        us_core = self.package(self.us_core_package_id)
+        us_core = self.package(self.us_core_package_id, self.us_core_version)
         if us_core is None:
             raise ValueError(f"US Core package {self.us_core_package_id} is not pinned")
         if us_core.version != self.us_core_version:
@@ -93,9 +95,9 @@ class FhirConfig(_FrozenModel):
             raise ValueError("hl7.fhir.r4.core must be pinned at the FHIR version")
         return self
 
-    def package(self, package_id: str) -> FhirPackagePin | None:
+    def package(self, package_id: str, version: str | None = None) -> FhirPackagePin | None:
         for package in self.packages:
-            if package.id == package_id:
+            if package.id == package_id and (version is None or package.version == version):
                 return package
         return None
 
@@ -146,14 +148,21 @@ class ExtractorConfig(_FrozenModel):
 
 class JvmConfig(_FrozenModel):
     distribution: str = Field(min_length=1)
-    heap_gb: int = Field(gt=0)
+    heap_gb: int = Field(gt=0, le=2)
 
 
 class ValidatorConfig(_FrozenModel):
-    artifact: str = Field(min_length=1)
-    version: str = Field(min_length=1)
+    artifact: str = Field(pattern=r"^[A-Za-z0-9_.-]+\.jar$")
+    version: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     sha256: str = Field(min_length=1)
     allow_unpinned: bool = False
+    url: str = Field(pattern=r"^https://")
+    bytes: int = Field(gt=0)
+    license: str = Field(min_length=1)
+
+    @property
+    def filename(self) -> str:
+        return f"{Path(self.artifact).stem}-{self.version}.jar"
 
     @model_validator(mode="after")
     def _check_pin(self) -> ValidatorConfig:

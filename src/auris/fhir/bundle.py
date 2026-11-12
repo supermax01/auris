@@ -6,13 +6,16 @@ import copy
 import json
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from auris._storage import write_private_text
 from auris.fhir.common import build_anchors
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.intake import Intake
+
+if TYPE_CHECKING:
+    from auris.validation.models import ValidationRun
 
 
 def _full_url(resource: dict[str, Any]) -> str:
@@ -31,12 +34,9 @@ def build_collection(
     outcomes: Sequence[MappingOutcome],
     *,
     preview: bool = False,
+    validation: ValidationRun | None = None,
 ) -> dict[str, Any]:
-    """Include mapper-eligible resources, or all built previews when requested.
-
-    This step does not authorize a clinical export: the three validator lanes
-    are NOT_CHECKED until the validator step. A supplied FAIL always excludes
-    a resource from the default collection, even if its mapper state is stale.
+    """Include checked resources, or all built previews when requested.
     References are rewritten only in copies to resolve against urn fullUrls.
     Unresolved material mappings block the default collection as a whole (A4).
     Intentional, evidence-passing ledger rows do not block it.
@@ -44,7 +44,7 @@ def build_collection(
     if not preview and any(
         outcome.is_material
         and (
-            outcome.export_state == "needs_review"
+            outcome.export_state not in ("final_exportable", "ledger_only")
             or LaneState.FAIL in outcome.lanes.model_dump().values()
         )
         for outcome in outcomes
@@ -52,6 +52,16 @@ def build_collection(
         raise ValueError("material assertion requires review before final collection (PLAN A4)")
     anchors = build_anchors(intake)
     resources = [anchors.patient, anchors.practitioner, anchors.encounter]
+    if not preview:
+        if validation is None:
+            raise ValueError("intake anchors require validation before final collection")
+        for anchor in resources:
+            result = validation.for_resource(anchor)
+            if (
+                result.base_r4.state != LaneState.PASS
+                or result.us_core_profile.state != LaneState.PASS
+            ):
+                raise ValueError("intake anchors must pass R4 and profile validation")
     resources += [
         outcome.resource
         for outcome in outcomes
@@ -64,6 +74,16 @@ def build_collection(
             )
         )
     ]
+    if not preview:
+        assert validation is not None
+        for resource in resources[3:]:
+            result = validation.for_resource(resource)
+            if (
+                result.base_r4.state != LaneState.PASS
+                or result.us_core_profile.state != LaneState.PASS
+                or result.terminology.state == LaneState.FAIL
+            ):
+                raise ValueError("exported resource must pass validation in this run")
     references = {f"{r['resourceType']}/{r['id']}": _full_url(r) for r in resources}
     if len(references) != len(resources) or len(set(references.values())) != len(resources):
         raise ValueError("duplicate resource identity in collection")

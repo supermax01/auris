@@ -97,6 +97,58 @@ version = "4.0.1"
 sha256 = "e18b31e7a52145a31f1f3f409cf6847583b08b7306cc4e9460a95a7b5efba930"
 license = "CC0-1.0"
 
+# Validator 7.0.5 runtime closure, observed in an isolated online setup run.
+# These are required by the validator, not declared US Core dependencies.
+# Their declared R5 core dependency was not needed by this R4 validator run.
+
+[[fhir.packages]]
+id = "hl7.fhir.xver-extensions"
+version = "0.1.0"
+sha256 = "f3bb9fa2083402e88a02b41f433655274e8a1cca563211c8f7ba6fd0badf537a"
+bytes = 183877
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.extensions"
+version = "5.4.0"
+sha256 = "9e72cb92118a3e64babf442394fdc300b97f5d53b295469aee5ed34f216a830e"
+bytes = 1252695
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.extensions.r4"
+version = "5.2.0"
+sha256 = "b406e75575f05676559d0759770c5939d023ee72fb2ef38e0b3259328487720a"
+bytes = 1302452
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.terminology"
+version = "7.5.0"
+sha256 = "c54ebe534cd3f2474459eaed68e54c34f09b003766605b19e5552db376f2cc42"
+bytes = 4971232
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.terminology.r4"
+version = "6.2.0"
+sha256 = "79404c9cc95491fc0155627cd039c401a6eb4748175328131e91b709a41300e2"
+bytes = 5661217
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.terminology.r5"
+version = "7.5.0"
+sha256 = "cabae9ff7828c05173369bd2244ab6eabafe19d65b02c140a76638c1f3a56bf9"
+bytes = 4911910
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
 # ---------------------------------------------------------------------------
 # Speech-to-text, laptop profile (PLAN section 6 / A6).
 # Source is OpenAI's original; Auris converts it to CTranslate2 INT8
@@ -139,14 +191,14 @@ temperature_status = "candidate, confirm in Slice 1"
 distribution = "temurin-21"
 heap_gb = 2
 
-# Pinned in the validator step (PLAN A6: validator_cli.jar is the
-# reference). The placeholders below load only because
-# allow_unpinned = true is set explicitly for this entry.
+# Official release asset digest, verified at setup (Apache-2.0).
 [validator]
 artifact = "validator_cli.jar"
-version = "TODO-pin-in-validator-step"
-sha256 = "TODO-pin-in-validator-step"
-allow_unpinned = true
+version = "7.0.5"
+url = "https://github.com/hapifhir/org.hl7.fhir.core/releases/download/7.0.5/validator_cli.jar"
+sha256 = "9dfe9f305b0f9389eceade2a4a1c9a2740d7b0e614066fdf07a78b571c76d92f"
+bytes = 204856882
+license = "Apache-2.0"
 
 # ---------------------------------------------------------------------------
 # Reference machines (PLAN section 6 / A6), recorded as data.

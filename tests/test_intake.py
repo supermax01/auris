@@ -20,7 +20,7 @@ def test_example_intake_loads() -> None:
     intake = load_intake(EXAMPLE)
     assert intake.patient.gender == "female"
     assert intake.encounter.subject.reference == "Patient/example-patient-1"
-    assert intake.encounter.period.start == "2026-01-15T09:00:00-05:00"
+    assert intake.encounter.period.start == "2026-11-02T09:00:00-05:00"
 
 
 def test_example_intake_is_labelled_fictional() -> None:
@@ -150,7 +150,7 @@ def test_period_without_start_refused() -> None:
 
 def test_period_end_before_start_refused() -> None:
     data = _valid_intake_data()
-    data["encounter"]["period"]["end"] = "2026-01-15T08:00:00-05:00"
+    data["encounter"]["period"]["end"] = "2026-11-02T08:00:00-05:00"
     with pytest.raises(ValidationError, match="period.end"):
         Intake.model_validate(data)
 
@@ -264,7 +264,7 @@ def test_period_preserves_supplied_precision_and_timezone(value: str) -> None:
 
 def test_period_comparison_uses_timezone() -> None:
     data = _valid_intake_data()
-    data["encounter"]["period"]["end"] = "2026-01-15T13:59:00Z"
+    data["encounter"]["period"]["end"] = "2026-11-02T13:59:00Z"
     with pytest.raises(ValidationError, match="period.end"):
         Intake.model_validate(data)
 

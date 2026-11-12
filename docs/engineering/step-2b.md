@@ -1,5 +1,9 @@
 # Step 2b: terminology and the A3 mapper
 
+Historical step report: [Step 3](step-3.md) replaces the mapper-only
+`final_exportable` state below with computed validation/review gating and
+moves the fictional demo encounter into the pinned ICD fiscal year.
+
 `auris setup terminology` verifies both archives against frozen SHA-256
 pins (and the published RxNorm MD5), then atomically rebuilds
 `cache/terminology/index.sqlite`. Missing archives produce their URLs and

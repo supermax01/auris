@@ -77,17 +77,6 @@ class Mapper:
             reasons.append("source_role_mismatch")
         unique_reasons = tuple(dict.fromkeys(reasons))
         material = is_material(assertion)
-        if built.ledger_only:
-            state = "ledger_only"
-        elif (
-            built.resource is not None
-            and not material
-            and not unique_reasons
-            and aligned.lane.value == "PASS"
-        ):
-            state = "final_exportable"
-        else:
-            state = "needs_review"
         return MappingOutcome(
             id=identifier,
             assertion_position=position,
@@ -100,7 +89,7 @@ class Mapper:
             mapper_flags=built.flags,
             provenance_notes=built.notes,
             is_material=material,
-            export_state=state,
+            ledger_only=built.ledger_only,
             lanes=ValidationLanes(evidence=LaneState(aligned.lane.value)),
         )
 

@@ -43,6 +43,10 @@ def map_case(terminology, units, intake, request):
 
 
 def pytest_terminal_summary(terminalreporter):
+    for report in terminalreporter.stats.get("passed", []):
+        for key, value in report.user_properties:
+            if key == "validator_seconds":
+                terminalreporter.write_line(f"Validator wall-clock time — {value}")
     counts = Counter()
     for report in terminalreporter.stats.get("passed", []):
         counts.update({value for key, value in report.user_properties if key == "a3_row"})

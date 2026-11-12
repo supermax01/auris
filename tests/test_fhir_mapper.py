@@ -8,6 +8,7 @@ from uuid import UUID
 import pytest
 from checklist_assertions import check_resource
 from fhir_helpers import BY_NAME, GOLDENS
+from validator_helpers import passing_run
 
 from auris.assertions import ExtractionResult
 from auris.evidence import align_assertion_evidence
@@ -15,6 +16,7 @@ from auris.fhir import Mapper, build_collection, bundle_bytes, write_bundle
 from auris.fhir.models import LaneState
 from auris.intake import Intake
 from auris.transcript import Transcript
+from auris.validation.report import apply_validation
 
 
 @pytest.mark.parametrize("case", GOLDENS, ids=lambda case: case["name"])
@@ -97,7 +99,14 @@ def test_resource_refusals_remain_review_entries(map_case, name, changes, reason
         with pytest.raises(ValueError, match="material assertion requires review"):
             build_collection(mapper.intake, [outcome])
     else:
-        assert len(build_collection(mapper.intake, [outcome])["entry"]) == 3
+        assert (
+            len(
+                build_collection(mapper.intake, [outcome], validation=passing_run(mapper.intake))[
+                    "entry"
+                ]
+            )
+            == 3
+        )
     assert "dataAbsentReason" not in outcome.model_dump_json()
 
 
@@ -163,7 +172,7 @@ def test_supported_units_are_not_converted(map_case, name, unit, value, expected
         "system": "http://unitsofmeasure.org",
         "code": expected,
     }
-    assert outcome.export_state == "final_exportable"
+    assert outcome.export_state == "pending_validation"
 
 
 @pytest.mark.parametrize(
@@ -193,7 +202,7 @@ def test_current_reported_vital_needs_date_and_uses_it(map_case):
         changes={"source_speaker_role": "patient", "stated_time_text": "2026-11-12"},
     )
     assert outcome.resource["effectiveDateTime"] == "2026-11-12"
-    assert outcome.export_state == "final_exportable"
+    assert outcome.export_state == "pending_validation"
 
 
 def test_low_precision_intake_time_cannot_supply_vital_date(map_case, intake):
@@ -234,7 +243,7 @@ def test_condition_status_from_explicit_temporality_only(map_case, name, tempora
         assert "clinicalStatus" not in outcome.resource
     assert "onsetDateTime" not in outcome.resource and "abatementDateTime" not in outcome.resource
     assert outcome.export_state == (
-        "final_exportable" if temporality == "current" else "needs_review"
+        "pending_validation" if temporality == "current" else "needs_review"
     )
 
 
@@ -412,8 +421,12 @@ def test_deterministic_ids_and_bundle_bytes_and_private_write(map_case, tmp_path
     assert mapper.map_all((assertion,))[0] == outcome
     original_intake = mapper.intake.model_dump()
     original_resource = copy.deepcopy(outcome.resource)
-    bundle = build_collection(mapper.intake, [outcome])
-    assert bundle_bytes(bundle) == bundle_bytes(build_collection(mapper.intake, [outcome]))
+    run = passing_run(mapper.intake, [outcome])
+    outcome = apply_validation(outcome, run)
+    bundle = build_collection(mapper.intake, [outcome], validation=run)
+    assert bundle_bytes(bundle) == bundle_bytes(
+        build_collection(mapper.intake, [outcome], validation=run)
+    )
     assert mapper.intake.model_dump() == original_intake and outcome.resource == original_resource
     urls = {entry["fullUrl"] for entry in bundle["entry"]}
     assert all(url.startswith("urn:uuid:") for url in urls)
@@ -442,7 +455,9 @@ def test_collection_filters_review_and_ledger_and_future_failed_lanes(map_case):
     _, _, denial = map_case("nka")
     with pytest.raises(ValueError, match="material assertion requires review"):
         build_collection(mapper.intake, [vital, medication, denial])
-    assert len(build_collection(mapper.intake, [vital, denial])["entry"]) == 4
+    run = passing_run(mapper.intake, [vital])
+    vital = apply_validation(vital, run)
+    assert len(build_collection(mapper.intake, [vital, denial], validation=run)["entry"]) == 4
     assert (
         len(build_collection(mapper.intake, [vital, medication, denial], preview=True)["entry"])
         == 5
@@ -450,9 +465,9 @@ def test_collection_filters_review_and_ledger_and_future_failed_lanes(map_case):
     failed = vital.model_copy(
         update={"lanes": vital.lanes.model_copy(update={"base_r4": LaneState.FAIL})}
     )
-    assert len(build_collection(mapper.intake, [failed])["entry"]) == 3
+    assert len(build_collection(mapper.intake, [failed], validation=run)["entry"]) == 3
     with pytest.raises(ValueError, match="duplicate"):
-        build_collection(mapper.intake, [vital, vital])
+        build_collection(mapper.intake, [vital, vital], validation=run)
 
 
 CONTRASTIVE = json.loads((Path(__file__).parent / "fixtures/contrastive_cases.json").read_text())[

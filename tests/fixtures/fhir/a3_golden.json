@@ -110,14 +110,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -229,14 +232,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -348,14 +354,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -467,14 +476,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -586,14 +598,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -709,14 +724,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -856,14 +874,17 @@
           "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
         ],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -950,7 +971,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1039,7 +1063,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1156,14 +1183,17 @@
         "mapper_flags": [],
         "provenance_notes": [],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1282,7 +1312,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1399,14 +1432,17 @@
         "mapper_flags": [],
         "provenance_notes": [],
         "is_material": false,
-        "export_state": "final_exportable",
+        "export_state": "pending_validation",
         "lanes": {
           "reduced_schema": "PASS",
           "evidence": "PASS",
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1495,7 +1531,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1613,7 +1652,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1712,7 +1754,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1809,7 +1854,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -1907,7 +1955,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -2035,7 +2086,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -2160,7 +2214,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -2254,7 +2311,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     },
     {
@@ -2348,7 +2408,10 @@
           "base_r4": "NOT_CHECKED",
           "us_core_profile": "NOT_CHECKED",
           "terminology": "NOT_CHECKED"
-        }
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null
       }
     }
   ]

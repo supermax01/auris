@@ -1,9 +1,11 @@
-"""Mapper outcomes. Validator lanes can be filled later without changing callers."""
+"""Mapper outcomes and derived export policy (PLAN A2/A4)."""
 
+import hashlib
+import json
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from auris.assertions import AssertionBase
 from auris.evidence import AssertionEvidenceResult
@@ -23,9 +25,35 @@ class ValidationLanes(BaseModel):
     us_core_profile: LaneState = LaneState.NOT_CHECKED
     terminology: LaneState = LaneState.NOT_CHECKED
 
+    @property
+    def export_checks_pass(self) -> bool:
+        return (
+            all(
+                state == LaneState.PASS
+                for state in (
+                    self.reduced_schema,
+                    self.evidence,
+                    self.base_r4,
+                    self.us_core_profile,
+                )
+            )
+            and self.terminology != LaneState.FAIL
+        )
+
+
+def resource_digest(resource: dict[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(resource, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    ).hexdigest()
+
+
+ExportState = Literal[
+    "final_exportable", "needs_review", "ledger_only", "pending_validation", "validation_failed"
+]
+
 
 class MappingOutcome(BaseModel):
-    """final_exportable is mapper eligibility, not a claim of FHIR validation.
+    """Export eligibility is derived, never assigned by review or a caller.
 
     A3 ledger rows use ledger_only. Refused resource mappings keep the full
     assertion in ledger and use needs_review. No incomplete FHIR is emitted.
@@ -43,8 +71,26 @@ class MappingOutcome(BaseModel):
     mapper_flags: tuple[str, ...] = ()
     provenance_notes: tuple[str, ...] = ()
     is_material: bool
-    export_state: Literal["final_exportable", "needs_review", "ledger_only"]
+    ledger_only: bool = False
+    validation_digest: str | None = None
+    reviewed_resource_digest: str | None = None
     lanes: ValidationLanes
+
+    @computed_field
+    @property
+    def export_state(self) -> ExportState:
+        if self.ledger_only:
+            return "ledger_only"
+        if self.resource is None:
+            return "needs_review"
+        if LaneState.FAIL in self.lanes.model_dump().values():
+            return "validation_failed"
+        digest = resource_digest(self.resource)
+        if (self.is_material or self.review_reasons) and self.reviewed_resource_digest != digest:
+            return "needs_review"
+        if self.validation_digest != digest or not self.lanes.export_checks_pass:
+            return "pending_validation"
+        return "final_exportable"
 
 
 class BuildResult(BaseModel):

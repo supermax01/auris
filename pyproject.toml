@@ -30,6 +30,7 @@ packages = ["src/auris"]
 [tool.pytest.ini_options]
 addopts = "--disable-socket"
 testpaths = ["tests"]
+markers = ["validator: runs the pinned official HL7 validator offline (requires seeded cache and Java)"]
 
 [tool.ruff]
 line-length = 100

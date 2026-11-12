@@ -46,6 +46,14 @@ def _build_parser() -> argparse.ArgumentParser:
     terminology_parser.add_argument("--cache", type=Path, default=None)
     terminology_parser.add_argument("--fetch", action="store_true", help="Fetch missing archives")
 
+    validator_parser = setup_subparsers.add_parser(
+        "validator", help="Verify the validator JAR and seed its offline package cache"
+    )
+    validator_parser.add_argument("--config", type=Path, default=None)
+    validator_parser.add_argument("--cache", type=Path, default=None)
+    validator_parser.add_argument("--package-cache", type=Path, default=None)
+    validator_parser.add_argument("--fetch", action="store_true", help="Fetch the missing JAR")
+
     checklist_parser = subparsers.add_parser(
         "checklist", help="Regenerate the US Core profile checklist from the cache"
     )
@@ -93,20 +101,36 @@ def _cmd_setup_fhir(args: argparse.Namespace) -> int:
     us_core = next(p for p in ensured if p.pin.id == config.fhir.us_core_package_id)
     print(f"\nDependencies declared by {us_core.pin.id}#{us_core.pin.version}:")
     for dep_id, dep_version in fhir_packages.declared_dependencies(us_core.package_json):
-        pinned = config.fhir.package(dep_id)
+        pinned = config.fhir.package(dep_id, dep_version)
         marker = "pinned" if pinned and pinned.version == dep_version else "NOT PINNED"
         print(f"  {dep_id}#{dep_version} [{marker}]")
         if marker != "pinned":
             problems.append(f"declared dependency {dep_id}#{dep_version} is not pinned")
     unpinned = fhir_packages.unpinned_declared_dependencies(ensured, config.fhir.packages)
     if unpinned:
-        print("\nDeclared by fetched packages but not pinned (not fetched):")
+        print("\nDeclared but not required for the pinned validator closure (not fetched):")
         for declaring, dep_id, dep_version in unpinned:
             print(f"  {declaring} -> {dep_id}#{dep_version}")
     if problems:
         for problem in problems:
             print(f"error: {problem}", file=sys.stderr)
         return 1
+    return 0
+
+
+def _cmd_setup_validator(args: argparse.Namespace) -> int:
+    from auris.config import load_frozen_config
+    from auris.setup import fhir_packages, validator
+
+    config = load_frozen_config(args.config)
+    path = validator.setup_validator(
+        config,
+        args.cache or validator.default_cache_dir(),
+        args.package_cache or fhir_packages.default_cache_dir(),
+        fetch=args.fetch,
+    )
+    print(f"validator {config.validator.version}: JAR size/SHA-256 OK")
+    print(f"seeded {len(config.fhir.packages)} verified packages -> {path}")
     return 0
 
 
@@ -165,6 +189,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_guarded(_cmd_setup_fhir, args)
     if args.command == "setup" and args.setup_command == "terminology":
         return _run_guarded(_cmd_setup_terminology, args)
+    if args.command == "setup" and args.setup_command == "validator":
+        return _run_guarded(_cmd_setup_validator, args)
     if args.command == "checklist":
         return _run_guarded(_cmd_checklist, args)
     parser.print_help(sys.stderr)

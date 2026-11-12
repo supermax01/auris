@@ -60,24 +60,27 @@ def test_us_core_declared_dependencies_are_pinned():
         assert pin.version == version
 
 
-def test_validator_placeholder_requires_allow_unpinned(raw_config):
-    config = FrozenConfig.model_validate(copy.deepcopy(raw_config))
-    assert config.validator.pinned is False
-    assert config.validator.allow_unpinned is True
-
+def test_validator_is_pinned_and_placeholders_are_refused(raw_config):
+    config = FrozenConfig.model_validate(raw_config)
+    assert config.validator.pinned is True
+    assert config.validator.allow_unpinned is False
+    assert config.validator.version == "7.0.5"
+    assert config.validator.bytes == 204856882
     mutated = copy.deepcopy(raw_config)
-    mutated["validator"]["allow_unpinned"] = False
+    mutated["validator"]["sha256"] = "TODO-pin-later"
     with pytest.raises(ValidationError, match="allow_unpinned"):
         FrozenConfig.model_validate(mutated)
 
-    pinned = copy.deepcopy(raw_config)
-    pinned["validator"] = {
-        "artifact": "validator_cli.jar",
-        "version": "1.0.0",
-        "sha256": "a" * 64,
-        "allow_unpinned": False,
-    }
-    assert FrozenConfig.model_validate(pinned).validator.pinned is True
+
+def test_validator_closure_allows_two_versions_of_one_package():
+    config = load_frozen_config()
+    assert len(config.fhir.packages) == 17
+    for package, versions in {
+        "hl7.fhir.uv.extensions.r4": ("1.0.0", "5.2.0"),
+        "hl7.terminology.r4": ("5.0.0", "6.2.0"),
+    }.items():
+        assert all(config.fhir.package(package, version) is not None for version in versions)
+    assert config.fhir.package("hl7.fhir.r5.core", "5.0.0") is None
 
 
 def test_wrong_length_and_missing_sha_are_rejected(raw_config):
