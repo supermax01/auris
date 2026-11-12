@@ -278,7 +278,8 @@ finish line:**
 |---|---|
 | Slice 1 | Every record type and every expected refusal is covered by a test case; every check lane appears in the output; the offline test passes |
 | Slice 2 | Speaker roles ≥ 90% correct while covering ≥ 85% of turns; using real speaker detection loses ≤ 5 points of accuracy versus perfect speaker labels; every edit re-checks correctly; no unreviewed critical error |
-| Slice 3 | On a clean machine our saved predictions reproduce the published numbers exactly, and a full rerun lands within 1 point |
+| Slice 3 | All install paths (Mac, Linux, Docker, air-gapped) work on a clean machine; records load into a local FHIR test server without duplicates on rerun; the evaluation kit runs end to end on the development set |
+| Slice 4 | The locked test sets are run once; on a clean machine our saved predictions reproduce the published numbers exactly and a full rerun lands within 1 point; every stress test, failure test and clinician walkthrough in section 11 is done and published; the release gate below is met, or the result is published as a "no" |
 
 **Release (research preview) requires** (a) zero critical errors in any
 export that no human reviewed, and (b) a published pre-review
@@ -340,6 +341,8 @@ visits.
   per dataset.
 - Until a clinic partner with consent is found, all results are labelled
   "mock consultation" results.
+- The test sets are run once, in Slice 4. All tuning and fixing uses
+  development data, so the published numbers are not tuned to the test.
 
 **Annotation budget.** Working formula: 65 h + 2.4 h per test visit + 1.5 h
 per development visit. That gives ≈ 365 annotator-hours for the full design
@@ -361,16 +364,35 @@ rounds, we simplify what we annotate rather than lower the bar.
    one.
 2. **Slice 2 — real speakers and review.** Freeze the dataset splits. Add
    speaker detection, roles, overlap handling and the review page.
-3. **Slice 3 — research and deployment.** Publish the locked evaluation
-   with speed, memory and hardware figures. Add Linux, Mac and Docker
+3. **Slice 3 — deployment and evaluation kit.** Add Linux, Mac and Docker
    install paths, the air-gapped install and data-retention rules, and a
    test that the records load correctly into a local FHIR test server.
+   Finish the evaluation kit and dry-run it on the development set.
+4. **Slice 4 — test and evaluate (protected time).** Starts when Slice 3
+   is done and is never shortened to absorb build overruns. It contains:
+   - **The locked evaluation**, run once on the untouched test sets, with
+     speed, memory and hardware figures published.
+   - **Stress tests:** noisy rooms, long visits, a companion or interpreter
+     in the room, accents, sound-alike drug names, and a hand-written set
+     of tricky negation and attribution cases ("no penicillin allergy",
+     "my mother has diabetes").
+   - **Failure tests:** missing intake details, corrupted or silent audio,
+     validator and model crashes, and reruns that must not duplicate
+     records.
+   - **Clinician walkthrough:** clinicians use the review page on realistic
+     visits; we measure correction time and record where it misleads.
+   - **Error analysis with a fix-and-retest loop on development data
+     only**, so the test sets stay untouched; every fix reruns the full
+     regression suite.
+   - **Independent reproduction:** someone outside the build reruns the
+     published evaluation on a clean machine.
 
 ## 12. Time, cost and people
 
-**Timeline (rough estimate, not yet validated).** About 4–6 weeks per
-slice for one full-time engineer, so roughly 3–4½ months to the research
-preview. Annotation runs in parallel with Slices 1 and 2. Each slice ends
+**Timeline (rough estimate, not yet validated).** About 4–6 weeks for
+each build slice (1–3) for one full-time engineer, plus a protected 6–8
+weeks for Slice 4 (test and evaluate), so roughly 4½–6 months to the
+research preview. Annotation runs in parallel with Slices 1 and 2. Each slice ends
 at its finish line in section 9, not on a date; the estimate is replaced
 with a measured one after Slice 1.
 
@@ -413,6 +435,11 @@ facts, or better audio capture.
    actors with signed voice releases and an explicit licence, and its cost.
 6. Name the **people** (annotators, adjudicator, FHIR reviewer) and the
    hourly rate.
+7. Confirm the **Slice 4 time box** (6–8 weeks proposed) for testing and
+   evaluation.
+
+**Decided at "go" (2026-11-12):** item 1, Apache-2.0; item 4, US code
+defaults (ICD-10-CM, RxNorm, LOINC).
 
 ---
 
