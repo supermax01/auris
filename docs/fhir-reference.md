@@ -8,8 +8,11 @@ hl7.org/fhir root now serves R5; always use the `/fhir/R4/` and
 
 Facts below were read from the official pages on 2026-11-10. Severity
 "error" = validation failure; "best practice"/"guideline" = warning.
-Items marked *(summary)* came from the unread tail of a long page and must
-be confirmed against the StructureDefinition JSON in Slice 1 task zero.
+Items marked *(summary)* came from the unread tail of a long page. On
+2026-11-12 Slice 1 task zero checked these facts against the 6.1.0
+StructureDefinition snapshots ([profile-checklist.md](profile-checklist.md)),
+and the five disagreements it found are corrected below. The generated
+checklist is the authority where the two ever differ.
 
 ## Resources Auris touches
 
@@ -47,18 +50,24 @@ value **SHALL** carry `component.dataAbsentReason`.
 
 **Heart rate (us-core-heart-rate):** `code` LOINC `8867-4`; UCUM `/min`.
 
-**effective[x]:** 1..1; US Core BP/HR list only `effectiveDateTime`.
+**effective[x]:** 1..1; the snapshots allow `dateTime` or `Period` in every
+vital profile (corrected 2026-11-12; the rendered key-elements view shows
+only dateTime). Auris always emits `effectiveDateTime`.
 `vs-1` (error): "if Observation.effective[x] is dateTime and has a value
 then that value shall be precise to the day" — `($this as dateTime).toString().length() >= 8`.
 
 **Other invariants (error):** `vs-2` — no component/hasMember ⇒ value[x] or
 dataAbsentReason; `vs-3` — each component has value or dataAbsentReason;
 `obs-6` — dataAbsentReason only if value absent; `obs-7` — no value under a
-code duplicated in a component.
+code duplicated in a component; `obs-3` — a referenceRange needs low, high
+or text (Auris never writes referenceRange).
 
 **Bindings:** category preferred; code extensible; value units extensible
 to VitalSignsUnits (base R4 component units were required; US Core relaxes
-to extensible).
+to extensible). **Exception (corrected 2026-11-12):** body temperature,
+body weight and body height bind `valueQuantity.code` as **required** to
+`ucum-bodytemp`, `ucum-bodyweight` and `ucum-bodylength`, so only those
+closed UCUM unit sets are valid for them.
 
 **Auris consequences:** mapper always injects the VSCat category and the
 fixed LOINC/UCUM codes; BP never uses root value; a vital with one BP
@@ -94,7 +103,9 @@ required binding to problem-list-item | health-concern; optional
 problem-list-item ⇒ clinicalStatus **SHOULD** be present.
 
 **Must Support (both):** clinicalStatus, verificationStatus, category, code,
-subject, onsetDateTime, abatementDateTime, recordedDate, assertedDate
+subject, onset[x], abatement[x] (choice elements whose types the snapshot
+does not restrict; the rendered view names onsetDateTime/abatementDateTime —
+corrected 2026-11-12), recordedDate, assertedDate
 extension; encounter (encounter-diagnosis).
 
 **Auris consequences:** set clinicalStatus from explicit temporality only;
@@ -126,7 +137,8 @@ by the generic extensible rule (concept not covered by the value set).
 **Must Support:** status, intent, category:us-core, reported[x], medication[x],
 subject, encounter, authoredOn (0..1), requester, dosageInstruction (text,
 timing, doseAndRate/dose[x]), dispenseRequest (numberOfRepeatsAllowed,
-quantity), reasonCode/reasonReference *(summary)*. No element under
+quantity). `reasonCode`/`reasonReference` are **not** Must Support in the
+6.1.0 snapshot (corrected 2026-11-12). No element under
 `dosageInstruction` is min ≥ 1, so text-only dosage is valid; R4 says text
 "will always be populated".
 

@@ -451,7 +451,9 @@ Intake context must supply these, never extracted or invented: Patient
 (identifier system+value, name, gender), Practitioner (identifier
 system+value, name.family), Encounter (status, class, type, subject,
 `period.start`). These are the US Core 6.1.0 minimums. A run without them
-refuses to export. The demo ships a fictional `intake.json`.
+refuses to export. The demo ships a fictional `intake.json`. Auris never
+modifies the intake anchors; for example, it does not add
+`Encounter.diagnosis` references to extracted Conditions in v1.
 
 ## A2. Profiles, fixed elements and validation lanes
 
@@ -481,7 +483,7 @@ refuses to export. The demo ships a fictional `intake.json`.
 
 | Assertion | Polarity | Resource / profile | Fixed semantics & mapper rules | Export rule |
 |---|---|---|---|---|
-| Vital sign (value+unit) | Affirmed | Observation, specific US Core vital profile | `status=preliminary`; category VSCat `vital-signs`; fixed LOINC + UCUM per profile (e.g. HR 8867-4 `/min`). BP = 85354-9 with systolic 8480-6 / diastolic 8462-4 components in `mm[Hg]`, root `value[x]` omitted. An in-visit measurement with no spoken time inherits `Encounter.period.start` with a provenance note; reported or historical readings need a spoken date at day precision (vs-1) | Export if lanes pass. Missing BP component, a unit-mismatched value, a missing spoken unit where the claimed profile does not fix exactly one unit (blood pressure and heart rate fix one, so the mapper supplies it), or a historical reading without a date → review. Never silently converted or padded with dataAbsentReason |
+| Vital sign (value+unit) | Affirmed | Observation, specific US Core vital profile | `status=preliminary`; category VSCat `vital-signs`; fixed LOINC + UCUM per profile (e.g. HR 8867-4 `/min`). BP = 85354-9 with systolic 8480-6 / diastolic 8462-4 components in `mm[Hg]`, root `value[x]` omitted. Body temperature, weight and height accept only their profile's required UCUM unit set. Pulse oximetry carries the SpO2 value only; a spoken oxygen flow rate or concentration goes to the ledger in v1. An in-visit measurement with no spoken time inherits `Encounter.period.start` with a provenance note; reported or historical readings need a spoken date at day precision (vs-1) | Export if lanes pass. Missing BP component, a unit-mismatched value, a missing spoken unit where the claimed profile does not fix exactly one unit (blood pressure and heart rate fix one, so the mapper supplies it), or a historical reading without a date → review. Never silently converted or padded with dataAbsentReason |
 | Symptom | Affirmed/negated | No resource in v1 | Ledger entry with polarity; rendered under S as transcript-supported text | Review-visible; not claimed as FHIR |
 | Clinician-assessed problem | Affirmed | Condition (us-core-condition-encounter-diagnosis) | `category=encounter-diagnosis`; `verificationStatus=provisional`; `clinicalStatus` from explicit temporality (current → `active`, explicitly resolved → `resolved`); onset/abatement only from explicit evidence | Only if a clinician stated or confirmed it; historical or unclear status → review |
 | Clinician-ruled-out problem | Negated | Condition (encounter-diagnosis) | `verificationStatus=refuted`, `clinicalStatus` omitted | Review queue by default; export only after clinician confirmation |
