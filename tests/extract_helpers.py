@@ -11,6 +11,34 @@ CASES = json.loads((Path(__file__).parent / "fixtures/contrastive_cases.json").r
 BY_NAME = {case["name"]: case for case in CASES}
 
 
+def fixture_transcript_texts(root: Path | None = None) -> tuple[str, ...]:
+    """Read every transcript segment in JSON fixtures, including nested goldens.
+
+    Discover files recursively so adding a new fixture also extends the leakage
+    guard. Validate transcript objects instead of silently ignoring malformed
+    segment text. No expected output, FHIR narrative or terminology is a turn.
+    """
+    texts: list[str] = []
+
+    def visit(value: object) -> None:
+        if isinstance(value, dict):
+            if "segments" in value:
+                transcript = Transcript.model_validate(value)
+                texts.extend(segment.text for segment in transcript.segments)
+            else:
+                for child in value.values():
+                    visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    for path in sorted((root or Path(__file__).parent / "fixtures").rglob("*.json")):
+        visit(json.loads(path.read_text("utf-8")))
+    if not texts:
+        raise ValueError("no fixture transcript texts found")
+    return tuple(texts)
+
+
 def case_input(name, *, changes=None, quote=None, role=None):
     case = copy.deepcopy(BY_NAME[name])
     data = case["assertions"][0]

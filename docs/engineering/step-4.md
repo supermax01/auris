@@ -48,23 +48,35 @@ added; the existing external llama-server runtime is MIT.
 
 ## Prompt, parsing and context budgets
 
-The prompt is `src/auris/extract/prompts/extraction_v1.md`. Its exact UTF-8
+The active prompt is `src/auris/extract/prompts/extraction_v2.md`. Its exact UTF-8
 SHA-256 is:
 
 ```text
-d87f75a09bf8718eb3f5ecab3789b62236a22949a990402e0100dedf1127be23
+a66c105f84af129589e5047c1eb3b4457a13b527cebee495030cb7f05cffa93e
 ```
 
 It defines all nine kinds, nullable fields, polarity, experiencer,
 temporality including resolved, source role, medication intent, and verbatim
-segment evidence. It includes fictional contrastive examples and both
-measured regressions. Transcript text is data rather than instructions.
+segment evidence. Its fictional contrasts teach the same classifications using
+clinical names and values absent from the repository's test data. Transcript
+text is data rather than instructions.
 Segments render as `[s3 | patient | 00:42.1–00:45.0] text`; embedded CR/LF
 are escaped to preserve one line per segment. Prompt hash and rendering
 are covered by a fixed snapshot/hash test.
 
-The prompt has 4,076 characters and a **1,359-token conservative estimate**.
-No server-measured count is available from this sandbox. The unchanged
+V2 has 4,195 characters, **907 tokens measured offline with the pinned Qwen
+GGUF's tokenizer**, and a **1,399-token conservative estimate**. Measurement
+used the existing `llama-tokenize` 0.9.0 (build 12110, commit cd959bae9), default
+special-token handling and no chat template. The same command measures the
+unchanged v1 as 883 tokens, matching Claude's earlier server `/tokenize` count.
+This is a prompt-only count, not a complete chat request's context usage:
+
+```sh
+llama-tokenize --offline -m cache/models/Qwen3-8B-Q4_K_M.gguf \
+  -f src/auris/extract/prompts/extraction_v2.md --show-count --ids
+```
+
+The unchanged
 compact schema is 15,024 characters (5,008 estimated tokens). We chose
 `max_tokens=1024`, rather than the suggested example 4096: the latter cannot
 fit prompt + schema + output + headroom in 8192 under the fallback estimate.
@@ -101,6 +113,69 @@ both records for review. Distinct non-overlapping occurrences remain distinct.
 The 64-assertion limit is per completion, so the merged encounter is an
 unbounded tuple of individually validated assertions, not a falsely truncated
 single `ExtractionResult`. All original responses remain in the artifact.
+
+## Step 4b: contamination finding and leakage guard
+
+Claude's external Qwen3-8B run with v1 reported correct kind, polarity and
+experiencer on all 15 contrastive cases, one temporality miss routed to review,
+zero critical errors and approximately 6.5 GB sampled server RSS. **The clinical
+result is contaminated and cannot support an accuracy claim.** Three fixture
+sentences appeared verbatim in v1: "My mother has diabetes.", "I have diabetes."
+and "I have no cough." Other examples reused the penicillin, amoxicillin,
+pneumonia and blood-pressure test content. PLAN section 10 and A9 require
+separation of teaching examples from the data being measured.
+
+V1 remains byte-for-byte unchanged for reproducibility (SHA-256
+`d87f75a09bf8718eb3f5ecab3789b62236a22949a990402e0100dedf1127be23`). V2 is the
+default. Every contrast has been rewritten, as has the numeric example in the
+field definitions. The rules are unchanged. New fictional clinical content is
+sesame, migraine, doxycycline, eczema and dizziness; the new values are 75 and
+37.3. These examples teach denial versus statement, family versus patient,
+discussion versus order, ruled-out versus assessed, verbatim vital value/unit
+text and a negated symptom. They are fictional utterances, not treatment advice
+or new clinical rules. No fixture or expected clinical answer was changed.
+
+`auris.extract.check_leakage(prompt, corpus, clinical_terms=...)` is an offline
+API for the future evaluation harness. It scans the entire prompt, including
+quoted examples and field definitions, against every supplied text and reports:
+
+- Exact sentences after Unicode NFKC/case normalization, whitespace and
+  punctuation normalization. Short sentences are included.
+- Nonidentical sentences with at least four tokens on **both** sides and
+  token-set Jaccard **>= 0.6**, inclusively. Stop words, negations and numbers
+  remain in the comparison. Exact matches are reported only in the first group.
+- Whole-token clinical content shared across prompt and corpus, using a small
+  fixture-derived watchlist: amoxicillin, asthma, bronchitis, cough, diabetes,
+  penicillin, pneumonia and rash. Callers can supply their own multiword terms.
+
+Quoted examples are separated from speaker labels and explanations. Sentence
+boundaries are newlines and `.?!;`, except decimal points between digits.
+The implementation performs no stemming, clinical synonym matching or semantic
+entailment. Passing this heuristic is necessary, not proof of no contamination;
+new evaluation corpora need their own clinical watchlist and split discipline.
+It does not detect model pretraining exposure. Empty/blank corpora are errors.
+
+The report provides `passed`, `raise_if_failed()` and `metadata()`. A harness
+must run the check on its full dev/test texts before inference, persist the
+metadata, and call `raise_if_failed()` before starting the model. Metadata
+records `leakage_check: pass` or `fail`, checker version, thresholds, prompt and
+corpus hashes, text count, clinical-watchlist hash and hit counts. It contains
+no transcript text; detailed findings are for private inspection only. Normal
+clinical extraction does not claim to have checked an evaluation corpus.
+
+The offline regression discovers all transcript objects recursively in every
+JSON file under `tests/fixtures/`, including nested FHIR goldens, and fails on
+any hit against the active prompt. Positive controls verify that v1 fails,
+including all three reported exact sentences. Tests cover the inclusive
+threshold, minimum lengths, quoted examples, decimals, whole-token clinical
+names, corpus discovery, metadata and refusal before runtime startup.
+
+The `llm` test is explicitly a **contrastive smoke test**, not an accuracy claim
+or the A9 evaluator. Its report labels the fewer-than-25-case limit and records
+the prompt version and leakage result even when prerequisites cause a skip.
+Leakage fails the run before model startup and is recorded as a failure, not a
+skip. Each case's extraction metadata also carries the passing check. V2 must
+still be rerun with the real model by Claude outside this sandbox.
 
 ## Lane 2 and review policy
 
@@ -172,7 +247,7 @@ probe permits only 127.0.0.1. It skips with actionable reasons for missing
 model/runtime or blocked localhost bind. Present corrupt artifacts and
 runtime/inference errors fail instead of being hidden by a skip.
 
-The integration probe runs all 15 step-2a contrastive cases with the real
+The integration smoke test runs all 15 step-2a contrastive cases with the real
 prompt, strictly checks every response, and tests all five critical-error
 classes against the fictional fixture gold. It does not assert perfect
 accuracy or an F1 threshold. The export invariant is stressed with passing
@@ -189,15 +264,16 @@ and no fabricated case results. Claude should run:
 .venv/bin/pytest -m llm -q -rs
 ```
 
-That same ignored private report will then contain per-case raw responses,
+That same ignored private smoke-test report will then contain prompt version,
+leakage-check metadata, per-case raw responses,
 parsed assertions, critical-error flags, gate states, timings, actual
 validation, prompt token count and sampled server RSS. Follow-ups are real
-Qwen accuracy/truncation observations, measured chat-template/token counts,
+Qwen smoke-test/truncation observations, measured chat-template/token counts,
 and memory measurement against the 16 GB laptop / 12 GB pipeline budget.
 Gemma inference and the 40-encounter model-selection study remain later work;
 metadata alone does not authorize a default replacement.
 
-Final commands and summaries:
+Original step-4 commands and summaries (before step 4b):
 
 ```text
 .venv/bin/ruff check
@@ -223,3 +299,26 @@ consistency expectations and the CLI's incorrect assumption of an
 `Intake.load()` method; the implementation now uses the existing
 `load_intake()` function. The final full suite includes the actual official
 validator tests and the new CLI test.
+
+Step-4b verification (network disabled; official validator tests included):
+
+```text
+.venv/bin/ruff check
+All checks passed!
+
+.venv/bin/ruff format --check
+72 files already formatted
+
+.venv/bin/pytest -q --disable-socket --tb=short -rs
+Validator wall-clock time — goldens + anchors: 9.269s
+Validator wall-clock time — broken resources: 9.017s
+SKIPPED [1] tests/test_extract_llm.py:107: sandbox blocks localhost bind; run llm tests outside this sandbox
+873 passed, 1 skipped, 1 warning in 26.34s
+
+git diff --check
+exit 0, no output
+```
+
+The warning is the existing test that intentionally attempts a blocked socket.
+The cached GGUF's SHA-256 was checked against the frozen configuration before
+reporting the measured token count. No dependencies or FHIR rules changed.
