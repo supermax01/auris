@@ -50,7 +50,22 @@ TRANSCRIPT_SUPPORTED = "transcript-supported"
 
 _APOSTROPHES = frozenset("'’‘ʼ")
 _NEGATION_CUES = frozenset(
-    {"no", "not", "never", "without", "deny", "denies", "denied", "neither", "nor"}
+    {
+        "no",
+        "not",
+        "never",
+        "without",
+        "deny",
+        "denies",
+        "denied",
+        "neither",
+        "nor",
+        "none",
+        "nil",
+        "negative",
+        "nothing",
+        "absent",
+    }
 )
 _SENTENCE_BOUNDARIES = frozenset(".?!;")
 
@@ -136,7 +151,13 @@ def _is_token_char(text: str, index: int) -> bool:
         return _is_word_char(before) and _is_word_char(after)
     if char in ".,/:" and before.isdigit() and after.isdigit():
         return True
-    return char in "+-−" and not _is_word_char(before) and after.isdigit()
+    if char == "." and after.isdigit() and (not _is_word_char(before)):
+        return True
+    return (
+        char in "+-−"
+        and not _is_word_char(before)
+        and (after.isdigit() or (after == "." and text[index + 2 : index + 3].isdigit()))
+    )
 
 
 def _normalise_token(raw: str) -> str:
@@ -166,6 +187,16 @@ def _has_negation(tokens: list[_Token]) -> bool:
         first.normalised == "ruled" and second.normalised == "out"
         for first, second in zip(tokens, tokens[1:], strict=False)
     )
+
+
+def normalised_tokens(text: str) -> tuple[str, ...]:
+    """Shared lexical policy for alignment, consistency and chunk merging."""
+    return tuple(token.normalised for token in _tokenise(text))
+
+
+def has_negation(text: str) -> bool:
+    """Shared conservative cue detector; not a clinical scope classifier."""
+    return _has_negation(_tokenise(text))
 
 
 def _omits_negation_context(text: str, tokens: list[_Token], start: int, stop: int) -> bool:

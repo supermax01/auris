@@ -120,7 +120,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -242,7 +246,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -364,7 +372,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -486,7 +498,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -608,7 +624,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -734,7 +754,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -884,7 +908,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -974,7 +1002,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1066,7 +1098,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1193,7 +1229,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1315,7 +1355,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1442,7 +1486,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1534,7 +1582,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1655,7 +1707,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1757,7 +1813,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1857,7 +1917,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -1958,7 +2022,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -2089,7 +2157,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -2217,7 +2289,11 @@
         },
         "ledger_only": false,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -2314,7 +2390,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     },
     {
@@ -2411,7 +2491,11 @@
         },
         "ledger_only": true,
         "validation_digest": null,
-        "reviewed_resource_digest": null
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
       }
     }
   ]

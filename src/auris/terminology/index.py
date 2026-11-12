@@ -219,6 +219,31 @@ class TerminologyIndex:
             term_type="IN" if row["tty"] in ("PIN", "BN") else row["tty"],
         )
 
+    def synonyms(self, text: str, system: str) -> tuple[str, ...]:
+        """Exact, unambiguous same-code aliases only; never fuzzy candidates."""
+        from auris.terminology.text import UK_US_NAMES
+
+        candidate = self.exact(text, system)
+        names = {text}
+        if candidate is not None:
+            rows = self.connection.execute(
+                "SELECT normalised FROM terms WHERE system=? AND assigned_code=?",
+                (system, candidate.code),
+            ).fetchall()
+            names.update(
+                row["normalised"]
+                for row in rows
+                if self.exact(row["normalised"], system) == candidate
+            )
+        if system == RXNORM:
+            # Audited whole-name aliases also work for uncoded combinations.
+            canonical = drug_name(text)
+            names.update(
+                alias for alias, target in UK_US_NAMES.items() if normalise(target) == canonical
+            )
+            names.add(canonical)
+        return tuple(sorted(names))
+
     def icd_valid_on(self, day: str) -> bool:
         try:
             value = date.fromisoformat(day[:10])

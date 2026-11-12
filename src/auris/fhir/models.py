@@ -8,6 +8,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from auris.assertions import AssertionBase
+from auris.consistency import ConsistencyResult
 from auris.evidence import AssertionEvidenceResult
 
 
@@ -67,6 +68,7 @@ class MappingOutcome(BaseModel):
     resource: dict[str, Any] | None = None
     ledger: dict[str, Any] | None = None
     evidence: AssertionEvidenceResult
+    consistency: ConsistencyResult = ConsistencyResult()
     review_reasons: tuple[str, ...] = ()
     mapper_flags: tuple[str, ...] = ()
     provenance_notes: tuple[str, ...] = ()
@@ -79,12 +81,14 @@ class MappingOutcome(BaseModel):
     @computed_field
     @property
     def export_state(self) -> ExportState:
+        if LaneState.FAIL in self.lanes.model_dump().values():
+            return "validation_failed"
         if self.ledger_only:
+            if self.consistency.review_reasons or "merge_conflict" in self.review_reasons:
+                return "needs_review"
             return "ledger_only"
         if self.resource is None:
             return "needs_review"
-        if LaneState.FAIL in self.lanes.model_dump().values():
-            return "validation_failed"
         digest = resource_digest(self.resource)
         if (self.is_material or self.review_reasons) and self.reviewed_resource_digest != digest:
             return "needs_review"

@@ -124,3 +124,49 @@ def test_load_from_file_rejects_corrupted_sha(tmp_path):
     target.write_text(corrupted)
     with pytest.raises(ValidationError):
         load_frozen_config(target)
+
+
+def test_extractor_candidates_are_pinned_and_selected_explicitly():
+    config = load_frozen_config().extractor
+    assert config.candidate().id == "qwen3-8b-q4_k_m"
+    gemma = config.candidate("gemma-4-e4b-it-q4_0")
+    assert gemma.role == "comparator"
+    assert gemma.license == "Apache-2.0" and gemma.bytes == 4590807392
+    assert gemma.quantization == "Q4_0"
+    assert config.candidate().quantization == "Q4_K_M"
+    assert config.max_tokens == 1024
+    with pytest.raises(ValueError, match="unknown extractor"):
+        config.candidate("fictional-not-configured")
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("revision", "main"),
+        ("sha256", "TODO-unknown"),
+        ("gguf_filename", "../escape.gguf"),
+        ("license", "non-commercial"),
+        ("runtime_flags", ["--host", "0.0.0.0"]),
+    ],
+)
+def test_extractor_candidate_pins_and_runtime_flags_are_validated(raw_config, field, value):
+    raw = copy.deepcopy(raw_config)
+    raw["extractor"]["candidates"][1][field] = value
+    with pytest.raises(ValidationError):
+        FrozenConfig.model_validate(raw)
+
+
+@pytest.mark.parametrize("mutation", ["two-defaults", "duplicate-id", "default-drift", "thinking"])
+def test_extractor_cannot_silently_drift_from_default(raw_config, mutation):
+    raw = copy.deepcopy(raw_config)
+    candidates = raw["extractor"]["candidates"]
+    if mutation == "two-defaults":
+        candidates[1]["role"] = "default"
+    elif mutation == "duplicate-id":
+        candidates[1]["id"] = candidates[0]["id"]
+    elif mutation == "default-drift":
+        candidates[0]["sha256"] = "a" * 64
+    else:
+        raw["extractor"]["thinking"] = True
+    with pytest.raises(ValidationError):
+        FrozenConfig.model_validate(raw)

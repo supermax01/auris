@@ -335,3 +335,9 @@ def test_one_timed_word_can_cover_multiple_normalised_tokens() -> None:
     assert result.aligned is not None
     assert result.aligned.audio_source == "word_timings"
     assert (result.aligned.audio_start_seconds, result.aligned.audio_end_seconds) == (11.0, 12.0)
+
+
+@pytest.mark.parametrize("text,quote", [("Dose .5 mg", "Dose 5 mg"), ("Dose -.5 mg", "Dose .5 mg")])
+def test_leading_decimal_and_sign_cannot_disappear(text, quote):
+    assert not _align(text, quote).ok
+    assert _align(text, text).ok

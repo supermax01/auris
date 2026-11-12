@@ -31,6 +31,14 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
     subparsers.add_parser("demo", help="Run the bundled demo (not implemented yet)")
 
+    extract_parser = subparsers.add_parser(
+        "extract", help="Extract facts using a local llama-server"
+    )
+    extract_parser.add_argument("--transcript", type=Path, required=True)
+    extract_parser.add_argument("--intake", type=Path, required=True)
+    extract_parser.add_argument("--out", type=Path, required=True)
+    extract_parser.add_argument("--model", default=None)
+
     setup_parser = subparsers.add_parser("setup", help="One-time setup downloads")
     setup_subparsers = setup_parser.add_subparsers(dest="setup_command")
     fhir_parser = setup_subparsers.add_parser(
@@ -76,6 +84,52 @@ def _build_parser() -> argparse.ArgumentParser:
         default=root / "docs" / "profile-checklist.md",
     )
     return parser
+
+
+def _cmd_extract(args: argparse.Namespace) -> int:
+    from pydantic import ValidationError
+
+    from auris.config import load_frozen_config
+    from auris.extract.pipeline import extract_local, finish_pipeline
+    from auris.fhir import Mapper
+    from auris.fhir.contracts import load_unit_sets
+    from auris.intake import load_intake
+    from auris.setup import fhir_packages, terminology, validator
+    from auris.terminology import TerminologyIndex
+    from auris.transcript import Transcript
+    from auris.validation.runner import ValidatorRunner
+
+    config = load_frozen_config()
+    candidate = config.extractor.candidate(args.model)
+
+    try:
+        transcript = Transcript.load(args.transcript)
+        intake = load_intake(args.intake)
+    except ValidationError:
+        raise ValueError("invalid transcript or intake JSON; check the input schemas") from None
+    core = config.fhir.package("hl7.fhir.r4.core")
+    assert core is not None
+    units = load_unit_sets(fhir_packages.default_cache_dir() / core.filename, core.sha256)
+    if args.out.exists() and any(args.out.iterdir()):
+        raise ValueError("output directory must be empty for a new extraction run")
+    with TerminologyIndex(terminology.default_cache_dir() / "index.sqlite") as index:
+        mapper = Mapper(intake, transcript, index, units)
+        run = extract_local(
+            transcript,
+            config.extractor,
+            candidate,
+            _repo_root() / "cache" / "models" / candidate.gguf_filename,
+        )
+        # Model is unloaded before any JVM is started (A6).
+        runner = ValidatorRunner(config, validator.default_cache_dir())
+        outcomes, validation = finish_pipeline(run, mapper, runner, args.out)
+    if run.failure:
+        print(f"extraction failed: {run.failure}", file=sys.stderr)
+        return 1
+    print(f"extracted {len(outcomes)} assertions; wrote extraction.json and validation.json")
+    if validation and validation.failure:
+        print("validator NOT_CHECKED; see validation.json for the reason")
+    return 0
 
 
 def _cmd_setup_fhir(args: argparse.Namespace) -> int:
@@ -182,6 +236,8 @@ def _cmd_checklist(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.command == "extract":
+        return _run_guarded(_cmd_extract, args)
     if args.command == "demo":
         print("not implemented yet (Slice 1)", file=sys.stderr)
         return 2

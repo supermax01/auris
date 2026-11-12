@@ -107,6 +107,15 @@ def validation_document(
             for item in outcome.evidence.items
             if item.failure is not None
         )
+        evidence_issues += tuple(
+            ValidatorIssue(
+                severity="error",
+                code="consistency",
+                details={"text": failure},
+                source="Auris consistency checker",
+            )
+            for failure in outcome.consistency.failures
+        )
         details = {
             "reduced_schema": LaneResult(state=outcome.lanes.reduced_schema),
             "evidence": LaneResult(state=outcome.lanes.evidence, issues=evidence_issues),
@@ -123,6 +132,7 @@ def validation_document(
                 "resource_type": outcome.resource["resourceType"] if outcome.resource else None,
                 "claimed_profile": outcome.claimed_profile,
                 "review_reasons": outcome.review_reasons,
+                "is_material": outcome.is_material,
                 "export_state": outcome.export_state,
                 "label": honest_label(outcome.lanes),
                 "lanes": {name: lane.model_dump(mode="json") for name, lane in details.items()},
@@ -130,6 +140,7 @@ def validation_document(
         )
     return {
         "tier": 0,
+        "lane_labels": {"evidence": "evidence and consistency"},
         "resources": rows,
         "validator": run.model_dump(mode="json", exclude={"resources"}),
     }

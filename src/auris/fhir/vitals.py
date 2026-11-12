@@ -75,6 +75,12 @@ def vital_profile(text: str | None) -> str | None:
     return f"us-core-{suffix}" if suffix else None
 
 
+def vital_synonyms(text: str) -> tuple[str, ...]:
+    """Reuse the mapper's verified vital-name groups for evidence support."""
+    profile = vital_profile(text)
+    return tuple(name for name in _PROFILES if profile and vital_profile(name) == profile)
+
+
 def _number(text: str | None) -> int | float | None:
     if text is None or not re.fullmatch(_NUMBER, text.strip()):
         return None

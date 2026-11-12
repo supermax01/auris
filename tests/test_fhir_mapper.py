@@ -94,7 +94,9 @@ def test_resource_refusals_remain_review_entries(map_case, name, changes, reason
     assert outcome.resource is None
     assert outcome.ledger == assertion.model_dump(mode="json")
     assert reason in outcome.review_reasons
-    assert outcome.export_state == "needs_review"
+    assert outcome.export_state == (
+        "validation_failed" if outcome.consistency.failures else "needs_review"
+    )
     if outcome.is_material:
         with pytest.raises(ValueError, match="material assertion requires review"):
             build_collection(mapper.intake, [outcome])
@@ -164,7 +166,9 @@ def test_missing_concept_never_creates_empty_code(map_case, name):
 )
 def test_supported_units_are_not_converted(map_case, name, unit, value, expected):
     _, _, outcome = map_case(
-        name, changes={"unit_text": unit, "value_text": value}, quote=f"Reading is {value} {unit}."
+        name,
+        changes={"unit_text": unit, "value_text": value},
+        quote=f"{BY_NAME[name]['assertion']['concept_text']} is {value} {unit}.",
     )
     assert outcome.resource["valueQuantity"] == {
         "value": float(value),
@@ -218,7 +222,9 @@ def test_low_precision_intake_time_cannot_supply_vital_date(map_case, intake):
     ["oxygen flow rate", "oxygen concentration", "oxygen flow", "unsupported fictional vital"],
 )
 def test_oxygen_supplements_and_unsupported_vitals_go_to_ledger(map_case, concept):
-    _, _, outcome = map_case("pulse-oximetry", changes={"concept_text": concept})
+    _, _, outcome = map_case(
+        "pulse-oximetry", changes={"concept_text": concept}, quote=f"{concept} is 98 percent."
+    )
     assert outcome.resource is None and outcome.export_state == "ledger_only"
     assert "vital_not_supported" in outcome.review_reasons
 
@@ -268,7 +274,11 @@ def test_refutation_never_has_clinical_status(map_case, temporality):
     ],
 )
 def test_uncoded_text_is_preserved_and_requires_review(map_case, name, changes, field):
-    _, _, outcome = map_case(name, changes=changes)
+    stated = next(iter(changes.values()))
+    original = BY_NAME[name]["assertion"]["concept_text"]
+    # These are positive coding tests: the changed clinical words must be stated.
+    quote = f"{original}; {stated} 500 milligrams."
+    _, _, outcome = map_case(name, changes=changes, quote=quote)
     assert outcome.resource[field] == {"text": next(iter(changes.values()))}
     assert outcome.mapper_flags == ("uncoded_text_only",)
     assert "needs_coding_review" in outcome.review_reasons
@@ -406,9 +416,7 @@ def test_evidence_is_external_and_cannot_be_reused_for_another_assertion(map_cas
 
 
 def test_material_is_not_the_only_final_export_gate(map_case):
-    _, _, outcome = map_case(
-        "patient_reported_condition", changes={"source_speaker_role": "unknown"}
-    )
+    _, _, outcome = map_case("patient_reported_condition", changes={"temporality": "unclear"})
     assert not outcome.is_material and outcome.review_reasons
     assert outcome.export_state == "needs_review"
 
@@ -513,7 +521,7 @@ def test_reported_medication_row_never_becomes_an_order(map_case, polarity, inte
         "reported-medication-affirmed", changes={"polarity": polarity, "medication_intent": intent}
     )
     assert outcome.resource is None
-    assert outcome.export_state == "ledger_only"
+    assert outcome.export_state == ("needs_review" if polarity == "negated" else "ledger_only")
     assert outcome.is_material and "medication" in outcome.review_reasons
 
 

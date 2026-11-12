@@ -179,9 +179,40 @@ gguf_filename = "Qwen3-8B-Q4_K_M.gguf"
 gguf_sha256 = "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
 license = "Apache-2.0"
 n_ctx = 8192
+max_tokens = 1024
 thinking = false
 temperature = 0.0
 temperature_status = "candidate, confirm in Slice 1"
+
+# Output cap leaves room for the unchanged reduced schema and prompt, even
+# with conservative token estimation. A capped response fails, never truncates.
+[[extractor.candidates]]
+id = "qwen3-8b-q4_k_m"
+repo = "Qwen/Qwen3-8B-GGUF"
+revision = "7c41481f57cb95916b40956ab2f0b139b296d974"
+gguf_filename = "Qwen3-8B-Q4_K_M.gguf"
+sha256 = "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+license = "Apache-2.0"
+quantization = "Q4_K_M"
+runtime_flags = ["--reasoning", "off"]
+role = "default"
+
+# Metadata supplied by Claude's verified probe; do not download at runtime.
+# Google's card google/gemma-4-E4B-it at
+# 4ecc2ba63bcac23ba4a767fc87025b1450f84c9c: apache-2.0, not gated.
+# Q4_0 versus Qwen Q4_K_M is a known quantization confound: ggml-org has
+# no official Q4_K_M. Text-only inference needs no mmproj file.
+[[extractor.candidates]]
+id = "gemma-4-e4b-it-q4_0"
+repo = "ggml-org/gemma-4-E4B-it-GGUF"
+revision = "8903cb408c7df39cde2ed15fac397e6d7be92951"
+gguf_filename = "gemma-4-E4B-it-Q4_0.gguf"
+sha256 = "a555b900214b477d8880e7832e0b8925e139b0159640036b09fe472b6f2097f2"
+bytes = 4590807392
+license = "Apache-2.0"
+quantization = "Q4_0"
+runtime_flags = ["--reasoning", "off"]
+role = "comparator"
 
 # ---------------------------------------------------------------------------
 # JVM for the official HL7 FHIR validator (PLAN A6).

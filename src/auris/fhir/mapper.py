@@ -12,6 +12,7 @@ from auris.assertions import (
     Temporality,
     VitalSignAssertion,
 )
+from auris.consistency import check_consistency
 from auris.evidence import AssertionEvidenceResult, align_assertion_evidence
 from auris.fhir.allergies import build_allergy
 from auris.fhir.common import build_anchors, resource_id
@@ -26,10 +27,11 @@ from auris.fhir.contracts import UnitSets, profile_url
 from auris.fhir.ledger import build_allergy_denial, build_reported_medication, build_symptom
 from auris.fhir.medications import build_order
 from auris.fhir.models import BuildResult, LaneState, MappingOutcome, ValidationLanes, ledger_entry
-from auris.fhir.vitals import build_vital, vital_profile
+from auris.fhir.vitals import build_vital, vital_profile, vital_synonyms
 from auris.intake import Intake
 from auris.review import is_material, review_reasons
 from auris.terminology import TerminologyIndex
+from auris.terminology.text import ICD10CM, RXNORM
 from auris.transcript import SpeakerRole, Transcript
 
 
@@ -61,9 +63,12 @@ class Mapper:
         if evidence is not None and evidence != aligned:
             raise ValueError("evidence result does not belong to this assertion and transcript")
         identifier = resource_id(self.transcript.content_hash, position, assertion.kind)
+        consistency = check_consistency(assertion, aligned, self.transcript, self._synonyms)
         built = self._build(assertion, identifier)
         reasons = [str(reason) for reason in review_reasons(assertion)]
-        reasons.extend((*built.reasons, *built.flags))
+        reasons.extend((*built.reasons, *built.flags, *consistency.review_reasons))
+        if consistency.failures:
+            reasons.append("consistency_failed")
         if assertion.temporality in (None, Temporality.UNCLEAR):
             reasons.append("temporality_unclear")
         if aligned.lane.value != "PASS":
@@ -76,7 +81,7 @@ class Mapper:
         if assertion.source_speaker_role not in cited_roles:
             reasons.append("source_role_mismatch")
         unique_reasons = tuple(dict.fromkeys(reasons))
-        material = is_material(assertion)
+        material = is_material(assertion) or consistency.force_material
         return MappingOutcome(
             id=identifier,
             assertion_position=position,
@@ -85,18 +90,32 @@ class Mapper:
             resource=built.resource,
             ledger=ledger_entry(assertion) if built.resource is None else None,
             evidence=aligned,
+            consistency=consistency,
             review_reasons=unique_reasons,
             mapper_flags=built.flags,
             provenance_notes=built.notes,
             is_material=material,
             ledger_only=built.ledger_only,
-            lanes=ValidationLanes(evidence=LaneState(aligned.lane.value)),
+            lanes=ValidationLanes(
+                evidence=LaneState.FAIL if consistency.failures else LaneState(aligned.lane.value)
+            ),
         )
 
     def map_all(self, assertions: tuple[AssertionBase, ...]) -> tuple[MappingOutcome, ...]:
         return tuple(
             self.map_assertion(assertion, position) for position, assertion in enumerate(assertions)
         )
+
+    def _synonyms(self, text: str, kind: str) -> tuple[str, ...]:
+        if kind == "vital_sign":
+            return vital_synonyms(text)
+        system = (
+            RXNORM
+            if kind
+            in ("explicit_new_order", "reported_medication", "allergy_statement", "allergy_denial")
+            else ICD10CM
+        )
+        return self.terminology.synonyms(text, system)
 
     def _build(self, assertion: AssertionBase, identifier: str) -> BuildResult:
         kind = assertion.kind

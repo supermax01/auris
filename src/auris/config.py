@@ -117,6 +117,28 @@ class AsrConfig(_FrozenModel):
     laptop: LaptopAsrConfig
 
 
+class ExtractorCandidate(_FrozenModel):
+    id: str = Field(pattern=r"^[a-z0-9_-]+$")
+    repo: str = Field(min_length=1)
+    revision: str
+    gguf_filename: str = Field(pattern=r"^[A-Za-z0-9_.-]+\.gguf$")
+    sha256: str
+    license: Literal["Apache-2.0", "MIT", "BSD-3-Clause", "BSD-2-Clause"]
+    quantization: str = Field(min_length=1)
+    runtime_flags: tuple[str, ...]
+    role: Literal["default", "comparator"]
+    bytes: int | None = Field(default=None, gt=0)
+
+    @model_validator(mode="after")
+    def _pins(self) -> ExtractorCandidate:
+        _check_commit_sha(self.revision, field="revision")
+        _check_sha256(self.sha256, allow_unpinned=False, field="sha256")
+        # Flags cannot override the loopback binding or load remote artifacts.
+        if self.runtime_flags not in ((), ("--reasoning", "off")):
+            raise ValueError("only the tested reasoning-off runtime flags are supported")
+        return self
+
+
 class ExtractorConfig(_FrozenModel):
     model: str = Field(min_length=1)
     revision: str = Field(min_length=1)
@@ -124,9 +146,35 @@ class ExtractorConfig(_FrozenModel):
     gguf_sha256: str = Field(min_length=1)
     license: str = Field(min_length=1)
     n_ctx: int = Field(gt=0)
-    thinking: bool
+    thinking: Literal[False]
+    max_tokens: int = Field(gt=0)
+    candidates: tuple[ExtractorCandidate, ...] = Field(min_length=1)
     temperature: float
     temperature_status: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _candidates(self) -> ExtractorConfig:
+        defaults = [candidate for candidate in self.candidates if candidate.role == "default"]
+        if len(defaults) != 1 or len({c.id for c in self.candidates}) != len(self.candidates):
+            raise ValueError("extractor requires unique candidate ids and exactly one default")
+        default = defaults[0]
+        if (
+            default.repo,
+            default.revision,
+            default.gguf_filename,
+            default.sha256,
+            default.license,
+        ) != (self.model, self.revision, self.gguf_filename, self.gguf_sha256, self.license):
+            raise ValueError("default candidate must match the existing extractor pins")
+        if self.max_tokens >= self.n_ctx:
+            raise ValueError("max_tokens must leave room for the prompt")
+        return self
+
+    def candidate(self, model_id: str | None = None) -> ExtractorCandidate:
+        for candidate in self.candidates:
+            if candidate.id == model_id or (model_id is None and candidate.role == "default"):
+                return candidate
+        raise ValueError("unknown extractor model id")
 
     @field_validator("revision")
     @classmethod
