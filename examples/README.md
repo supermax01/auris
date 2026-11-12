@@ -8,6 +8,28 @@ organisation, and must never be replaced with real patient data.
   Encounter) for the demo run, at the PLAN Appendix A1 minimums.
   Identifier systems use `example.org` and every name and value is
   labelled fictional.
+- `transcript.json` — a scripted 4 minute 10 second primary-care visit,
+  with a clinician and patient. Times are invented segment bounds, not
+  measured audio. It covers all nine A3 rows, including a family-history
+  condition, a continuing medicine, a medicine discussed without an order,
+  a sulfa-family allergy and a specific allergy denial. The medicine
+  dialogue is fictional test content, not treatment advice.
+
+After setup, run `auris demo` from the repository root. It writes
+`extraction.json`, `validation.json`, `bundle.json` and `note.md` to
+`./out/demo/` (0700 directory, 0600 files). The directory must be new or
+empty. Use `auris run --transcript examples/transcript.json --intake
+examples/intake.json --out out/another-demo` for a separate run.
+
+The hand-written replay and expected outcomes live in
+[`tests/fixtures/demo/expected.json`](../tests/fixtures/demo/expected.json),
+with an exact note snapshot beside them. They are a regression/smoke
+fixture, not adjudicated clinical gold or an accuracy benchmark. The demo
+passes the active prompt's leakage guard with a demo-specific clinical
+watchlist. The default tier-zero path never claims coding validation.
+Unresolved material assertions block final clinical export, so the
+hand-written demo replay produces an anchors-only collection. All extracted
+facts and review reasons remain visible in the note and JSON artifacts.
 
 The intake JSON is a small Auris input form, not a complete FHIR resource
 Bundle. Encounter subjects currently use the local `Patient/<id>` form;

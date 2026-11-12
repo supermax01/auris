@@ -156,7 +156,9 @@ class HttpBackend:
 def find_llama_server() -> str:
     resolved = shutil.which(os.environ.get("AURIS_LLAMA_SERVER", "llama-server"))
     if resolved is None:
-        raise ExtractionError("llama-server unavailable; set AURIS_LLAMA_SERVER or PATH")
+        raise ExtractionError(
+            "llama-server unavailable; set AURIS_LLAMA_SERVER or PATH, then run auris setup model"
+        )
     return resolved
 
 
@@ -212,7 +214,10 @@ class ManagedLlamaServer:
         started = time.monotonic()
         try:
             if not self.model_path.is_file():
-                raise ExtractionError("pinned extractor model missing; provision it during setup")
+                raise ExtractionError(
+                    "pinned extractor model missing; run auris setup model "
+                    f"--model {self.candidate.id} --fetch"
+                )
             if self.candidate.bytes and self.model_path.stat().st_size != self.candidate.bytes:
                 raise ExtractionError("extractor model size mismatch")
             if sha256_file(self.model_path) != self.candidate.sha256:

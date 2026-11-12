@@ -21,12 +21,11 @@ def test_cli_version(capsys: pytest.CaptureFixture[str]) -> None:
     assert "0.0.1" in captured.out
 
 
-def test_cli_demo_exits_2(capsys: pytest.CaptureFixture[str]) -> None:
-    result = main(["demo"])
-    assert result == 2
-    captured = capsys.readouterr()
-    combined = captured.out + captured.err
-    assert "not implemented yet (Slice 1)" in combined
+def test_cli_demo_help(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as result:
+        main(["demo", "--help"])
+    assert result.value.code == 0
+    assert "--model" in capsys.readouterr().out
 
 
 def test_sockets_are_blocked() -> None:

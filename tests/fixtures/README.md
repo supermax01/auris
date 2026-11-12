@@ -15,3 +15,13 @@ retained only for reproducibility; v2 is the active prompt.
 
 The other fixture, `fake_structure_definition.json`, is a small synthetic
 definition for checklist tests, not an authoritative FHIR definition.
+
+`demo/expected.json` contains a hand-written extraction and independently
+specified expected per-assertion outcomes for `examples/transcript.json`.
+Expected coding states use the small public terminology extracts in this
+directory and a fake passing structural validator. They do not imply that
+the official validator ran or that the full terminology cache will have the
+same coverage. `demo/note.md` is the inspected exact renderer golden with a
+fixed fictional run timestamp. The CLI regression also tests an actual
+FakeBackend replay through chunking, parsing, evidence, consistency, mapping
+and the export gate. No clinical codes were added for the demo.

@@ -304,7 +304,7 @@ def test_cli_runs_the_pipeline_and_selects_model(
     monkeypatch.setattr(
         terminology_module, "TerminologyIndex", lambda path: nullcontext(terminology)
     )
-    monkeypatch.setattr(runner_module, "ValidatorRunner", lambda *args: fake_validator())
+    monkeypatch.setattr(runner_module, "ValidatorRunner", lambda *args, **kwargs: fake_validator())
     status = main(
         [
             "extract",

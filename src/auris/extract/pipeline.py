@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from auris._storage import write_private_text
+from auris._storage import prepare_output_directory, write_private_text
 from auris.assertions import MAX_ASSERTIONS, AssertionBase, ExtractionResult, extraction_json_schema
 from auris.config import ExtractorCandidate, ExtractorConfig
 from auris.extract.backend import Backend, ExtractionError, ManagedLlamaServer, RuntimeMetadata
@@ -79,6 +80,7 @@ class ExtractionRun:
     decoding: dict[str, Any]
     transcript_sha256: str
     runtime: RuntimeMetadata
+    started_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     prompt_tokens: int | None = None
     prompt_token_count_method: str | None = None
     assertions: tuple[AssertionBase, ...] = ()
@@ -98,6 +100,7 @@ class ExtractionRun:
             "calls": self.calls,
             "metadata": {
                 "model_id": self.model.id,
+                "run_timestamp": self.started_at,
                 "model_repo": self.model.repo,
                 "model_license": self.model.license,
                 "model_sha256": self.model.sha256,
@@ -190,6 +193,7 @@ def extract_local(
 ) -> ExtractionRun:
     """Own the model lifetime, including startup-failure metadata and unload."""
     manager = ManagedLlamaServer(model, model_path, n_ctx=config.n_ctx)
+    timestamp = datetime.now(UTC).isoformat()
     started = time.monotonic()
     try:
         with manager as backend:
@@ -209,6 +213,7 @@ def extract_local(
             if isinstance(exc, ExtractionError)
             else "local extractor startup I/O failed",
         )
+    run.started_at = timestamp
     run.wall_seconds = time.monotonic() - started
     return run
 
@@ -218,9 +223,10 @@ def finish_pipeline(
 ) -> tuple[tuple[MappingOutcome, ...], ValidationRun | None]:
     """Call after unloading the extractor (A6); never export a final bundle here."""
     # Do not overwrite a previous run or leave stale success artifacts after a failure.
-    output_dir.mkdir(mode=0o700, exist_ok=True)
-    if any(output_dir.iterdir()):
-        raise ExtractionError("output directory must be empty for a new extraction run")
+    try:
+        prepare_output_directory(output_dir)
+    except ValueError as exc:
+        raise ExtractionError(str(exc)) from None
     write_private_text(output_dir / "extraction.json", json.dumps(run.document(), indent=2) + "\n")
     if run.failure:
         write_private_text(
