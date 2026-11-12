@@ -13,7 +13,7 @@ from collections.abc import Callable, Iterable
 from pydantic import BaseModel, ConfigDict
 
 from auris.assertions import AssertionBase, Experiencer, Polarity
-from auris.evidence import AssertionEvidenceResult, has_negation, normalised_tokens
+from auris.evidence import AssertionEvidenceResult, has_negation, normalised_tokens, sentence_texts
 from auris.transcript import SpeakerRole, Transcript
 
 FAMILY_CUES = frozenset(
@@ -76,14 +76,25 @@ def check_consistency(
         text = getattr(assertion, field, None)
         if text and not numeric_tokens(text).issubset(numbers):
             failures.append(f"{field}_number_not_in_quote")
+    key_terms: list[str] = []
     for field in ("concept_text", "allergen_text"):
         text = getattr(assertion, field, None)
         if text is None:
             continue  # Missing data is a mapper/review concern, not invention.
         aliases = [text, *(synonyms(text, assertion.kind) if synonyms else ())]
+        key_terms.extend(aliases)
         if not any(contains_phrase(quote, alias) for quote in quotes for alias in aliases):
             failures.append(f"{field}_not_in_quote")
-    negation = any(has_negation(quote) for quote in quotes)
+    polarity_texts: list[str] = []
+    for quote in quotes:
+        matching_sentences = [
+            sentence
+            for sentence in sentence_texts(quote)
+            if any(contains_phrase(sentence, term) for term in key_terms)
+        ]
+        # Keep the whole quote when no key term establishes a narrower scope.
+        polarity_texts.extend(matching_sentences or [quote])
+    negation = any(has_negation(text) for text in polarity_texts)
     if assertion.polarity == Polarity.AFFIRMED and negation:
         reasons.append("polarity_conflicts_with_quote")
     if (

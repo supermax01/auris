@@ -9,6 +9,7 @@ from auris.evidence import (
     EvidenceLane,
     align_assertion_evidence,
     align_evidence_item,
+    sentence_texts,
 )
 from auris.transcript import Transcript, TranscriptSegment, WordTiming
 
@@ -71,6 +72,16 @@ def test_punctuation_difference_aligns() -> None:
     assert result.aligned is not None
     assert result.aligned.aligned_text == "dose is: 500 milligrams"
     assert (result.aligned.char_start, result.aligned.char_end) == (10, 33)
+
+
+def test_sentence_boundaries_preserve_numeric_punctuation() -> None:
+    assert sentence_texts("Dose 1.5 mg; BP 126/78! At 10:30? No, take .5 mg.") == (
+        "Dose 1.5 mg",
+        "BP 126/78",
+        "At 10:30",
+        "No, take .5 mg",
+    )
+    assert sentence_texts("?!;") == ()
 
 
 def test_whitespace_difference_aligns() -> None:

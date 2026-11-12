@@ -10,6 +10,8 @@ from decimal import Decimal
 from pydantic import TypeAdapter, ValidationError
 
 from auris.assertions import Temporality, VitalSignAssertion
+from auris.consistency import numeric_tokens
+from auris.evidence import AssertionEvidenceResult, EvidenceLane
 from auris.fhir.common import Anchors, base
 from auris.fhir.contracts import UnitSets, element, fixed
 from auris.fhir.models import BuildResult
@@ -75,6 +77,8 @@ _UNIT_DISPLAYS = {
     "[in_i]": "in",
 }
 _NUMBER = r"[+-]?(?:\d+(?:\.\d+)?|\.\d+)"
+_BP_PAIR = rf"(?P<systolic>{_NUMBER})\s*(?:/|over|on)\s*(?P<diastolic>{_NUMBER})"
+BP_SPLIT_FIELDS_FLAG = "bp_parsed_from_value_and_unit"
 _DATETIME = TypeAdapter(IntakeDateTime)
 
 
@@ -116,17 +120,50 @@ def _date(text: str) -> str | None:
     return None
 
 
+def _bp_values(text: str | None) -> list[int | float]:
+    parts = re.fullmatch(rf"\s*{_BP_PAIR}\s*", text or "", re.IGNORECASE)
+    if parts:
+        values = [_number(part) for part in parts.groups()]
+        if all(value is not None for value in values):
+            return [value for value in values if value is not None]
+    return []
+
+
+def _split_bp_fields(
+    assertion: VitalSignAssertion, evidence: AssertionEvidenceResult
+) -> tuple[list[int | float], str | None] | None:
+    """Recover a split BP pair only from numeric tokens in one aligned quote."""
+    if not assertion.value_text or not assertion.unit_text or evidence.lane != EvidenceLane.PASS:
+        return None
+    combined = f"{assertion.value_text} {assertion.unit_text}"
+    parts = re.fullmatch(
+        rf"\s*(?P<pair>{_BP_PAIR})(?:\s+(?P<unit>\S.*?))?\s*", combined, re.IGNORECASE
+    )
+    if parts is None:
+        return None
+    values = _bp_values(parts["pair"])
+    numbers = frozenset((parts["systolic"], parts["diastolic"]))
+    if not values or not any(
+        item.aligned is not None and numbers.issubset(numeric_tokens(item.aligned.aligned_text))
+        for item in evidence.items
+    ):
+        return None
+    return values, parts["unit"]
+
+
 def build_vital(
     assertion: VitalSignAssertion,
     identifier: str,
     anchors: Anchors,
     unit_sets: UnitSets,
+    evidence: AssertionEvidenceResult,
 ) -> BuildResult:
     profile = vital_profile(assertion.concept_text)
     if profile is None:
         return BuildResult(ledger_only=True, reasons=("vital_not_supported",))
     reasons: list[str] = []
     notes: list[str] = []
+    flags: list[str] = []
     bp = profile == "us-core-blood-pressure"
     quantity_path = (
         "Observation.component:systolic.value[x]" if bp else "Observation.value[x]:valueQuantity"
@@ -134,6 +171,13 @@ def build_vital(
     unit_definition = element(profile, f"{quantity_path}.code")
     fixed_unit = unit_definition.get("fixed", {}).get("value")
     spoken = assertion.unit_text
+    values = _bp_values(assertion.value_text) if bp else []
+    if bp and not values:
+        recovered = _split_bp_fields(assertion, evidence)
+        if recovered is not None:
+            values, spoken = recovered
+            notes.append("systolic/diastolic parsed from value and unit text")
+            flags.append(BP_SPLIT_FIELDS_FLAG)
     if spoken is None:
         unit = fixed_unit
         if unit is None:
@@ -148,15 +192,7 @@ def build_vital(
         if unit not in unit_sets[set_id]:
             reasons.append("unit_not_in_profile_set")
 
-    values: list[int | float] = []
     if bp:
-        parts = re.fullmatch(
-            rf"\s*({_NUMBER})\s*(?:/|over)\s*({_NUMBER})\s*", assertion.value_text or ""
-        )
-        if parts:
-            parsed = [_number(part) for part in parts.groups()]
-            if all(value is not None for value in parsed):
-                values = [value for value in parsed if value is not None]
         if len(values) != 2:
             reasons.append("bp_component_missing")
     else:
@@ -246,4 +282,4 @@ def build_vital(
             "system": fixed(profile, f"{quantity_path}.system"),
             "code": unit,
         }
-    return BuildResult(profile=profile, resource=resource, notes=tuple(notes))
+    return BuildResult(profile=profile, resource=resource, flags=tuple(flags), notes=tuple(notes))

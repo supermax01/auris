@@ -43,6 +43,86 @@ def test_supported_affirmation_does_not_conflict(case):
     assert not result.failures and not result.review_reasons
 
 
+def test_natural_demo_medication_ignores_negation_in_another_sentence():
+    result = checked(
+        "continuing_medication",
+        changes={"concept_text": "albuterol"},
+        quote=(
+            "I still use albuterol. I brought the inhaler with me because I can never "
+            "remember everything on the label."
+        ),
+    )
+    assert not result.failures and not result.review_reasons
+
+
+@pytest.mark.parametrize(
+    "quote",
+    [
+        "I take albuterol but not every day.",
+        "I take albuterol. I do not take albuterol every day.",
+        "I do not take albuterol every day. I take albuterol.",
+    ],
+)
+def test_same_sentence_medication_negation_still_requires_review(quote):
+    result = checked("continuing_medication", changes={"concept_text": "albuterol"}, quote=quote)
+    assert not result.failures
+    assert result.review_reasons == ("polarity_conflicts_with_quote",)
+
+
+@pytest.mark.parametrize("polarity", ["affirmed", "negated"])
+def test_absent_key_term_keeps_whole_quote_negation_scope(polarity):
+    result = checked(
+        "continuing_medication",
+        changes={"concept_text": "albuterol", "polarity": polarity},
+        quote="I use the inhaler. I can never remember the label.",
+    )
+    assert result.failures == ("concept_text_not_in_quote",)
+    assert result.review_reasons == (
+        ("polarity_conflicts_with_quote",) if polarity == "affirmed" else ()
+    )
+
+
+def test_unrelated_sentence_cannot_support_extracted_negation():
+    result = checked(
+        "continuing_medication",
+        changes={"concept_text": "albuterol", "polarity": "negated"},
+        quote="I still use albuterol. I can never remember the label.",
+    )
+    assert not result.failures
+    assert result.review_reasons == ("negation_not_in_quote",)
+
+
+@pytest.mark.parametrize("separator", [".", "?", "!", ";"])
+@pytest.mark.parametrize("negated", [False, True])
+def test_sentence_scope_uses_existing_terminology_aliases(
+    terminology, units, intake, separator, negated
+):
+    action = "do not take" if negated else "take"
+    transcript, assertion = case_input(
+        "continuing_medication",
+        changes={"concept_text": "ACETAMINOPHEN"},
+        quote=f"I {action} PARACETAMOL{separator} I never read labels.",
+    )
+    outcome = Mapper(intake, transcript, terminology, units).map_assertion(assertion, 0)
+    assert not outcome.consistency.failures
+    assert outcome.consistency.review_reasons == (
+        ("polarity_conflicts_with_quote",) if negated else ()
+    )
+
+
+def test_sentence_scope_uses_allergen_when_concept_is_absent():
+    result = checked(
+        "affirmed_allergy",
+        changes={"concept_text": None},
+        quote="Penicillin gives me a rash. I can never remember when it started.",
+    )
+    assert not result.failures and not result.review_reasons
+    denied = checked(
+        "affirmed_allergy", changes={"concept_text": None}, quote="I am not allergic to penicillin."
+    )
+    assert denied.review_reasons == ("polarity_conflicts_with_quote",)
+
+
 @pytest.mark.parametrize(
     "case,changes,quote,reason",
     [

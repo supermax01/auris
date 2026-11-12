@@ -199,18 +199,42 @@ def has_negation(text: str) -> bool:
     return _has_negation(_tokenise(text))
 
 
+def _has_sentence_boundary(text: str, left: _Token, right: _Token) -> bool:
+    return any(char in _SENTENCE_BOUNDARIES for char in text[left.char_end : right.char_start])
+
+
+def sentence_texts(text: str) -> tuple[str, ...]:
+    """Sentence token spans using the alignment guard's boundaries.
+
+    Preserve original wording and internal punctuation, including decimals;
+    omit punctuation outside the first and last token of each sentence.
+    """
+    tokens = _tokenise(text)
+    if not tokens:
+        return ()
+    starts = [0]
+    starts.extend(
+        index
+        for index in range(1, len(tokens))
+        if _has_sentence_boundary(text, tokens[index - 1], tokens[index])
+    )
+    stops = [*starts[1:], len(tokens)]
+    return tuple(
+        text[tokens[start].char_start : tokens[stop - 1].char_end]
+        for start, stop in zip(starts, stops, strict=True)
+    )
+
+
 def _omits_negation_context(text: str, tokens: list[_Token], start: int, stop: int) -> bool:
     if _has_negation(tokens[start:stop]):
         return False
     left, right = start, stop
     while left > 0:
-        gap = text[tokens[left - 1].char_end : tokens[left].char_start]
-        if any(char in _SENTENCE_BOUNDARIES for char in gap):
+        if _has_sentence_boundary(text, tokens[left - 1], tokens[left]):
             break
         left -= 1
     while right < len(tokens):
-        gap = text[tokens[right - 1].char_end : tokens[right].char_start]
-        if any(char in _SENTENCE_BOUNDARIES for char in gap):
+        if _has_sentence_boundary(text, tokens[right - 1], tokens[right]):
             break
         right += 1
     return _has_negation(tokens[left:right])

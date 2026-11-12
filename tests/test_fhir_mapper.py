@@ -27,6 +27,98 @@ def test_a3_exact_golden_outcome(case, map_case):
 
 
 @pytest.mark.parametrize(
+    "value_text,unit_text,quote,recovered",
+    [
+        ("126", "over 78", "Your blood pressure is 126 over 78.", True),
+        ("126", "/78", "Your blood pressure is 126/78.", True),
+        ("126", "on 78", "Your blood pressure is 126 on 78.", True),
+        ("126", "over 78 mmHg", "Your blood pressure is 126 over 78 mmHg.", True),
+        ("126/78", None, "Your blood pressure is 126/78.", False),
+    ],
+)
+def test_bp_pair_normalisation_is_evidence_grounded(
+    map_case, value_text, unit_text, quote, recovered
+):
+    mapper, assertion, outcome = map_case(
+        "blood-pressure", changes={"value_text": value_text, "unit_text": unit_text}, quote=quote
+    )
+    resource = outcome.resource
+    assert resource is not None
+    assert "valueQuantity" not in resource
+    assert [part["valueQuantity"] for part in resource["component"]] == [
+        {"value": value, "unit": "mmHg", "system": "http://unitsofmeasure.org", "code": "mm[Hg]"}
+        for value in (126, 78)
+    ]
+    note = "systolic/diastolic parsed from value and unit text"
+    assert (note in outcome.provenance_notes) is recovered
+    assert outcome.mapper_flags == (("bp_parsed_from_value_and_unit",) if recovered else ())
+    assert not outcome.review_reasons
+    assert outcome.lanes.evidence == LaneState.PASS
+    assert assertion.value_text == value_text and assertion.unit_text == unit_text
+    # The informational repair flag must not itself prevent final export.
+    run = passing_run(mapper.intake, [outcome])
+    assert apply_validation(outcome, run).export_state == "final_exportable"
+
+
+@pytest.mark.parametrize(
+    "value_text,unit_text,quote",
+    [
+        ("125", "over 78", "Your blood pressure is 126 over 78."),
+        ("126", "over 79", "Your blood pressure is 126 over 78."),
+        ("126", "over79", "Your blood pressure is 126 over 78."),
+        ("126", "on79", "Your blood pressure is 126 over 78."),
+        ("126", "over 78", "Your blood pressure is 126 over78."),
+        ("126", "over 78", "Your blood pressure is 126 over 178."),
+        ("126", "over 78", "Your blood pressure is 126 over 78.5."),
+        ("126", "over 78", "Your blood pressure is 126 over -78."),
+        ("126", "78", "Your blood pressure is 126 over 78."),
+        ("126", "over 78 then 80", "Your blood pressure is 126 over 78 then 80."),
+        ("126", "over 78 kPa", "Your blood pressure is 126 over 78 kPa."),
+        ("126", "over 78 mmHg extra", "Your blood pressure is 126 over 78 mmHg extra."),
+        ("126/78", "over 78", "Your blood pressure is 126 over 78."),
+    ],
+)
+def test_bp_field_repair_refuses_unsupported_numbers_and_other_shapes(
+    map_case, value_text, unit_text, quote
+):
+    _, assertion, outcome = map_case(
+        "blood-pressure", changes={"value_text": value_text, "unit_text": unit_text}, quote=quote
+    )
+    assert outcome.resource is None
+    assert outcome.ledger == assertion.model_dump(mode="json")
+    assert outcome.review_reasons
+    assert not outcome.mapper_flags
+
+
+def test_bp_field_repair_requires_numbers_in_the_same_aligned_quote(map_case):
+    mapper, assertion, _ = map_case(
+        "blood-pressure",
+        changes={"value_text": "126", "unit_text": "over 78"},
+        quote="Your blood pressure is 126 over 78.",
+    )
+    for quotes in (
+        ("Your blood pressure is 126", "over 78"),
+        ("Your blood pressure is 126 over 79",),
+    ):
+        evidence = tuple(assertion.evidence[0].model_copy(update={"quote": q}) for q in quotes)
+        outcome = mapper.map_assertion(assertion.model_copy(update={"evidence": evidence}), 0)
+        assert outcome.resource is None
+        assert "bp_component_missing" in outcome.review_reasons
+        assert not outcome.mapper_flags
+
+
+def test_bp_field_repair_is_not_used_for_other_vitals(map_case):
+    _, _, outcome = map_case(
+        "heart-rate",
+        changes={"value_text": "126", "unit_text": "over 78"},
+        quote="Your heart rate is 126 over 78.",
+    )
+    assert outcome.resource is None
+    assert "unit_not_in_profile_set" in outcome.review_reasons
+    assert not outcome.mapper_flags
+
+
+@pytest.mark.parametrize(
     "name,changes,reason",
     [
         ("blood-pressure", {"value_text": "128"}, "bp_component_missing"),

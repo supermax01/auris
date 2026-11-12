@@ -27,7 +27,7 @@ from auris.fhir.contracts import UnitSets, profile_url
 from auris.fhir.ledger import build_allergy_denial, build_reported_medication, build_symptom
 from auris.fhir.medications import build_order
 from auris.fhir.models import BuildResult, LaneState, MappingOutcome, ValidationLanes, ledger_entry
-from auris.fhir.vitals import build_vital, vital_profile, vital_synonyms
+from auris.fhir.vitals import BP_SPLIT_FIELDS_FLAG, build_vital, vital_profile, vital_synonyms
 from auris.intake import Intake
 from auris.review import is_material, review_reasons
 from auris.terminology import TerminologyIndex
@@ -66,7 +66,10 @@ class Mapper:
         consistency = check_consistency(assertion, aligned, self.transcript, self._synonyms)
         built = self._build(assertion, identifier, aligned)
         reasons = [str(reason) for reason in review_reasons(assertion)]
-        reasons.extend((*built.reasons, *built.flags, *consistency.review_reasons))
+        reasons.extend(built.reasons)
+        # This evidence-grounded field repair is informational for evaluation.
+        reasons.extend(flag for flag in built.flags if flag != BP_SPLIT_FIELDS_FLAG)
+        reasons.extend(consistency.review_reasons)
         if consistency.failures:
             reasons.append("consistency_failed")
         if assertion.temporality in (None, Temporality.UNCLEAR):
@@ -187,7 +190,7 @@ class Mapper:
         match kind:
             case "vital_sign":
                 assert isinstance(assertion, VitalSignAssertion)
-                return build_vital(assertion, identifier, self.anchors, self.unit_sets)
+                return build_vital(assertion, identifier, self.anchors, self.unit_sets, evidence)
             case "clinician_assessed_problem":
                 return build_assessed(assertion, identifier, self.anchors, self.terminology)
             case "clinician_ruled_out_problem":

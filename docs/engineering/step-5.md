@@ -153,6 +153,22 @@ development data in the evaluation harness in the next step. This single
 fictional encounter is a low-confidence smoke observation, not accuracy
 evidence; the rewritten transcript below requires a fresh real-model run.
 
+Claude's subsequent Step 5c smoke run on the natural transcript completed
+in approximately **51 seconds**. In **s15**, “Your blood pressure is 126
+over 78.”, Qwen3-8B split the pair into `value_text="126"` and
+`unit_text="over 78"`. The mapper safely refused it with unit/component
+review reasons. In **s9**, the continuing albuterol statement was flagged
+for polarity because “never” occurred in the following sentence about
+remembering the inhaler label. Step 5d addresses these two downstream
+robustness issues with deterministic, evidence-grounded checks.
+
+The **s21** statement, “We could try amoxicillin, but I don't think you
+need an antibiotic”, was **again omitted**. This remains a recall miss
+to measure in the development evaluation harness; Step 5d does not tune
+the prompt or manufacture a medication assertion. These are Claude's
+reported observations from one fictional encounter, not new measurements
+by the implementer or evidence of accuracy.
+
 ## Verification
 
 Commands were run directly from `.venv/bin/`; no mise, uv, installation,
@@ -402,3 +418,72 @@ run found the stale note snapshot and a test's wrong height expectation;
 both were corrected. A subsequent validator/note run passed all 19 tests
 in 22.68s. One overlong review-reason source line was wrapped before the
 final clean lint run. No setup, installation or git-history command ran.
+
+## Step 5d: evidence-grounded robustness
+
+For BP only, an incomplete `value_text` may be joined to `unit_text` when
+the entire result is a pair separated by `/`, `over` or `on`, optionally
+followed by a unit. Both numeric tokens must occur in the same aligned
+quote, and the evidence lane must pass. Any trailing unit still passes
+through the existing profile-unit checks; an absent unit uses the profile's
+fixed `mm[Hg]`. Unsupported numbers, malformed pairs and mismatched units
+remain refused. A complete pair in `value_text` uses the ordinary path.
+Other vitals retain their existing parsing rules.
+
+Successful recovery records the provenance note
+`systolic/diastolic parsed from value and unit text` and mapper flag
+`bp_parsed_from_value_and_unit`. This flag is informational for evaluation
+and does not itself require review; existing review flags such as
+`uncoded_text_only` retain their effect. This implements the requested
+normalisation without retaining the avoidable field-split review defect.
+The original extraction fields and aligned evidence are preserved, and
+all validation/export gates still apply.
+
+Polarity consistency uses the sentence(s) containing the assertion's
+normalised concept, medication or allergen text, including the existing
+unambiguous terminology aliases. Sentence boundaries share the evidence
+alignment guard's `.?!;` policy outside tokens, preserving decimal points
+inside numbers. Every matching sentence is checked. Each quote without a
+matching key term falls back to its full text. This scopes both polarity
+conflicts and missing-negation checks; same-sentence cues still require
+review. Numeric support, concept support, experiencer checks and evidence
+alignment retain their existing rules.
+
+Offline regressions cover the exact reported BP split and albuterol quote,
+complete BP with a null unit, supported separators and trailing `mmHg`,
+unsupported numbers and units, absent/fragmented evidence, other vitals,
+same-sentence denials, multiple matching sentences, existing terminology
+aliases, all shared sentence boundaries and the whole-quote fallback.
+
+No dependency, terminology code, prompt or frozen configuration changed.
+There is no disagreement with `fhir-reference.md`. Claude will rerun the
+real demo; no model inference was performed by the Step 5d implementer.
+
+Step 5d final checks (direct project-venv commands, networking disabled):
+
+```text
+.venv/bin/ruff check
+All checks passed!
+
+.venv/bin/ruff format --check
+83 files already formatted
+
+.venv/bin/pytest tests/test_fhir_mapper.py tests/test_consistency.py tests/test_evidence.py -q --disable-socket --tb=short
+385 passed in 0.42s
+
+.venv/bin/pytest -m 'not llm' -q --disable-socket --tb=short -rs
+Validator wall-clock time — goldens + anchors: 8.217s
+Validator wall-clock time — demo + display variants: 6.400s
+Validator wall-clock time — broken resources: 6.104s
+1079 passed, 2 deselected, 1 warning in 24.02s
+
+git diff --check
+(no output; exit 0)
+```
+
+The warning is the existing intentional socket-blocking test. Initial lint
+found two long test lines; both were corrected, including one with
+`.venv/bin/ruff format`. Diff review added explicit checks for each parsed
+BP number so compact separator text cannot hide an unsupported diastolic
+value from tokenization. The targeted and full suites above include those
+additional refusal cases. No setup, installation or git-history command ran.
