@@ -163,3 +163,21 @@ runtime_target = "at most 20 minutes to process 10 minutes of audio (to be measu
 name = "server"
 gpu_memory_gb = 24
 memory_gb = 64
+
+# Terminology: verified source archives, downloaded only during setup (A8).
+[terminology.rxnorm]
+release = "2026-11-02"
+url = "https://download.nlm.nih.gov/rxnorm/RxNorm_full_prescribe_11022026.zip"
+filename = "RxNorm_full_prescribe_11022026.zip"
+sha256 = "c742a6c4b2995194aa3479400e08a7c1ad707178bfc80fe9c8cd7afa693ae987"
+md5 = "cd240fc9655dcd2cb54b1e185f3d8702"
+license = "NLM Current Prescribable Content; no licence required"
+
+[terminology.icd10cm]
+release = "FY2027"
+url = "https://www.cms.gov/files/zip/2027-code-descriptions-tabular-order.zip"
+filename = "2027-code-descriptions-tabular-order.zip"
+sha256 = "91c6c9d1117764ce72375a0f3a5493b1725dafbc1ab283b55799076c9e194965"
+license = "Public domain (US Government)"
+valid_from = 2026-10-01
+valid_to = 2027-09-30

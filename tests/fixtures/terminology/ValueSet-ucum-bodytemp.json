@@ -1,0 +1,21 @@
+{
+  "resourceType": "ValueSet",
+  "id": "ucum-bodytemp",
+  "url": "http://hl7.org/fhir/ValueSet/ucum-bodytemp",
+  "version": "4.0.1",
+  "compose": {
+    "include": [
+      {
+        "system": "http://unitsofmeasure.org",
+        "concept": [
+          {
+            "code": "Cel"
+          },
+          {
+            "code": "[degF]"
+          }
+        ]
+      }
+    ]
+  }
+}

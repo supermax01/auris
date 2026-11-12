@@ -1,0 +1,21 @@
+{
+  "resourceType": "ValueSet",
+  "id": "ucum-bodylength",
+  "url": "http://hl7.org/fhir/ValueSet/ucum-bodylength",
+  "version": "4.0.1",
+  "compose": {
+    "include": [
+      {
+        "system": "http://unitsofmeasure.org",
+        "concept": [
+          {
+            "code": "cm"
+          },
+          {
+            "code": "[in_i]"
+          }
+        ]
+      }
+    ]
+  }
+}

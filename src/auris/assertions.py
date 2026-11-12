@@ -77,6 +77,7 @@ class Experiencer(StrEnum):
 class Temporality(StrEnum):
     CURRENT = "current"
     PAST = "past"
+    RESOLVED = "resolved"
     FUTURE = "future"
     UNCLEAR = "unclear"
 

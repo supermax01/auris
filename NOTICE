@@ -6,30 +6,22 @@ This product includes software developed by the Auris contributors.
 
 LOINC
 
-[No LOINC content is included yet. The required LOINC licence notice
-will be added here when the LOINC vitals subset artifact is introduced
-(see docs/PLAN.md Appendix A8).]
+This material contains content from LOINC (http://loinc.org). LOINC is copyright © Regenstrief Institute, Inc. and the Logical Observation Identifiers Names and Codes (LOINC) Committee and is available at no cost under the license at http://loinc.org/license. LOINC® is a registered United States trademark of Regenstrief Institute, Inc.
 
 ---
 
 UCUM
 
-[No UCUM content is included yet. The required UCUM terms notice will
-be added here when UCUM content is introduced (see docs/PLAN.md
-Appendix A8).]
+Auris uses individual UCUM codes from the Unified Code for Units of Measure, copyright © Regenstrief Institute, Inc. and The UCUM Organization, under the UCUM Copyright Notice and License, including its disclaimer of warranties: https://ucum.org/license
 
 ---
 
 RxNorm
 
-[No RxNorm content is included yet. The required RxNorm notice will be
-added here when the RxNorm artifact is introduced (see docs/PLAN.md
-Appendix A8).]
+RxNorm Current Prescribable Content is downloaded at setup from the U.S. National Library of Medicine (no licence required) and is not redistributed with Auris. This product uses publicly available data from the U.S. National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
 
 ---
 
 ICD-10-CM
 
-[No ICD-10-CM content is included yet. The required ICD-10-CM notice
-will be added here when the ICD-10-CM artifact is introduced (see
-docs/PLAN.md Appendix A8).]
+ICD-10-CM code files are downloaded at setup from the U.S. Centers for Medicare & Medicaid Services (public domain) and are not redistributed with Auris.

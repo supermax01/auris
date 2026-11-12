@@ -94,13 +94,13 @@ def review_reasons(assertion: AssertionBase) -> tuple[ReviewReason, ...]:
     if assertion.source_speaker_role in (None, SpeakerRole.UNKNOWN):
         reasons.append(ReviewReason.SOURCE_ROLE_UNKNOWN)
     if assertion.kind in _POSITIVE_CONDITION_KINDS:
-        if assertion.temporality is Temporality.PAST:
+        if assertion.temporality in (Temporality.PAST, Temporality.RESOLVED):
             reasons.append(ReviewReason.HISTORICAL_CONDITION)
         elif assertion.temporality in (None, Temporality.UNCLEAR):
             reasons.append(ReviewReason.CONDITION_TEMPORALITY_UNCLEAR)
-    if (
-        isinstance(assertion, AllergyStatementAssertion)
-        and assertion.stated_resolution_text is not None
+    if isinstance(assertion, AllergyStatementAssertion) and (
+        assertion.stated_resolution_text is not None
+        or assertion.temporality is Temporality.RESOLVED
     ):
         reasons.append(ReviewReason.ALLERGY_RESOLUTION_STATED)
     return tuple(reasons)

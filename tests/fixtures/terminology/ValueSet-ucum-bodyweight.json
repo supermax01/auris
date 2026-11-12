@@ -1,0 +1,24 @@
+{
+  "resourceType": "ValueSet",
+  "id": "ucum-bodyweight",
+  "url": "http://hl7.org/fhir/ValueSet/ucum-bodyweight",
+  "version": "4.0.1",
+  "compose": {
+    "include": [
+      {
+        "system": "http://unitsofmeasure.org",
+        "concept": [
+          {
+            "code": "kg"
+          },
+          {
+            "code": "[lb_av]"
+          },
+          {
+            "code": "g"
+          }
+        ]
+      }
+    ]
+  }
+}

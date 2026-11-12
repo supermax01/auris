@@ -39,6 +39,13 @@ def _build_parser() -> argparse.ArgumentParser:
     fhir_parser.add_argument("--config", type=Path, default=None)
     fhir_parser.add_argument("--cache", type=Path, default=None)
 
+    terminology_parser = setup_subparsers.add_parser(
+        "terminology", help="Verify terminology archives and build the local index"
+    )
+    terminology_parser.add_argument("--config", type=Path, default=None)
+    terminology_parser.add_argument("--cache", type=Path, default=None)
+    terminology_parser.add_argument("--fetch", action="store_true", help="Fetch missing archives")
+
     checklist_parser = subparsers.add_parser(
         "checklist", help="Regenerate the US Core profile checklist from the cache"
     )
@@ -103,6 +110,18 @@ def _cmd_setup_fhir(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_setup_terminology(args: argparse.Namespace) -> int:
+    from auris.config import load_frozen_config
+    from auris.setup.terminology import default_cache_dir, setup_terminology
+
+    config = load_frozen_config(args.config)
+    path = setup_terminology(
+        config.terminology, args.cache or default_cache_dir(), fetch=args.fetch
+    )
+    print(f"terminology archives: checksums OK; index rebuilt -> {path}")
+    return 0
+
+
 def _cmd_checklist(args: argparse.Namespace) -> int:
     from auris.config import load_frozen_config
     from auris.contract import checklist
@@ -144,6 +163,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.command == "setup" and args.setup_command == "fhir":
         return _run_guarded(_cmd_setup_fhir, args)
+    if args.command == "setup" and args.setup_command == "terminology":
+        return _run_guarded(_cmd_setup_terminology, args)
     if args.command == "checklist":
         return _run_guarded(_cmd_checklist, args)
     parser.print_help(sys.stderr)

@@ -1,0 +1,65 @@
+"""Mapper outcomes. Validator lanes can be filled later without changing callers."""
+
+from enum import StrEnum
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from auris.assertions import AssertionBase
+from auris.evidence import AssertionEvidenceResult
+
+
+class LaneState(StrEnum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    NOT_CHECKED = "NOT_CHECKED"
+
+
+class ValidationLanes(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    reduced_schema: LaneState = LaneState.PASS
+    evidence: LaneState
+    base_r4: LaneState = LaneState.NOT_CHECKED
+    us_core_profile: LaneState = LaneState.NOT_CHECKED
+    terminology: LaneState = LaneState.NOT_CHECKED
+
+
+class MappingOutcome(BaseModel):
+    """final_exportable is mapper eligibility, not a claim of FHIR validation.
+
+    A3 ledger rows use ledger_only. Refused resource mappings keep the full
+    assertion in ledger and use needs_review. No incomplete FHIR is emitted.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    id: str
+    assertion_position: int = Field(ge=0)
+    kind: str
+    claimed_profile: str | None
+    resource: dict[str, Any] | None = None
+    ledger: dict[str, Any] | None = None
+    evidence: AssertionEvidenceResult
+    review_reasons: tuple[str, ...] = ()
+    mapper_flags: tuple[str, ...] = ()
+    provenance_notes: tuple[str, ...] = ()
+    is_material: bool
+    export_state: Literal["final_exportable", "needs_review", "ledger_only"]
+    lanes: ValidationLanes
+
+
+class BuildResult(BaseModel):
+    """Internal builder result before evidence/review/export policy is applied."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+    profile: str | None = None
+    resource: dict[str, Any] | None = None
+    reasons: tuple[str, ...] = ()
+    flags: tuple[str, ...] = ()
+    notes: tuple[str, ...] = ()
+    ledger_only: bool = False
+
+
+def ledger_entry(assertion: AssertionBase) -> dict[str, Any]:
+    # Preserve every stated field, polarity and quote. Exact offsets live in
+    # MappingOutcome.evidence for both resources and ledger entries.
+    return assertion.model_dump(mode="json")

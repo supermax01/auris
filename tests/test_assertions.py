@@ -201,7 +201,7 @@ def test_exported_schema_uses_enums_for_closed_sets() -> None:
     }
     assert ("affirmed", "negated") in enum_values
     assert ("patient", "family_member", "other", "unknown") in enum_values
-    assert ("current", "past", "future", "unclear") in enum_values
+    assert ("current", "past", "resolved", "future", "unclear") in enum_values
     assert ("clinician", "patient", "companion", "other", "unknown") in enum_values
     assert ("new_order", "continuing", "historical", "discussed", "unclear") in enum_values
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import re
 import tomllib
+from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -189,6 +190,32 @@ class ReferenceMachinesConfig(_FrozenModel):
     server: ServerReferenceMachine
 
 
+class TerminologyPin(_FrozenModel):
+    """An independently verified, setup-only terminology archive."""
+
+    release: str = Field(min_length=1)
+    url: str = Field(pattern=r"^https://")
+    filename: str = Field(pattern=r"^[A-Za-z0-9_.-]+\.zip$")
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    md5: str | None = Field(default=None, pattern=r"^[0-9a-f]{32}$")
+    license: str = Field(min_length=1)
+    valid_from: date | None = None
+    valid_to: date | None = None
+
+    @model_validator(mode="after")
+    def _check_dates(self) -> TerminologyPin:
+        if (self.valid_from is None) != (self.valid_to is None):
+            raise ValueError("terminology validity needs both dates")
+        if self.valid_from and self.valid_to and self.valid_from > self.valid_to:
+            raise ValueError("terminology validity dates are reversed")
+        return self
+
+
+class TerminologyConfig(_FrozenModel):
+    rxnorm: TerminologyPin
+    icd10cm: TerminologyPin
+
+
 class FrozenConfig(_FrozenModel):
     """Root of ``config/frozen.toml``."""
 
@@ -198,6 +225,7 @@ class FrozenConfig(_FrozenModel):
     jvm: JvmConfig
     validator: ValidatorConfig
     reference_machines: ReferenceMachinesConfig
+    terminology: TerminologyConfig
 
 
 def default_config_path() -> Path:
