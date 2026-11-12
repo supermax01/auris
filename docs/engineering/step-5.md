@@ -178,10 +178,125 @@ Missing prerequisites produce an actionable skip; corrupt/runtime errors
 fail. No real-model run or new real-model measurement was performed in
 this step.
 
-The frozen step-4 output limit remains **1,024 tokens**. Thirteen assertions
-may exhaust it when the full script fits the input context. The smoke test
-preserves and fails on that truncation instead of accepting partial output.
-Any output-budget/window-policy change needs the separate step-4/frozen-config
-review; the fixture replay does not prove this dense visit completes on
-real Qwen. The commissioned audio, review workflow/log, transaction-server
-integration and whole-pipeline memory measurement remain later work.
+The original Step 5 retained the step-4 **1,024-token** output limit. Claude's
+subsequent real Qwen demo failed safely on truncation: all 24 segments were
+sent together, `usage.prompt_tokens` was 2,080 and `completion_tokens` hit
+1,024. The planner had reserved 5,736 input tokens. Step 5b below replaces
+that output-budget policy. The commissioned audio, review workflow/log,
+transaction-server integration and whole-pipeline memory measurement remain
+later work.
+
+## Step 5b: measured budgets and adaptive splitting
+
+The frozen configuration now specifies `max_output_tokens = 4096` and
+`min_output_tokens = 1024`; `n_ctx` remains 8,192. For each window:
+
+```text
+max_tokens = min(max_output_tokens, n_ctx - input_tokens - 256)
+```
+
+The planner accepts a whole encounter when it leaves at least the output
+floor plus headroom. Otherwise it makes the existing segment-boundary
+windows, with the A5 ~4,096-token transcript target and two-segment overlap.
+No completion is sent below the output floor. At the reported 2,080-token
+input size the new cap would be 4,096; this arithmetic is not a new live
+measurement.
+
+For HttpBackend, `/apply-template` receives the same messages, schema
+response format and thinking-off template kwargs as `/v1/chat/completions`.
+Its rendered prompt is passed to `/tokenize` with `add_special=true` and
+`parse_special=true`. The tested runtime's
+[server implementation](https://raw.githubusercontent.com/ggml-org/llama.cpp/cd959bae9/tools/server/server-context.cpp)
+uses the same chat parser for template application and chat completions,
+and those two tokenization flags on the text completion path. The
+[tokenization helper](https://raw.githubusercontent.com/ggml-org/llama.cpp/cd959bae9/tools/server/server-common.cpp)
+routes text prompts through the same tokenizer. The schema is not separately
+reserved when measuring: the server determines how it affects the rendered
+prompt and decoding grammar.
+
+A live server that cannot render/tokenize fails the run; it cannot silently
+switch to estimation. Backends without rendered measurement, including the
+ordinary FakeBackend, retain the conservative UTF-8/character estimate of
+message contents plus schema, explicitly labelled `conservative_utf8_chars`.
+Raw-text tokenizer availability alone is not rendered-input measurement.
+
+Each call records its `reserved_input_tokens`, `token_count_method`, chosen
+`max_tokens`, window ID, segment IDs, timing and usage. The
+`input_token_comparison` records tokenizer count, `usage.prompt_tokens`,
+their difference (`usage - tokenizer`), and `match`, `mismatch`,
+`usage_unavailable` or `estimate_only`. Exact measurements must match usage;
+a mismatch or missing/invalid usage fails closed without retry. Comparisons
+are also collected under `metadata.input_token_comparisons`, including
+truncated calls. Existing top-level metadata `prompt_tokens` still describes
+the raw instruction text only; it is not the input budget.
+
+On `finish_reason=length`, the generated body is discarded entirely, even
+when it is complete, schema-valid JSON. No raw body or parsed assertions
+from that attempt enter the artifact or merge. Usage, timing, finish reason
+and an `output_discarded` marker remain. The window is split into balanced,
+contiguous halves; each is measured again and receives its own budget.
+Processing is deterministically left-first, recursively. Successful leaves
+use the unchanged evidence-based A5 merger and conflict review rules.
+
+Two-segment overlap is retained for parents of four or more segments. The
+necessary minimum-size exception is explicit: three segments split into
+two pairs with one-segment overlap, and two split into singletons with no
+overlap. Keeping two overlapping segments there would repeat a parent
+unchanged, preventing progress to the required one-segment minimum. Every
+child is strictly smaller. Identical windows revisited through overlapping
+branches reuse already completed work; they never issue the same inference
+again. `metadata.splits` records parent/child IDs, their segment lists,
+reason and actual overlap; `metadata.window_reuses` records those references.
+
+A single segment that still truncates fails the entire run with an explicit
+reason. Earlier successful leaves remain diagnostics only; run assertions
+stay empty and mapping/export never starts. Other malformed responses and
+transport failures retain their existing failure behavior. Existing CLI
+handlers already return 1 for extraction failure; offline tests now exercise
+both `auris run` and `auris demo` through recursive single-segment failure,
+checking that only extraction/validation diagnostics exist.
+
+Offline tests cover exact measurement versus estimation, transport template
+parity, token-count verification, floor/ceiling arithmetic, planning before
+inference, child budgets, discarded valid and invalid truncated JSON,
+overlap/coverage/progress, deterministic recursive plans, reuse, successful
+leaf merging and failure after a successful sibling. The two old mocked
+chunk tests now use distinct windows (overlapping for the conflict case),
+since identical windows are intentionally reused.
+
+No dependency was added. No FHIR, clinical prompt, terminology, model or
+licensing rule changed, and there is no disagreement with the FHIR reference.
+The smaller-overlap minimum-size exception above is the only A5 interpretation
+needed by this step. Claude must rerun the real demo outside the sandbox and
+inspect the tokenizer/usage comparisons and split metadata; offline tests
+do not establish real-model extraction quality or successful live completion.
+
+Step 5b final checks (direct project-venv commands; no installs or live model):
+
+```text
+.venv/bin/ruff check
+All checks passed!
+
+.venv/bin/ruff format --check
+83 files already formatted
+
+.venv/bin/pytest -m 'not llm' -q --disable-socket --tb=short -rs
+Validator wall-clock time — goldens + anchors: 7.766s
+Validator wall-clock time — broken resources: 6.513s
+978 passed, 2 deselected, 1 warning in 16.83s
+
+git diff --check
+(no output; exit 0)
+```
+
+The warning is the existing deliberate socket-blocking test. Development
+also ran `.venv/bin/ruff format`, `.venv/bin/ruff check --fix`, and:
+
+```text
+.venv/bin/pytest tests/test_extract_backend.py tests/test_extract_budget.py tests/test_extract_chunking.py tests/test_extract_pipeline.py tests/test_run.py tests/test_config.py -q --disable-socket --tb=short
+172 passed in 1.18s
+```
+
+That targeted result preceded the last three budget cases, which are included
+in the final full-suite result. Initial checks found formatting issues and
+the two identical-window test fixtures described above; both were corrected.

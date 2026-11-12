@@ -13,8 +13,22 @@ from auris._storage import prepare_output_directory, write_private_text
 from auris.assertions import MAX_ASSERTIONS, AssertionBase, ExtractionResult, extraction_json_schema
 from auris.config import ExtractorCandidate, ExtractorConfig
 from auris.extract.backend import Backend, ExtractionError, ManagedLlamaServer, RuntimeMetadata
-from auris.extract.chunking import TokenCounter, merge_assertions, plan_chunks
+from auris.extract.chunking import (
+    Chunk,
+    measure_chunk,
+    merge_assertions,
+    plan_chunks,
+    split_segments,
+)
 from auris.extract.prompt import PROMPT_VERSION, messages, prompt_sha256, prompt_text
+from auris.extract.tokens import (
+    HEADROOM_TOKENS,
+    InputTokenCounter,
+    InputTokens,
+    TokenCounter,
+    compare_input_usage,
+    output_budget,
+)
 from auris.fhir import Mapper
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.transcript import Transcript
@@ -25,6 +39,10 @@ from auris.validation.runner import ValidatorRunner
 
 class SchemaResponseError(ExtractionError):
     """The reduced-schema checker ran and rejected the response."""
+
+
+class TruncatedCompletionError(ExtractionError):
+    """A length-limited attempt contributes no assertions, even if valid JSON."""
 
 
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -47,7 +65,9 @@ def parse_completion(response: dict[str, Any]) -> ExtractionResult:
             raise ExtractionError("extractor must return exactly one completion")
         choice = choices[0]
         if choice["finish_reason"] == "length":
-            raise ExtractionError("extraction truncated (finish_reason=length); no partial results")
+            raise TruncatedCompletionError(
+                "extraction truncated (finish_reason=length); no partial results"
+            )
         if choice["finish_reason"] != "stop":
             raise ExtractionError("extractor did not finish normally; no partial results")
         if choice["message"].get("reasoning_content"):
@@ -86,6 +106,8 @@ class ExtractionRun:
     assertions: tuple[AssertionBase, ...] = ()
     conflict_positions: frozenset[int] = frozenset()
     calls: list[dict[str, Any]] = field(default_factory=list)
+    splits: list[dict[str, Any]] = field(default_factory=list)
+    window_reuses: list[dict[str, str]] = field(default_factory=list)
     wall_seconds: float = 0
     failure: str | None = None
     reduced_schema_state: LaneState = LaneState.NOT_CHECKED
@@ -116,6 +138,11 @@ class ExtractionRun:
                 "transcript_sha256": self.transcript_sha256,
                 "wall_seconds": self.wall_seconds,
                 "token_usage": [call.get("usage") for call in self.calls],
+                "input_token_comparisons": [
+                    call.get("input_token_comparison") for call in self.calls
+                ],
+                "splits": self.splits,
+                "window_reuses": self.window_reuses,
             },
         }
 
@@ -131,7 +158,9 @@ def extract(
         model=model,
         decoding={
             "temperature": config.temperature,
-            "max_tokens": config.max_tokens,
+            "max_output_tokens": config.max_output_tokens,
+            "min_output_tokens": config.min_output_tokens,
+            "headroom_tokens": HEADROOM_TOKENS,
             "n_ctx": config.n_ctx,
             "thinking": config.thinking,
         },
@@ -143,27 +172,81 @@ def extract(
         run.prompt_tokens = counter.count(prompt_text())
         run.prompt_token_count_method = counter.method
         schema = extraction_json_schema()
+        input_counter = InputTokenCounter(backend, schema)
         chunks = plan_chunks(
-            transcript, schema, backend, n_ctx=config.n_ctx, max_tokens=config.max_tokens
+            transcript,
+            schema,
+            backend,
+            n_ctx=config.n_ctx,
+            min_output_tokens=config.min_output_tokens,
+            input_counter=input_counter,
         )
-        groups = []
-        for chunk in chunks:
+        groups: list[tuple[AssertionBase, ...]] = []
+        resolved: dict[tuple[str, ...], str] = {}
+
+        def split_window(chunk: Chunk, window_id: str, reason: str) -> None:
+            if len(chunk.segments) == 1:
+                if reason == "finish_reason=length":
+                    raise ExtractionError(
+                        "single transcript segment still truncated (finish_reason=length); "
+                        "no partial results"
+                    )
+                raise ExtractionError("one transcript segment exceeds the available context budget")
+            halves = split_segments(chunk.segments)
+            children = [f"{window_id}.{i}" for i in range(2)]
+            left_ids = {segment.id for segment in halves[0]}
+            run.splits.append(
+                {
+                    "window_id": window_id,
+                    "reason": reason,
+                    "segment_ids": [s.id for s in chunk.segments],
+                    "child_window_ids": children,
+                    "child_segment_ids": [[s.id for s in half] for half in halves],
+                    "overlap_segment_ids": [s.id for s in halves[1] if s.id in left_ids],
+                }
+            )
+            for child_id, half in zip(children, halves, strict=True):
+                run_window(measure_chunk(half, input_counter), child_id)
+
+        def run_window(chunk: Chunk, window_id: str) -> None:
+            key = tuple(segment.id for segment in chunk.segments)
+            if key in resolved:
+                # Small overlapping split trees can revisit the same window.
+                # Its successful work is already in groups; never infer twice.
+                run.window_reuses.append(
+                    {"window_id": window_id, "source_window_id": resolved[key]}
+                )
+                return
+            max_tokens = output_budget(
+                chunk.input_tokens, n_ctx=config.n_ctx, max_output_tokens=config.max_output_tokens
+            )
+            if max_tokens < config.min_output_tokens:
+                split_window(chunk, window_id, "output_below_floor")
+                resolved[key] = window_id
+                return
             call: dict[str, Any] = {
+                "window_id": window_id,
                 "segment_ids": [s.id for s in chunk.segments],
                 "reserved_input_tokens": chunk.input_tokens,
                 "token_count_method": chunk.token_count_method,
+                "max_tokens": max_tokens,
             }
             run.calls.append(call)
             call_started = time.monotonic()
+            truncated = False
             try:
                 response = backend.complete(
                     messages(chunk.segments),
                     schema,
                     temperature=config.temperature,
-                    max_tokens=config.max_tokens,
+                    max_tokens=max_tokens,
                 )
                 call["raw_response"] = response
                 call["usage"] = response.get("usage")
+                comparison = compare_input_usage(
+                    InputTokens(chunk.input_tokens, chunk.token_count_method), call["usage"]
+                )
+                call["input_token_comparison"] = comparison
                 result = parse_completion(response)
                 allowed = {s.id for s in chunk.segments}
                 if any(
@@ -172,8 +255,26 @@ def extract(
                     raise ExtractionError("extraction cites a segment outside its input window")
                 call["parsed_assertions"] = result.model_dump(mode="json")["assertions"]
                 groups.append(result.assertions)
+            except TruncatedCompletionError:
+                # Discard the entire generated body, including syntactically
+                # complete JSON. Only usage, timing and split metadata survive.
+                del call["raw_response"]
+                del response
+                call["finish_reason"] = "length"
+                call["output_discarded"] = True
+                truncated = True
             finally:
                 call["wall_seconds"] = time.monotonic() - call_started
+            if comparison["status"] in ("mismatch", "usage_unavailable"):
+                raise ExtractionError(
+                    "rendered input token count could not be verified against usage.prompt_tokens"
+                )
+            if truncated:
+                split_window(chunk, window_id, "finish_reason=length")
+            resolved[key] = window_id
+
+        for index, chunk in enumerate(chunks):
+            run_window(chunk, str(index))
         merged = merge_assertions(groups, transcript)
         run.assertions = merged.assertions
         run.conflict_positions = merged.conflict_positions
@@ -182,7 +283,8 @@ def extract(
         if isinstance(exc, SchemaResponseError):
             run.reduced_schema_state = LaneState.FAIL
         run.failure = str(exc) if isinstance(exc, ExtractionError) else "local extractor I/O failed"
-        # Per-call raw/parsed output is retained for diagnosis, never mapped.
+        # Successful/invalid per-call output is diagnostic only on failure.
+        # Truncated bodies are discarded entirely, never parsed or mapped.
     finally:
         run.wall_seconds = time.monotonic() - started
     return run
@@ -205,7 +307,9 @@ def extract_local(
             transcript_sha256=transcript.content_hash,
             decoding={
                 "temperature": config.temperature,
-                "max_tokens": config.max_tokens,
+                "max_output_tokens": config.max_output_tokens,
+                "min_output_tokens": config.min_output_tokens,
+                "headroom_tokens": HEADROOM_TOKENS,
                 "n_ctx": config.n_ctx,
                 "thinking": config.thinking,
             },

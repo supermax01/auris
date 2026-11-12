@@ -46,7 +46,7 @@ def replay(transcript, config, candidate, assertions):
         extraction_json_schema(),
         FakeBackend([]),
         n_ctx=config.n_ctx,
-        max_tokens=config.max_tokens,
+        min_output_tokens=config.min_output_tokens,
     )
     responses = []
     for chunk in chunks:

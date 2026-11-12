@@ -147,7 +147,8 @@ class ExtractorConfig(_FrozenModel):
     license: str = Field(min_length=1)
     n_ctx: int = Field(gt=0)
     thinking: Literal[False]
-    max_tokens: int = Field(gt=0)
+    max_output_tokens: int = Field(gt=0)
+    min_output_tokens: int = Field(gt=0)
     candidates: tuple[ExtractorCandidate, ...] = Field(min_length=1)
     temperature: float
     temperature_status: str = Field(min_length=1)
@@ -166,8 +167,10 @@ class ExtractorConfig(_FrozenModel):
             default.license,
         ) != (self.model, self.revision, self.gguf_filename, self.gguf_sha256, self.license):
             raise ValueError("default candidate must match the existing extractor pins")
-        if self.max_tokens >= self.n_ctx:
-            raise ValueError("max_tokens must leave room for the prompt")
+        if self.min_output_tokens > self.max_output_tokens:
+            raise ValueError("min_output_tokens must not exceed max_output_tokens")
+        if self.min_output_tokens >= self.n_ctx:
+            raise ValueError("min_output_tokens must leave room for the prompt")
         return self
 
     def candidate(self, model_id: str | None = None) -> ExtractorCandidate:

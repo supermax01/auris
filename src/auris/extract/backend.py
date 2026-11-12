@@ -59,6 +59,22 @@ class Backend(Protocol):
 
     def tokenize(self, text: str) -> int | None: ...
 
+    def count_input_tokens(
+        self, messages: list[dict[str, str]], schema: dict[str, Any]
+    ) -> int | None: ...
+
+
+def _chat_input(messages: list[dict[str, str]], schema: dict[str, Any]) -> dict[str, Any]:
+    """Identical template-affecting parameters for measurement and inference."""
+    return {
+        "messages": messages,
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {"name": "ExtractionResult", "strict": True, "schema": schema},
+        },
+        "chat_template_kwargs": {"enable_thinking": False},
+    }
+
 
 class _NoRedirect(HTTPRedirectHandler):
     def redirect_request(
@@ -87,12 +103,17 @@ class HttpBackend:
         self.timeout = timeout
         self.runtime = runtime or RuntimeMetadata()
         self.opener = build_opener(ProxyHandler({}), _NoRedirect())
-        self._tokenizer_available: bool | None = None
 
     def request(
         self, path: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None
     ) -> dict[str, Any]:
-        if path not in ("/health", "/props", "/tokenize", "/v1/chat/completions"):
+        if path not in (
+            "/health",
+            "/props",
+            "/apply-template",
+            "/tokenize",
+            "/v1/chat/completions",
+        ):
             raise ExtractionError("unsupported local extractor endpoint")
         data = None if payload is None else json.dumps(payload, allow_nan=False).encode()
         request = Request(
@@ -126,31 +147,30 @@ class HttpBackend:
         return self.request(
             "/v1/chat/completions",
             {
-                "messages": messages,
-                "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {"name": "ExtractionResult", "strict": True, "schema": schema},
-                },
+                **_chat_input(messages, schema),
                 "temperature": temperature,
                 "max_tokens": max_tokens,
                 "stream": False,
-                "chat_template_kwargs": {"enable_thinking": False},
             },
         )
 
-    def tokenize(self, text: str) -> int | None:
-        if self._tokenizer_available is False:
-            return None
-        try:
-            result = self.request("/tokenize", {"content": text, "add_special": True})
-            tokens = result["tokens"]
-            if not isinstance(tokens, list) or any(type(t) is not int for t in tokens):
-                raise ValueError("unexpected tokenizer response")
-        except (ExtractionError, KeyError, ValueError):
-            self._tokenizer_available = False
-            return None
-        self._tokenizer_available = True
+    def tokenize(self, text: str) -> int:
+        # llama.cpp's text chat completion path uses both flags as true.
+        result = self.request(
+            "/tokenize", {"content": text, "add_special": True, "parse_special": True}
+        )
+        tokens = result.get("tokens")
+        if not isinstance(tokens, list) or any(type(t) is not int for t in tokens):
+            raise ExtractionError("invalid server tokenizer response")
         return len(tokens)
+
+    def count_input_tokens(self, messages: list[dict[str, str]], schema: dict[str, Any]) -> int:
+        rendered = self.request("/apply-template", _chat_input(messages, schema)).get("prompt")
+        if not isinstance(rendered, str) or not rendered:
+            raise ExtractionError("invalid server chat-template response")
+        # No schema reservation here: the server decides whether it enters the
+        # prompt or only constrains decoding. A live server must measure or fail.
+        return self.tokenize(rendered)
 
 
 def find_llama_server() -> str:
@@ -327,10 +347,15 @@ class ManagedLlamaServer:
 
 class FakeBackend:
     def __init__(
-        self, responses: Sequence[dict[str, Any]], *, tokenizer: Callable[[str], int] | None = None
+        self,
+        responses: Sequence[dict[str, Any]],
+        *,
+        tokenizer: Callable[[str], int] | None = None,
+        input_tokenizer: Callable[[list[dict[str, str]], dict[str, Any]], int] | None = None,
     ) -> None:
         self.responses = iter(responses)
         self.tokenizer = tokenizer
+        self.input_tokenizer = input_tokenizer
         self.calls: list[dict[str, Any]] = []
         self.runtime = RuntimeMetadata(version="fake (offline test)")
 
@@ -352,3 +377,8 @@ class FakeBackend:
 
     def tokenize(self, text: str) -> int | None:
         return self.tokenizer(text) if self.tokenizer else None
+
+    def count_input_tokens(
+        self, messages: list[dict[str, str]], schema: dict[str, Any]
+    ) -> int | None:
+        return self.input_tokenizer(messages, schema) if self.input_tokenizer else None

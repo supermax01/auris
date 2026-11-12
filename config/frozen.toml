@@ -179,13 +179,15 @@ gguf_filename = "Qwen3-8B-Q4_K_M.gguf"
 gguf_sha256 = "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
 license = "Apache-2.0"
 n_ctx = 8192
-max_tokens = 1024
+max_output_tokens = 4096
+min_output_tokens = 1024
 thinking = false
 temperature = 0.0
 temperature_status = "candidate, confirm in Slice 1"
 
-# Output cap leaves room for the unchanged reduced schema and prompt, even
-# with conservative token estimation. A capped response fails, never truncates.
+# Each call reserves measured input + 256 headroom, up to the output ceiling.
+# Windows shrink below the output floor. Truncated output is discarded before
+# deterministic splitting; a truncated single segment fails the entire run.
 [[extractor.candidates]]
 id = "qwen3-8b-q4_k_m"
 repo = "Qwen/Qwen3-8B-GGUF"

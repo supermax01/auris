@@ -1,5 +1,7 @@
 """Context planning and conflict-preserving merging, entirely offline."""
 
+import json
+
 import pytest
 from extract_helpers import case_input
 
@@ -9,9 +11,20 @@ from auris.extract.chunking import HEADROOM_TOKENS, merge_assertions, plan_chunk
 from auris.transcript import Transcript
 
 
+def measured_backend():
+    # Fictional tokenizer: count characters to stress context boundaries offline.
+    return FakeBackend(
+        [],
+        tokenizer=len,
+        input_tokenizer=lambda messages, schema: (
+            len(json.dumps(schema)) + sum(len(message["content"]) for message in messages)
+        ),
+    )
+
+
 def test_whole_encounter_and_conservative_fallback():
     transcript, _ = case_input("vital_sign")
-    chunks = plan_chunks(transcript, {}, FakeBackend([]), n_ctx=8192, max_tokens=1024)
+    chunks = plan_chunks(transcript, {}, FakeBackend([]), n_ctx=8192, min_output_tokens=1024)
     assert len(chunks) == 1 and chunks[0].segments == transcript.segments
     assert chunks[0].token_count_method == "conservative_utf8_chars"
     assert chunks[0].input_tokens + 1024 + HEADROOM_TOKENS <= 8192
@@ -23,16 +36,14 @@ def test_windows_have_two_segment_overlap_and_cover_every_segment():
         source.segments[0].model_copy(update={"id": f"s{i}", "text": "x" * 300}) for i in range(13)
     )
     transcript = Transcript(segments=segments)
-    chunks = plan_chunks(
-        transcript, {}, FakeBackend([], tokenizer=len), n_ctx=6600, max_tokens=1024
-    )
+    chunks = plan_chunks(transcript, {}, measured_backend(), n_ctx=6600, min_output_tokens=1024)
     assert len(chunks) > 1
     for first, second in zip(chunks, chunks[1:], strict=False):
         assert first.segments[-2:] == second.segments[:2]
         assert first.segments[0] != second.segments[0]
     assert {s.id for c in chunks for s in c.segments} == {s.id for s in segments}
     assert all(c.input_tokens + 1024 + HEADROOM_TOKENS <= 6600 for c in chunks)
-    assert all(c.token_count_method == "server_tokenize" for c in chunks)
+    assert all(c.token_count_method == "server_apply_template_tokenize" for c in chunks)
 
 
 @pytest.mark.parametrize("context,reason", [(1000, "no context"), (5600, "one transcript segment")])
@@ -42,7 +53,7 @@ def test_oversized_prompt_or_segment_fails_clearly(context, reason):
         segments=(transcript.segments[0].model_copy(update={"text": "x" * 2000}),)
     )
     with pytest.raises(ExtractionError, match=reason):
-        plan_chunks(transcript, {}, FakeBackend([], tokenizer=len), n_ctx=context, max_tokens=1024)
+        plan_chunks(transcript, {}, measured_backend(), n_ctx=context, min_output_tokens=1024)
 
 
 def test_overlap_without_progress_is_refused():
@@ -54,7 +65,7 @@ def test_overlap_without_progress_is_refused():
         )
     )
     with pytest.raises(ExtractionError, match="2-segment overlap"):
-        plan_chunks(transcript, {}, FakeBackend([], tokenizer=len), n_ctx=6400, max_tokens=1024)
+        plan_chunks(transcript, {}, measured_backend(), n_ctx=6400, min_output_tokens=1024)
 
 
 def test_identical_overlapping_facts_merge_without_dropping_evidence():

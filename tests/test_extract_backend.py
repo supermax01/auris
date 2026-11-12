@@ -66,14 +66,57 @@ def test_http_request_preserves_schema_and_decoding(monkeypatch):
         _NoRedirect().redirect_request(None, None, 302, "", {}, "http://example.org")
 
 
-def test_tokenizer_and_fallback_do_not_call_network():
+def test_live_tokenizer_failure_never_falls_back_to_estimate():
     client = HttpBackend("http://127.0.0.1:8000")
     client.request = Mock(return_value={"tokens": [1, 2, 3]})
     assert client.tokenize("fictional") == 3
+    client.request.assert_called_once_with(
+        "/tokenize", {"content": "fictional", "add_special": True, "parse_special": True}
+    )
     client.request.side_effect = ExtractionError("unsupported")
-    assert client.tokenize("fictional") is None
-    assert client.tokenize("new text") is None
+    with pytest.raises(ExtractionError, match="unsupported"):
+        client.tokenize("fictional")
     assert client.request.call_count == 2
+
+
+def test_rendered_input_uses_same_chat_settings_as_completion():
+    client = HttpBackend("http://127.0.0.1:8000")
+    rendered = "<fictional-template>fictional input<assistant>"
+    client.request = Mock(
+        side_effect=[{"prompt": rendered}, {"tokens": [10, 11, 12]}, completion()]
+    )
+    messages = [{"role": "user", "content": "fictional input"}]
+    schema = extraction_json_schema()
+    assert client.count_input_tokens(messages, schema) == 3
+    client.complete(messages, schema, temperature=0, max_tokens=4096)
+    template, tokenize, complete = client.request.call_args_list
+    assert template.args[0] == "/apply-template"
+    assert tokenize.args == (
+        "/tokenize",
+        {"content": rendered, "add_special": True, "parse_special": True},
+    )
+    assert template.args[1] == {
+        key: value
+        for key, value in complete.args[1].items()
+        if key not in ("temperature", "max_tokens", "stream")
+    }
+
+
+@pytest.mark.parametrize("rendered", [{}, {"prompt": None}, {"prompt": []}, {"prompt": ""}])
+def test_invalid_template_response_fails_without_inference(rendered):
+    client = HttpBackend("http://127.0.0.1:8000")
+    client.request = Mock(return_value=rendered)
+    with pytest.raises(ExtractionError, match="chat-template"):
+        client.count_input_tokens([], {})
+    assert client.request.call_count == 1
+
+
+@pytest.mark.parametrize("tokens", [None, {}, [True], ["1"]])
+def test_invalid_tokenizer_response_fails(tokens):
+    client = HttpBackend("http://127.0.0.1:8000")
+    client.request = Mock(return_value={"tokens": tokens})
+    with pytest.raises(ExtractionError, match="tokenizer"):
+        client.tokenize("fictional")
 
 
 @pytest.mark.parametrize(

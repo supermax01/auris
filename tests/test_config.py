@@ -134,9 +134,28 @@ def test_extractor_candidates_are_pinned_and_selected_explicitly():
     assert gemma.license == "Apache-2.0" and gemma.bytes == 4590807392
     assert gemma.quantization == "Q4_0"
     assert config.candidate().quantization == "Q4_K_M"
-    assert config.max_tokens == 1024
+    assert config.max_output_tokens == 4096
+    assert config.min_output_tokens == 1024
+    assert config.n_ctx == 8192
     with pytest.raises(ValueError, match="unknown extractor"):
         config.candidate("fictional-not-configured")
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"min_output_tokens": 0},
+        {"max_output_tokens": 0},
+        {"min_output_tokens": 4097},
+        {"min_output_tokens": 8192, "max_output_tokens": 8192},
+        {"max_tokens": 1024},
+    ],
+)
+def test_invalid_output_budget_config_is_refused(raw_config, changes):
+    raw = copy.deepcopy(raw_config)
+    raw["extractor"].update(changes)
+    with pytest.raises(ValidationError):
+        FrozenConfig.model_validate(raw)
 
 
 @pytest.mark.parametrize(

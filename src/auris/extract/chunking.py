@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -12,9 +10,9 @@ from auris.assertions import MAX_EVIDENCE_ITEMS, AssertionBase, parse_assertion
 from auris.evidence import align_assertion_evidence, normalised_tokens
 from auris.extract.backend import Backend, ExtractionError
 from auris.extract.prompt import messages, render_transcript
+from auris.extract.tokens import HEADROOM_TOKENS, InputTokenCounter, TokenCounter
 from auris.transcript import Transcript, TranscriptSegment
 
-HEADROOM_TOKENS = 256
 WINDOW_TOKENS = 4096
 OVERLAP_SEGMENTS = 2
 
@@ -26,28 +24,24 @@ class Chunk:
     token_count_method: str
 
 
-class TokenCounter:
-    def __init__(self, backend: Backend) -> None:
-        self.backend = backend
-        self.used_estimate = False
-        self._cache: dict[str, int] = {}
+def measure_chunk(segments: tuple[TranscriptSegment, ...], counter: InputTokenCounter) -> Chunk:
+    count = counter.count(messages(segments))
+    return Chunk(segments, count.tokens, count.method)
 
-    @property
-    def method(self) -> str:
-        return "conservative_utf8_chars" if self.used_estimate else "server_tokenize"
 
-    def count(self, text: str) -> int:
-        if text not in self._cache:
-            measured = self.backend.tokenize(text)
-            if measured is None:
-                self.used_estimate = True
-                # Three ASCII chars/token; non-ASCII bytes each reserve a token.
-                # This is an estimate, not a tokenizer guarantee. The request
-                # must still fail rather than consume any partial completion.
-                ascii_chars = sum(ord(char) < 128 for char in text)
-                measured = math.ceil(ascii_chars / 3) + len(text.encode()) - ascii_chars
-            self._cache[text] = measured
-        return self._cache[text]
+def split_segments(
+    segments: tuple[TranscriptSegment, ...],
+) -> tuple[tuple[TranscriptSegment, ...], tuple[TranscriptSegment, ...]]:
+    """Balanced halves with two overlapping segments, limited by strict progress.
+
+    Three segments can only overlap by one; two must become singletons.
+    Every child is smaller, so recursion always reaches the one-segment limit.
+    """
+    if len(segments) < 2:
+        raise ExtractionError("cannot split a single transcript segment")
+    overlap = min(OVERLAP_SEGMENTS, len(segments) - 2)
+    left_stop = (len(segments) + overlap) // 2
+    return segments[:left_stop], segments[left_stop - overlap :]
 
 
 def plan_chunks(
@@ -56,28 +50,24 @@ def plan_chunks(
     backend: Backend,
     *,
     n_ctx: int,
-    max_tokens: int,
+    min_output_tokens: int,
+    input_counter: InputTokenCounter | None = None,
 ) -> tuple[Chunk, ...]:
     counter = TokenCounter(backend)
-    schema_tokens = counter.count(json.dumps(schema, separators=(",", ":"), ensure_ascii=False))
-
-    def input_size(segments: Sequence[TranscriptSegment]) -> int:
-        # Reserve schema even on servers which compile it solely as a grammar.
-        return schema_tokens + sum(counter.count(m["content"]) for m in messages(segments))
-
-    capacity = n_ctx - max_tokens - HEADROOM_TOKENS
-    whole = input_size(transcript.segments)
-    if whole <= capacity:
-        return (Chunk(transcript.segments, whole, counter.method),)
-    if input_size(()) >= capacity:
-        raise ExtractionError("prompt + schema + output cap leave no context for transcript")
+    input_counter = input_counter or InputTokenCounter(backend, schema)
+    capacity = n_ctx - min_output_tokens - HEADROOM_TOKENS
+    whole = measure_chunk(transcript.segments, input_counter)
+    if whole.input_tokens <= capacity:
+        return (whole,)
+    if measure_chunk((), input_counter).input_tokens >= capacity:
+        raise ExtractionError("prompt + output floor + headroom leave no context for transcript")
     chunks: list[Chunk] = []
     start = 0
     while start < len(transcript.segments):
         stop = start
         while stop < len(transcript.segments):
             proposed = transcript.segments[start : stop + 1]
-            if input_size(proposed) > capacity:
+            if measure_chunk(proposed, input_counter).input_tokens > capacity:
                 break
             # A single segment may exceed the target window, but must fit n_ctx.
             if stop > start and counter.count(render_transcript(proposed)) > WINDOW_TOKENS:
@@ -86,7 +76,7 @@ def plan_chunks(
         if stop == start:
             raise ExtractionError("one transcript segment exceeds the available context budget")
         selected = transcript.segments[start:stop]
-        chunks.append(Chunk(selected, input_size(selected), counter.method))
+        chunks.append(measure_chunk(selected, input_counter))
         if stop == len(transcript.segments):
             break
         if stop - start <= OVERLAP_SEGMENTS:

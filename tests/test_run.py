@@ -127,7 +127,11 @@ def test_run_export_gates_are_nonvacuous(mode, monkeypatch, terminology, units, 
                 assert value["reference"] in full_urls
 
 
-def test_failed_run_has_only_diagnostics(monkeypatch, terminology, units, tmp_path, capsys):
+@pytest.mark.parametrize("command", ["run", "demo"])
+def test_failed_run_has_only_diagnostics(
+    command, monkeypatch, terminology, units, tmp_path, capsys
+):
+    from demo_helpers import ROOT
     from extract_helpers import completion
 
     from auris.extract import pipeline
@@ -138,13 +142,26 @@ def test_failed_run_has_only_diagnostics(monkeypatch, terminology, units, tmp_pa
     monkeypatch.setattr(
         pipeline,
         "extract_local",
-        lambda t, c, m, p: extract(FakeBackend([completion(finish_reason="length")]), t, c, m),
+        lambda t, c, m, p: extract(FakeBackend([completion(finish_reason="length")] * 20), t, c, m),
     )
     monkeypatch.chdir(tmp_path)
-    assert main(["demo"]) == 1
     directory = tmp_path / "out/demo"
+    args = (
+        []
+        if command == "demo"
+        else [
+            "--transcript",
+            str(ROOT / "examples/transcript.json"),
+            "--intake",
+            str(ROOT / "examples/intake.json"),
+            "--out",
+            str(directory),
+        ]
+    )
+    assert main([command, *args]) == 1
     assert {p.name for p in directory.iterdir()} == {"extraction.json", "validation.json"}
-    assert "truncated" in capsys.readouterr().err
+    assert "single transcript segment still truncated" in capsys.readouterr().err
+    assert json.loads((directory / "extraction.json").read_text())["assertions"] == []
 
 
 def test_rerun_refuses_stale_outputs_before_model(monkeypatch, terminology, units, tmp_path):

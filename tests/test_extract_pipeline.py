@@ -327,15 +327,19 @@ def test_cli_runs_the_pipeline_and_selects_model(
 def test_later_chunk_failure_discards_all_partial_assertions(monkeypatch):
     from auris.extract import pipeline
     from auris.extract.chunking import Chunk
+    from auris.transcript import Transcript
 
     transcript, assertion = case_input("vital_sign")
+    transcript = Transcript(
+        segments=(*transcript.segments, transcript.segments[0].model_copy(update={"id": "s2"}))
+    )
     config = load_frozen_config().extractor
     monkeypatch.setattr(
         pipeline,
         "plan_chunks",
         lambda *args, **kwargs: (
-            Chunk(transcript.segments, 100, "fictional"),
-            Chunk(transcript.segments, 100, "fictional"),
+            Chunk(transcript.segments[:1], 100, "fictional"),
+            Chunk(transcript.segments[1:], 100, "fictional"),
         ),
     )
     backend = FakeBackend([completion([assertion]), completion(finish_reason="length")])
@@ -350,16 +354,25 @@ def test_conflicting_chunks_keep_both_assertions_and_force_review(
     from auris.assertions import parse_assertion
     from auris.extract import pipeline
     from auris.extract.chunking import Chunk
+    from auris.transcript import Transcript
 
     transcript, assertion = case_input("vital_sign")
+    segment = transcript.segments[0]
+    transcript = Transcript(
+        segments=(
+            segment.model_copy(update={"id": "s0"}),
+            segment,
+            segment.model_copy(update={"id": "s2"}),
+        )
+    )
     conflicting = parse_assertion({**assertion.model_dump(mode="json"), "polarity": "negated"})
     config = load_frozen_config().extractor
     monkeypatch.setattr(
         pipeline,
         "plan_chunks",
         lambda *args, **kwargs: (
-            Chunk(transcript.segments, 100, "fictional"),
-            Chunk(transcript.segments, 100, "fictional"),
+            Chunk(transcript.segments[:2], 100, "fictional"),
+            Chunk(transcript.segments[1:], 100, "fictional"),
         ),
     )
     run = extract(
