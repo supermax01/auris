@@ -1,0 +1,149 @@
+{
+  "resourceType": "StructureDefinition",
+  "id": "fictional-test-profile",
+  "url": "http://example.org/fictional/StructureDefinition/fictional-test-profile",
+  "name": "FictionalTestProfile",
+  "title": "Fictional test profile (not a real FHIR profile; test fixture only)",
+  "status": "draft",
+  "fhirVersion": "4.0.1",
+  "type": "Observation",
+  "baseDefinition": "http://hl7.org/fhir/StructureDefinition/Observation",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Observation",
+        "path": "Observation",
+        "min": 0,
+        "max": "*",
+        "constraint": [
+          {
+            "key": "fake-1",
+            "severity": "error",
+            "human": "Fictional invariant for generator tests",
+            "expression": "status.exists()"
+          },
+          {
+            "key": "ele-1",
+            "severity": "error",
+            "human": "Generic bookkeeping invariant, must be filtered out",
+            "expression": "hasValue() or (children().count() > id.count())"
+          }
+        ]
+      },
+      {
+        "id": "Observation.status",
+        "path": "Observation.status",
+        "short": "Fictional status",
+        "min": 1,
+        "max": "1",
+        "type": [{ "code": "code" }],
+        "mustSupport": true,
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://example.org/fictional/ValueSet/fake-status"
+        }
+      },
+      {
+        "id": "Observation.category",
+        "path": "Observation.category",
+        "min": 1,
+        "max": "*",
+        "type": [{ "code": "CodeableConcept" }],
+        "slicing": {
+          "discriminator": [{ "type": "value", "path": "coding.code" }],
+          "rules": "open",
+          "ordered": false
+        }
+      },
+      {
+        "id": "Observation.category:FakeCat",
+        "path": "Observation.category",
+        "sliceName": "FakeCat",
+        "min": 1,
+        "max": "1",
+        "type": [{ "code": "CodeableConcept" }]
+      },
+      {
+        "id": "Observation.category:FakeCat.coding.system",
+        "path": "Observation.category.coding.system",
+        "min": 1,
+        "max": "1",
+        "type": [{ "code": "uri" }],
+        "fixedUri": "http://example.org/fictional/category-system"
+      },
+      {
+        "id": "Observation.category:FakeCat.coding.code",
+        "path": "Observation.category.coding.code",
+        "min": 1,
+        "max": "1",
+        "type": [{ "code": "code" }],
+        "fixedCode": "fake-cat"
+      },
+      {
+        "id": "Observation.code",
+        "path": "Observation.code",
+        "min": 1,
+        "max": "1",
+        "type": [{ "code": "CodeableConcept" }],
+        "patternCodeableConcept": {
+          "coding": [{ "system": "http://example.org/fictional/codes", "code": "FAKE-1" }]
+        },
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://example.org/fictional/ValueSet/fake-codes"
+        }
+      },
+      {
+        "id": "Observation.subject",
+        "path": "Observation.subject",
+        "min": 1,
+        "max": "1",
+        "type": [
+          {
+            "code": "Reference",
+            "targetProfile": [
+              "http://example.org/fictional/StructureDefinition/fictional-patient"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Observation.value[x]",
+        "path": "Observation.value[x]",
+        "min": 0,
+        "max": "1",
+        "type": [{ "code": "Quantity" }],
+        "mustSupport": true
+      },
+      {
+        "id": "Observation.component.code",
+        "path": "Observation.component.code",
+        "min": 1,
+        "max": "1",
+        "type": [{ "code": "CodeableConcept" }]
+      },
+      {
+        "id": "Observation.note",
+        "path": "Observation.note",
+        "min": 0,
+        "max": "*",
+        "type": [{ "code": "Annotation" }]
+      },
+      {
+        "id": "Observation.comment",
+        "path": "Observation.comment",
+        "min": 0,
+        "max": "1",
+        "type": [{ "code": "string" }],
+        "constraint": [
+          {
+            "key": "ele-1",
+            "severity": "error",
+            "human": "Generic bookkeeping invariant only; element must be excluded",
+            "expression": "hasValue() or (children().count() > id.count())"
+          }
+        ]
+      }
+    ]
+  }
+}

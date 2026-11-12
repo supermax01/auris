@@ -1,0 +1,165 @@
+# Auris frozen reference configuration (PLAN Appendix A6).
+#
+# Every value here is pinned. Changing a value means re-auditing the
+# artefact it names (source, licence, checksum) — see PLAN A8/A11.
+# Loaded and validated by src/auris/config.py.
+
+# ---------------------------------------------------------------------------
+# FHIR R4 4.0.1 + US Core 6.1.0 (PLAN A2/A6)
+#
+# Package SHA-256 values were computed locally from the tarballs downloaded
+# from the official FHIR package registry on 2026-11-12, e.g.
+#   https://packages.fhir.org/hl7.fhir.r4.core/4.0.1
+#   https://packages.fhir.org/hl7.fhir.us.core/6.1.0
+# (fallback registry base: https://packages2.fhir.org/packages).
+# The registry does not publish SHA-256 digests, so the first download is
+# the trust anchor; `auris setup fhir` refuses any later mismatch.
+# Licence values are the `license` field of each package's package.json,
+# read from the downloaded tarballs on the same date.
+# ---------------------------------------------------------------------------
+
+[fhir]
+version = "4.0.1"
+us_core_package_id = "hl7.fhir.us.core"
+us_core_version = "6.1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.r4.core"
+version = "4.0.1"
+sha256 = "ebd7731df7d36b5b7d39d5fb6c9d77b44bb7fe5742f1a2e87f164738c3289d44"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.us.core"
+version = "6.1.0"
+sha256 = "ec096f29bc4ce8f04117dfc4ef82e7289c67a7e2188892e86288c45389d158d9"
+license = "CC0-1.0"
+
+# Dependencies declared in hl7.fhir.us.core 6.1.0's package.json
+# (`dependencies` field, read 2026-11-12). Fetched into the local cache
+# only; never bundled (PLAN A8). Note the mixed licences: redistribution
+# for offline Docker still needs the PLAN A11 check before any image
+# ships with a prefilled cache.
+
+[[fhir.packages]]
+id = "hl7.terminology.r4"
+version = "5.0.0"
+sha256 = "c863bef14eddb01d2884d8f14826b9b152f9fcef6b99e107025136af69ce2c18"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.extensions.r4"
+version = "1.0.0"
+sha256 = "b270eb5b0ea3d015398a5af6c86cab2718070cbb850e366ef050ce6d6eb4a9d3"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.bulkdata"
+version = "2.0.0"
+sha256 = "2dca9c8aeebad2c3db8e0d8db919cb3a65a24b9fcf6d46f02badbb1ae89b86cb"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.smart-app-launch"
+version = "2.1.0"
+sha256 = "c1f26d40e5b58fc0c101f7f7e109ddc40b8156015e1632439d2cb34cf67a612c"
+license = "CC-BY-4.0"
+
+[[fhir.packages]]
+id = "us.nlm.vsac"
+version = "0.11.0"
+sha256 = "37aa3f718c68283ec7123bfa77adf8c5fcdd90b35be37e19d76a8b66121bc88d"
+license = "US Govt"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.sdc"
+version = "3.0.0"
+sha256 = "be5c3f0a7f82e072b40739e05fb68f3e58e44c9bd040cd901b1b55c62f23dca2"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "us.cdc.phinvads"
+version = "0.12.0"
+sha256 = "cf565971a6bcca3193de4d7ff71f5c443fc4e00adaeef8c88416d21c778e3a3f"
+license = "HHS/Open"
+
+[[fhir.packages]]
+id = "ihe.formatcode.fhir"
+version = "1.1.0"
+sha256 = "3c9bf67d35d5b090ce5a2215ea7e650c9e826918ebddc95eaa35439a436f7d84"
+license = "CC-BY-SA-4.0"
+
+# Second-order: declared by hl7.fhir.uv.sdc 3.0.0, not by US Core itself.
+# Pinned so the cache closure is complete and auditable.
+[[fhir.packages]]
+id = "hl7.fhir.r4.examples"
+version = "4.0.1"
+sha256 = "e18b31e7a52145a31f1f3f409cf6847583b08b7306cc4e9460a95a7b5efba930"
+license = "CC0-1.0"
+
+# ---------------------------------------------------------------------------
+# Speech-to-text, laptop profile (PLAN section 6 / A6).
+# Source is OpenAI's original; Auris converts it to CTranslate2 INT8
+# itself in a later step (conversion command + converted artefacts get
+# pinned there). Revision and licence from the Hugging Face API:
+#   https://huggingface.co/api/models/openai/whisper-large-v3-turbo
+# (field `sha`; `cardData.license` = "mit"), read 2026-11-12.
+# ---------------------------------------------------------------------------
+
+[asr.laptop]
+source_model = "openai/whisper-large-v3-turbo"
+revision = "41f01f3fe87f28c78e2fbf8b568835947dd65ed9"
+license = "MIT"
+
+# ---------------------------------------------------------------------------
+# Fact-extraction model (PLAN A5/A6). Metadata only — no weights are
+# downloaded in Step 1. Revision is field `sha` and the file digest is
+# `siblings[].lfs.sha256` for the Q4_K_M file, from:
+#   https://huggingface.co/api/models/Qwen/Qwen3-8B-GGUF?blobs=true
+# read 2026-11-12. `cardData.license` = "apache-2.0".
+# Temperature 0 is the candidate value to confirm in Slice 1 (PLAN A5).
+# ---------------------------------------------------------------------------
+
+[extractor]
+model = "Qwen/Qwen3-8B-GGUF"
+revision = "7c41481f57cb95916b40956ab2f0b139b296d974"
+gguf_filename = "Qwen3-8B-Q4_K_M.gguf"
+gguf_sha256 = "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+license = "Apache-2.0"
+n_ctx = 8192
+thinking = false
+temperature = 0.0
+temperature_status = "candidate, confirm in Slice 1"
+
+# ---------------------------------------------------------------------------
+# JVM for the official HL7 FHIR validator (PLAN A6).
+# ---------------------------------------------------------------------------
+
+[jvm]
+distribution = "temurin-21"
+heap_gb = 2
+
+# Pinned in the validator step (PLAN A6: validator_cli.jar is the
+# reference). The placeholders below load only because
+# allow_unpinned = true is set explicitly for this entry.
+[validator]
+artifact = "validator_cli.jar"
+version = "TODO-pin-in-validator-step"
+sha256 = "TODO-pin-in-validator-step"
+allow_unpinned = true
+
+# ---------------------------------------------------------------------------
+# Reference machines (PLAN section 6 / A6), recorded as data.
+# ---------------------------------------------------------------------------
+
+[reference_machines.laptop]
+name = "laptop"
+chip = "Apple M2"
+memory_gb = 16
+pipeline_memory_budget_gb = 12
+runtime_target = "at most 20 minutes to process 10 minutes of audio (to be measured)"
+
+[reference_machines.server]
+name = "server"
+gpu_memory_gb = 24
+memory_gb = 64
