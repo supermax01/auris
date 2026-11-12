@@ -4,6 +4,7 @@ from pathlib import Path
 
 from auris.contract.checklist import (
     CLAIMED_PROFILES,
+    BindingInfo,
     coverage_problems,
     find_discrepancies,
     load_checklist_json,
@@ -45,12 +46,28 @@ def test_blood_pressure_facts_match_fhir_reference():
     assert unit.fixed.value == "mm[Hg]"
 
 
-def test_discrepancies_are_reported_in_the_markdown():
+def test_no_discrepancies_with_fhir_reference():
     document = load_checklist_json(CHECKLIST_JSON)
-    discrepancies = find_discrepancies(document)
-    assert discrepancies, "expected the known fhir-reference disagreements"
+    assert find_discrepancies(document) == []
     markdown = CHECKLIST_MD.read_text()
     assert "## Discrepancies with PLAN/fhir-reference" in markdown
-    for discrepancy in discrepancies:
-        # The generator escapes pipes for Markdown tables/lists.
-        assert discrepancy.replace("|", "\\|") in markdown
+    assert "None found by the automated checks" in markdown
+
+
+def test_injected_snapshot_mismatch_is_reported():
+    # Guards the corrected expectation: body temperature's unit binding is
+    # required (ucum-bodytemp). If a snapshot said extensible, the check
+    # must fire instead of passing silently.
+    document = load_checklist_json(CHECKLIST_JSON)
+    mutated = document.model_copy(deep=True)
+    profile = next(p for p in mutated.profiles if p.id == "us-core-body-temperature")
+    element_id = "Observation.value[x]:valueQuantity.code"
+    index, element = next((i, e) for i, e in enumerate(profile.elements) if e.id == element_id)
+    assert element.binding is not None
+    profile.elements[index] = element.model_copy(
+        update={"binding": BindingInfo(strength="extensible", value_set=element.binding.value_set)}
+    )
+    problems = find_discrepancies(mutated)
+    assert any(element_id in p and "required" in p for p in problems)
+    # The committed document itself is untouched by the mutation.
+    assert find_discrepancies(document) == []

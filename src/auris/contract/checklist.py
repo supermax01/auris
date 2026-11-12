@@ -542,7 +542,7 @@ def find_discrepancies(document: ChecklistDocument) -> list[str]:
     check.cardinality(vitals, "Observation.code", "1..1")
     check.cardinality(vitals, "Observation.subject", "1..1")
     check.cardinality(vitals, "Observation.effective[x]", "1..1")
-    for key in ("vs-1", "vs-2", "vs-3", "obs-6", "obs-7"):
+    for key in ("vs-1", "vs-2", "vs-3", "obs-3", "obs-6", "obs-7"):
         check.invariant_severity(vitals, key, "error")
     # Blood pressure.
     bp = "us-core-blood-pressure"
@@ -606,31 +606,47 @@ def find_discrepancies(document: ChecklistDocument) -> list[str]:
     check.cardinality(encounter, "Encounter.class", "1..1")
     check.cardinality(encounter, "Encounter.type", "1..*")
     check.cardinality(encounter, "Encounter.subject", "1..1")
-    # fhir-reference: "US Core BP/HR list only effectiveDateTime".
-    check.types_exact(bp, "Observation.effective[x]", ["dateTime"])
-    check.types_exact("us-core-heart-rate", "Observation.effective[x]", ["dateTime"])
-    # fhir-reference: "value units extensible to VitalSignsUnits".
+    # fhir-reference: every vital profile's snapshot allows dateTime or
+    # Period for effective[x]; Auris always emits effectiveDateTime.
+    for profile_id in (
+        vitals,
+        bp,
+        "us-core-heart-rate",
+        "us-core-respiratory-rate",
+        "us-core-body-temperature",
+        "us-core-body-weight",
+        "us-core-body-height",
+        "us-core-pulse-oximetry",
+    ):
+        check.types_exact(profile_id, "Observation.effective[x]", ["dateTime", "Period"])
+    # fhir-reference: body temperature, weight and height bind
+    # valueQuantity.code as required to their closed UCUM unit sets
+    # (ucum-bodytemp / ucum-bodyweight / ucum-bodylength).
     for profile_id in (
         "us-core-body-temperature",
         "us-core-body-weight",
         "us-core-body-height",
     ):
-        check.binding_strength(profile_id, "Observation.value[x]:valueQuantity.code", "extensible")
-    # fhir-reference Must Support list names reasonCode/reasonReference
-    # (marked "(summary)" there, to be confirmed in this step).
-    check.must_support(med, "MedicationRequest.reasonCode", True)
-    check.must_support(med, "MedicationRequest.reasonReference", True)
-    # fhir-reference Must Support list names onsetDateTime/abatementDateTime.
+        check.binding_strength(profile_id, "Observation.value[x]:valueQuantity.code", "required")
+    # fhir-reference: reasonCode/reasonReference are not Must Support in
+    # the 6.1.0 snapshot.
+    check.must_support(med, "MedicationRequest.reasonCode", False)
+    check.must_support(med, "MedicationRequest.reasonReference", False)
+    # fhir-reference: onset[x]/abatement[x] are Must Support choice
+    # elements; the snapshot does not restrict their types.
     for profile_id in (enc, prob):
-        check.element_present(profile_id, "Condition.onsetDateTime")
-        check.element_present(profile_id, "Condition.abatementDateTime")
-    # fhir-reference lists the vital-signs invariants as vs-1..3, obs-6, obs-7.
+        check.element_present(profile_id, "Condition.onset[x]")
+        check.element_present(profile_id, "Condition.abatement[x]")
+        check.must_support(profile_id, "Condition.onset[x]", True)
+        check.must_support(profile_id, "Condition.abatement[x]", True)
+    # fhir-reference lists the vital-signs invariants as vs-1..3 and
+    # obs-3, obs-6, obs-7.
     vitals_profile = check.profile(vitals)
     if vitals_profile is not None:
         found = {
             inv.key for _, inv in vitals_profile.invariants() if inv.key.startswith(("vs-", "obs-"))
         }
-        expected = {"vs-1", "vs-2", "vs-3", "obs-6", "obs-7"}
+        expected = {"vs-1", "vs-2", "vs-3", "obs-3", "obs-6", "obs-7"}
         if found != expected:
             check.problems.append(
                 f"{vitals}: fhir-reference lists invariants {sorted(expected)},"

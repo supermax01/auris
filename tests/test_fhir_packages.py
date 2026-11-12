@@ -1,6 +1,7 @@
 """Offline tests for FHIR package setup with a fictional fake tarball."""
 
 import pytest
+from helpers import make_fake_package_bytes
 
 from auris.cli import main
 from auris.config import FhirPackagePin
@@ -17,7 +18,7 @@ MEMBERS = {"package/StructureDefinition-fictional.json": b'{"id": "fictional"}'}
 
 @pytest.fixture()
 def package_bytes():
-    return fhir_packages.make_fake_package_bytes(PACKAGE_JSON, MEMBERS)
+    return make_fake_package_bytes(PACKAGE_JSON, MEMBERS)
 
 
 @pytest.fixture()

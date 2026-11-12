@@ -101,7 +101,7 @@
 "Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
 "Observation.value[x]:valueQuantity.unit" = { source = "extracted", note = "written from the spoken unit" }
 "Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
-"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM; the profile does not fix one unit, so a missing spoken unit goes to review, never converted silently (A3)" }
+"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM within the profile's required unit set (ucum-bodytemp); only that set is accepted, so a unit outside it or a missing spoken unit goes to review, never converted silently (A3)" }
 "Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
 
 [profiles.us-core-body-weight.elements]
@@ -117,7 +117,7 @@
 "Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
 "Observation.value[x]:valueQuantity.unit" = { source = "extracted", note = "written from the spoken unit" }
 "Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
-"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM; the profile does not fix one unit, so a missing spoken unit goes to review, never converted silently (A3)" }
+"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM within the profile's required unit set (ucum-bodyweight); only that set is accepted, so a unit outside it or a missing spoken unit goes to review, never converted silently (A3)" }
 "Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
 
 [profiles.us-core-body-height.elements]
@@ -133,7 +133,7 @@
 "Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
 "Observation.value[x]:valueQuantity.unit" = { source = "extracted", note = "written from the spoken unit" }
 "Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
-"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM; the profile does not fix one unit, so a missing spoken unit goes to review, never converted silently (A3)" }
+"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM within the profile's required unit set (ucum-bodylength); only that set is accepted, so a unit outside it or a missing spoken unit goes to review, never converted silently (A3)" }
 "Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
 
 [profiles.us-core-pulse-oximetry.elements]
@@ -153,17 +153,17 @@
 "Observation.value[x]:valueQuantity.unit" = { source = "fixed", note = "mapper writes the unit for the profile-fixed UCUM code" }
 "Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
 "Observation.value[x]:valueQuantity.code" = { source = "fixed", note = "profile fixes exactly one UCUM unit, so the mapper supplies it (A3)" }
-"Observation.component.code" = { source = "fixed", note = "constrained by the component slice patterns when a component is emitted" }
-"Observation.component:FlowRate.code" = { source = "fixed", note = "pattern LOINC 3151-8 fixed by profile" }
-"Observation.component:FlowRate.value[x].value" = { source = "unresolved", note = "see [open_questions]: PLAN does not state whether spoken oxygen flow/concentration become components in v1" }
-"Observation.component:FlowRate.value[x].unit" = { source = "fixed", note = "mapper writes the unit for the fixed L/min code, if the component is emitted" }
-"Observation.component:FlowRate.value[x].system" = { source = "fixed", note = "fixed UCUM system by profile" }
-"Observation.component:FlowRate.value[x].code" = { source = "fixed", note = "fixed L/min by profile" }
-"Observation.component:Concentration.code" = { source = "fixed", note = "pattern LOINC 3150-0 fixed by profile" }
-"Observation.component:Concentration.value[x].value" = { source = "unresolved", note = "see [open_questions]: PLAN does not state whether spoken oxygen flow/concentration become components in v1" }
-"Observation.component:Concentration.value[x].unit" = { source = "fixed", note = "mapper writes the unit for the fixed % code, if the component is emitted" }
-"Observation.component:Concentration.value[x].system" = { source = "fixed", note = "fixed UCUM system by profile" }
-"Observation.component:Concentration.value[x].code" = { source = "fixed", note = "fixed % by profile" }
+"Observation.component.code" = { source = "not-emitted", note = "no components are emitted in v1: pulse oximetry carries the SpO2 value only (A3); required only inside a component, which stays absent" }
+"Observation.component:FlowRate.code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].value" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].unit" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].system" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:Concentration.code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].value" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].unit" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].system" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
 
 [profiles.us-core-condition-encounter-diagnosis.elements]
 "Condition.clinicalStatus" = { source = "mapper-policy", note = "from explicit temporality only (current -> active, explicitly resolved -> resolved); omitted on refuted encounter diagnoses (A3)" }
@@ -238,20 +238,10 @@
 "Encounter.classHistory.period" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
 "Encounter.type" = { source = "intake", note = "A1 minimum" }
 "Encounter.subject" = { source = "intake", note = "A1 minimum: the intake Patient" }
-"Encounter.diagnosis.condition" = { source = "unresolved", note = "see [open_questions]: PLAN never states whether Auris adds Encounter.diagnosis references for extracted Conditions or leaves the intake Encounter untouched" }
+"Encounter.diagnosis.condition" = { source = "not-emitted", note = "never written in v1: Auris never modifies the intake anchors and does not add Encounter.diagnosis references to extracted Conditions (A1); required only inside a diagnosis entry Auris never adds" }
 "Encounter.location.location" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
 
-[[open_questions]]
-profile = "us-core-pulse-oximetry"
-element = "Observation.component:FlowRate.value[x].value"
-reason = "PLAN A3 covers a vital sign as value+unit and never mentions the pulse-oximetry FlowRate/Concentration components. Whether a spoken oxygen flow rate (e.g. 'on two litres') is extracted into this component in v1, or left in the ledger, is undecided."
-
-[[open_questions]]
-profile = "us-core-pulse-oximetry"
-element = "Observation.component:Concentration.value[x].value"
-reason = "Same question as FlowRate: whether a spoken inhaled oxygen concentration becomes this component in v1 is undecided in PLAN."
-
-[[open_questions]]
-profile = "us-core-encounter"
-element = "Encounter.diagnosis.condition"
-reason = "A1 supplies the Encounter and fhir-reference says a Condition always references the intake Encounter (Condition.encounter). Nothing states whether Auris also writes Encounter.diagnosis entries pointing at extracted Conditions, which would mean modifying an intake-supplied resource."
+# No open questions at present. An element whose source PLAN does not
+# decide gets source = "unresolved" above plus a [[open_questions]]
+# entry here (profile, element, reason); the coverage test enforces
+# the pairing.

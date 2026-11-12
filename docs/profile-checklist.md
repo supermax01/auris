@@ -36,18 +36,7 @@ cache at setup and never bundled (PLAN A8).
 
 ## Discrepancies with PLAN/fhir-reference
 
-- us-core-blood-pressure `Observation.effective[x]`: fhir-reference says types ['dateTime'], snapshot says ['dateTime', 'Period']
-- us-core-heart-rate `Observation.effective[x]`: fhir-reference says types ['dateTime'], snapshot says ['dateTime', 'Period']
-- us-core-body-temperature `Observation.value[x]:valueQuantity.code`: fhir-reference says extensible binding, snapshot says required (value set http://hl7.org/fhir/ValueSet/ucum-bodytemp\|4.0.1)
-- us-core-body-weight `Observation.value[x]:valueQuantity.code`: fhir-reference says extensible binding, snapshot says required (value set http://hl7.org/fhir/ValueSet/ucum-bodyweight\|4.0.1)
-- us-core-body-height `Observation.value[x]:valueQuantity.code`: fhir-reference says extensible binding, snapshot says required (value set http://hl7.org/fhir/ValueSet/ucum-bodylength\|4.0.1)
-- us-core-medicationrequest `MedicationRequest.reasonCode`: fhir-reference lists it as Must Support, snapshot says mustSupport=False
-- us-core-medicationrequest `MedicationRequest.reasonReference`: fhir-reference lists it as Must Support, snapshot says mustSupport=False
-- us-core-condition-encounter-diagnosis `Condition.onsetDateTime`: named in fhir-reference but no such element exists in the snapshot checklist
-- us-core-condition-encounter-diagnosis `Condition.abatementDateTime`: named in fhir-reference but no such element exists in the snapshot checklist
-- us-core-condition-problems-health-concerns `Condition.onsetDateTime`: named in fhir-reference but no such element exists in the snapshot checklist
-- us-core-condition-problems-health-concerns `Condition.abatementDateTime`: named in fhir-reference but no such element exists in the snapshot checklist
-- us-core-vital-signs: fhir-reference lists invariants ['obs-6', 'obs-7', 'vs-1', 'vs-2', 'vs-3'], snapshot also carries ['obs-3'] (missing: [])
+None found by the automated checks in `checklist.py` (`find_discrepancies`), which encode the cardinalities, fixed codes and invariant severities stated in `docs/fhir-reference.md`.
 
 ## Claimed profiles
 
@@ -451,28 +440,28 @@ Invariants:
 | `Observation.interpretation` | 0..* | CodeableConcept |  | extensible: observation-interpretation |  |  | — |
 | `Observation.referenceRange` | 0..* | BackboneElement |  |  |  |  | — |
 | `Observation.component` | 0..* | BackboneElement |  |  | yes | sliced by pattern `code`<br>rules: open | — |
-| `Observation.component.code` | 1..1 | CodeableConcept |  | extensible: us-core-vital-signs | yes |  | `fixed` |
+| `Observation.component.code` | 1..1 | CodeableConcept |  | extensible: us-core-vital-signs | yes |  | `not-emitted` |
 | `Observation.component.value[x]` | 0..1 | Quantity<br>CodeableConcept<br>string<br>boolean<br>integer<br>Range<br>Ratio<br>SampledData<br>time<br>dateTime<br>Period |  | extensible: ucum-vitals-common | yes |  | — |
 | `Observation.component.dataAbsentReason` | 0..1 | CodeableConcept |  | extensible: data-absent-reason | yes |  | — |
 | `Observation.component.interpretation` | 0..* | CodeableConcept |  | extensible: observation-interpretation |  |  | — |
 | `Observation.component:FlowRate` | 0..1 | BackboneElement |  |  | yes | slice `FlowRate` | — |
-| `Observation.component:FlowRate.code` | 1..1 | CodeableConcept | pattern: `{"coding": [{"code": "3151-8", "system": "http://loinc.org"}]}` | extensible: us-core-vital-signs | yes |  | `fixed` |
+| `Observation.component:FlowRate.code` | 1..1 | CodeableConcept | pattern: `{"coding": [{"code": "3151-8", "system": "http://loinc.org"}]}` | extensible: us-core-vital-signs | yes |  | `not-emitted` |
 | `Observation.component:FlowRate.value[x]` | 0..1 | Quantity |  | extensible: ucum-vitals-common | yes |  | — |
-| `Observation.component:FlowRate.value[x].value` | 1..1 | decimal |  |  | yes |  | `unresolved` |
+| `Observation.component:FlowRate.value[x].value` | 1..1 | decimal |  |  | yes |  | `not-emitted` |
 | `Observation.component:FlowRate.value[x].comparator` | 0..1 | code |  | required: quantity-comparator |  |  | — |
-| `Observation.component:FlowRate.value[x].unit` | 1..1 | string |  |  | yes |  | `fixed` |
-| `Observation.component:FlowRate.value[x].system` | 1..1 | uri | fixed: `"http://unitsofmeasure.org"` |  | yes |  | `fixed` |
-| `Observation.component:FlowRate.value[x].code` | 1..1 | code | fixed: `"L/min"` |  | yes |  | `fixed` |
+| `Observation.component:FlowRate.value[x].unit` | 1..1 | string |  |  | yes |  | `not-emitted` |
+| `Observation.component:FlowRate.value[x].system` | 1..1 | uri | fixed: `"http://unitsofmeasure.org"` |  | yes |  | `not-emitted` |
+| `Observation.component:FlowRate.value[x].code` | 1..1 | code | fixed: `"L/min"` |  | yes |  | `not-emitted` |
 | `Observation.component:FlowRate.dataAbsentReason` | 0..1 | CodeableConcept |  | extensible: data-absent-reason | yes |  | — |
 | `Observation.component:FlowRate.interpretation` | 0..* | CodeableConcept |  | extensible: observation-interpretation |  |  | — |
 | `Observation.component:Concentration` | 0..1 | BackboneElement |  |  | yes | slice `Concentration` | — |
-| `Observation.component:Concentration.code` | 1..1 | CodeableConcept | pattern: `{"coding": [{"code": "3150-0", "system": "http://loinc.org"}]}` | extensible: us-core-vital-signs | yes |  | `fixed` |
+| `Observation.component:Concentration.code` | 1..1 | CodeableConcept | pattern: `{"coding": [{"code": "3150-0", "system": "http://loinc.org"}]}` | extensible: us-core-vital-signs | yes |  | `not-emitted` |
 | `Observation.component:Concentration.value[x]` | 0..1 | Quantity |  | extensible: ucum-vitals-common | yes |  | — |
-| `Observation.component:Concentration.value[x].value` | 1..1 | decimal |  |  | yes |  | `unresolved` |
+| `Observation.component:Concentration.value[x].value` | 1..1 | decimal |  |  | yes |  | `not-emitted` |
 | `Observation.component:Concentration.value[x].comparator` | 0..1 | code |  | required: quantity-comparator |  |  | — |
-| `Observation.component:Concentration.value[x].unit` | 1..1 | string |  |  | yes |  | `fixed` |
-| `Observation.component:Concentration.value[x].system` | 1..1 | uri | fixed: `"http://unitsofmeasure.org"` |  | yes |  | `fixed` |
-| `Observation.component:Concentration.value[x].code` | 1..1 | code | fixed: `"%"` |  | yes |  | `fixed` |
+| `Observation.component:Concentration.value[x].unit` | 1..1 | string |  |  | yes |  | `not-emitted` |
+| `Observation.component:Concentration.value[x].system` | 1..1 | uri | fixed: `"http://unitsofmeasure.org"` |  | yes |  | `not-emitted` |
+| `Observation.component:Concentration.value[x].code` | 1..1 | code | fixed: `"%"` |  | yes |  | `not-emitted` |
 | `Observation.component:Concentration.dataAbsentReason` | 0..1 | CodeableConcept |  | extensible: data-absent-reason | yes |  | — |
 | `Observation.component:Concentration.interpretation` | 0..* | CodeableConcept |  | extensible: observation-interpretation |  |  | — |
 
@@ -767,7 +756,7 @@ Invariants:
 | `Encounter.period` | 0..1 | Period |  |  | yes |  | — |
 | `Encounter.reasonCode` | 0..* | CodeableConcept |  | preferred: encounter-reason | yes |  | — |
 | `Encounter.reasonReference` | 0..* | Reference(us-core-condition-problems-health-concerns, us-core-condition-encounter-diagnosis, us-core-procedure, Observation, ImmunizationRecommendation) |  |  | yes |  | — |
-| `Encounter.diagnosis.condition` | 1..1 | Reference(Condition, Procedure) |  |  |  |  | `unresolved` |
+| `Encounter.diagnosis.condition` | 1..1 | Reference(Condition, Procedure) |  |  |  |  | `not-emitted` |
 | `Encounter.hospitalization` | 0..1 | BackboneElement |  |  | yes |  | — |
 | `Encounter.hospitalization.dischargeDisposition` | 0..1 | CodeableConcept |  | preferred: us-core-discharge-disposition | yes |  | — |
 | `Encounter.location` | 0..* | BackboneElement |  |  | yes |  | — |

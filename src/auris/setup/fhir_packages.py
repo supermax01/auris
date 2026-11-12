@@ -9,7 +9,6 @@ SHA-256 pinned in ``config/frozen.toml``; a mismatching file is refused.
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import os
 import tarfile
@@ -216,15 +215,3 @@ def unpinned_declared_dependencies(
             if (dep_id, dep_version) not in pinned:
                 rows.append((package.pin.id, dep_id, dep_version))
     return sorted(rows)
-
-
-def make_fake_package_bytes(package_json: dict[str, Any], members: dict[str, bytes]) -> bytes:
-    """Build a tiny package-shaped tarball in memory. Test support only."""
-    buffer = io.BytesIO()
-    with tarfile.open(fileobj=buffer, mode="w:gz") as tarball:
-        payload = {"package/package.json": json.dumps(package_json).encode(), **members}
-        for name, data in payload.items():
-            info = tarfile.TarInfo(name=name)
-            info.size = len(data)
-            tarball.addfile(info, io.BytesIO(data))
-    return buffer.getvalue()
