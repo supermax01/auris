@@ -1,0 +1,35 @@
+Auris, Copyright 2026 the Auris contributors
+
+This product includes software developed by the Auris contributors.
+
+---
+
+LOINC
+
+[No LOINC content is included yet. The required LOINC licence notice
+will be added here when the LOINC vitals subset artifact is introduced
+(see docs/PLAN.md Appendix A8).]
+
+---
+
+UCUM
+
+[No UCUM content is included yet. The required UCUM terms notice will
+be added here when UCUM content is introduced (see docs/PLAN.md
+Appendix A8).]
+
+---
+
+RxNorm
+
+[No RxNorm content is included yet. The required RxNorm notice will be
+added here when the RxNorm artifact is introduced (see docs/PLAN.md
+Appendix A8).]
+
+---
+
+ICD-10-CM
+
+[No ICD-10-CM content is included yet. The required ICD-10-CM notice
+will be added here when the ICD-10-CM artifact is introduced (see
+docs/PLAN.md Appendix A8).]
