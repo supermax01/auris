@@ -1,272 +1,605 @@
-# Auris — Final Plan (locked for owner review, 2026-11-10)
+# Auris — The Plan
 
-Team: Muse (coordinator), Claude Code CLI `claude-fable-5-2`, Muse
-`gpt-6.1-sol` (reasoning max), Gemini via Chrome (human relay). Rounds:
-independent drafts → coordinator merge → round-2 critiques (Fable and Codex
-both BLOCKED on the missing export matrix) → Gemini review via Chrome
-(BLOCKED on vital-sign timestamp, BP-component, and negation traps inside
-that matrix; its four amendments are applied in §3, Approach, Validation,
-and Positioning below) → coordinator verification of every flagged
-licence/FHIR claim (see Sources). All four teammates have now reviewed.
-No application code exists yet. Owner approval ("go") is required before
-implementation.
+*Final plan for owner review · 2026-11-10 · No code is written until the
+owner says "go".*
 
-## Goal
+Reviewed in three rounds by four AI teammates (Muse as coordinator, Claude,
+Codex and Gemini), then a round-4 review by Claude Fable 5.2 whose five
+changes are applied. FHIR facts were checked against the official HL7 pages
+([fhir-reference.md](fhir-reference.md)); every change is traced in
+[reviews/](reviews/).
 
-Open-source, self-hostable ambient scribe: clinician–patient audio →
-validated FHIR R4 resources (Observation, Condition, MedicationRequest,
-AllergyIntolerance) → a SOAP-format encounter summary rendered from those
-resources. Aim: the OSS tool of record for audio-to-FHIR in work, research,
-and deployment — won on structured output, honest validation, rerunnable
-evaluation, and local-first operation, not marketing claims.
+---
 
-## Success Criteria
+## 1. What we are building
 
-1. One command turns a sample WAV into `bundle.json`, `validation.json`,
-   and `note.md` on a laptop, fully offline after one-time model download.
-2. Every exported resource is evidence-linked (quote, audio offset,
-   speaker) and labelled by state: extracted / structurally valid /
-   profile-and-terminology checked / clinician-reviewed. No state implies
-   the next; no output claims more than its lane results support.
-3. A stranger can rerun our published evaluation and reproduce our numbers.
-4. Any stage (ASR, diariser, extractor, validator) can be swapped without
-   touching the rest of the pipeline.
+**Auris listens to a recorded doctor–patient visit and turns it into
+structured medical records that hospital software can read.** These are
+the vital signs taken, the problems diagnosed, the medicines ordered and
+the allergies mentioned. Each record is linked to the exact moment in the
+recording it came from. From those records Auris writes a short visit
+summary in the familiar SOAP layout (Subjective, Objective, Assessment,
+Plan).
 
-## Approach
+It is open source, it runs on your own laptop or server, and the audio
+never leaves that machine.
 
-Pipeline: ingest → ASR → diarisation → role assignment → constrained
-extraction into a reduced assertion schema → deterministic terminology
-mapping → FHIR validation lanes → human review → deterministic rendering.
+**Who version 1 is for.** Researchers and health-IT developers. Version 1
+is a research tool and a reference pipeline: it proves the approach and
+measures it honestly. It is not yet a scribe a clinician would choose for
+daily use, because symptoms and current medicines are not turned into
+records and the summary is a templated list.
 
-- **ASR:** faster-whisper (verified MIT). Linux quality profile large-v3;
-  laptop profile INT8 CPU. VAD gating, no conditioning on previous text,
-  word timestamps labelled approximate. ASR scores are flags, never
-  calibrated clinical probabilities.
-- **Diarisation:** one interface, two profiles. Default portable profile:
-  Silero VAD + SpeechBrain speaker embeddings + clustering — ours to own
-  (windows, speaker-count estimation, short-turn and overlap handling,
-  `unknown` preserved; tuned on a non-test tuning set). Comparison profile:
-  pyannote speaker-diarization-community-1 (verified CC-BY-4.0, gated
-  access; user accepts terms and supplies token; offline cache import must
-  be demonstrated). Demo fixture is dual-channel so the demo never depends
-  on diarisation quality. Profile choice is later decided on downstream
-  assertion F1/role accuracy (portable stays default within 2 F1 points),
-  not DER alone.
-- **Roles:** separate component; per-cluster clinician / patient /
-  companion / other / unknown, correctable per segment in review.
-  Lexical baseline + extractor-LLM proposal; disagreement → review.
-- **Extraction:** Qwen/Qwen3-8B (verified Apache-2.0) as the initial laptop
-  candidate, thinking mode off, temperature 0; llama.cpp on Mac,
-  vLLM+XGrammar on Linux (all verified permissive). Backend contract tests
-  must prove AST-level schema conformance and identical rejection of
-  invalid structures on both backends (token streams will not be
-  bit-identical across Metal/CUDA/CPU; that is accepted).
-  The LLM never emits codes and never fills missing facts: it emits atomic
-  assertions with a mandatory transcript evidence span (segment id +
-  quote, verified against the immutable transcript by case- and
-  punctuation-normalized token-span alignment resolving exact
-  character/audio offsets; unaligned quotes fail the evidence lane;
-  aligned results labelled "transcript-supported", never "verified"),
-  subject, negation, experiencer, temporality, and medication
-  intent. Every clinical field is nullable. Flip to a larger extractor only
-  on predeclared dev-set criteria (≥25% relative cut in critical errors, or
-  ≥3 F1 points with CI excluding 0, within laptop memory/runtime budgets),
-  measured at declared coverage; if all candidates fail, none is default.
-- **Mapping:** deterministic code, local candidate retrieval, LLM picks
-  from candidates or none. Defaults: LOINC vitals (small table + notice),
-  ICD-10-CM for conditions, RxNorm Current Prescribable Content downloaded
-  at setup (NLM states no licence required). SNOMED CT only via
-  user-supplied licensed release. No match → text-only code + flag, never
-  an invented code.
-- **Rendering:** deterministic templates only, from accepted resources plus
-  a flagged "Needs review — not validated" block. Unsupported encounter
-  content is recorded in the evidence ledger and shown as "discussed, not
-  captured as FHIR"; absent content is shown as "not captured". The
-  artefact is a structured encounter summary in SOAP format — four
-  resource types cannot represent a full clinical note, and the plan does
-  not claim otherwise.
+## 2. The problem
 
-## §3 Export and acceptance matrix (the contract both reviewers required)
+Writing up a visit is a large part of a clinician's day. "AI scribes" have
+appeared to help, but the ones we inspected share four gaps:
 
-`meta.profile` is always set by the mapper; a resource without it claims
-base R4 only. Intake context MUST supply Patient, Encounter (including
-`Encounter.period.start`), and a default Practitioner anchor — a
-MedicationRequest is never exported without `requester` bound to that
-anchor. Anchors are never extracted or invented. Validation lanes report
-PASS / FAIL / NOT_CHECKED separately (reduced schema → evidence and
-consistency → base R4 → declared US Core profiles, pinned
-`hl7.fhir.us.core#6.1.0` for compatibility, configurable → terminology),
-parsed lane-by-lane from validator OperationOutcome severities.
-Tier 0 terminology (local tables, validator terminology disabled) always
-sets the terminology lane to NOT_CHECKED and can never produce a
-"fully validated" label; reviewed state is invalidated by any edit;
-validator feedback may only trigger evidence-grounded structural repair
-(max one loop), never invented clinical facts.
-Profile cardinalities and invariants (vital-signs effective-time rules,
-requester, category slices) are checked against the 6.1.0
-StructureDefinitions by the FHIR specialist as Slice 1's first task;
-rows below are the contract that check must confirm or amend.
+1. **They write prose, not data.** Most produce a paragraph-style note. A
+   note is easy to read but hard for software to use: an EHR (electronic
+   health record) cannot reliably file "patient mentioned a penicillin
+   rash" as an allergy record from a paragraph.
+2. **They send audio to the cloud.** Many depend on hosted AI services, so
+   recordings of patients leave the clinic.
+3. **You can't check how accurate they are.** Few publish an evaluation
+   that someone else can rerun and get the same numbers.
+4. **Open-source attempts stop short.** The closest open project that turns
+   text into structured records (Infherno) reports that local models were
+   much less reliable and recommends a paid proprietary model.
+
+**What exists today (GitHub search, 2026-11-10; star counts are snapshots)**
+
+| Project | What it does | What it doesn't do |
+|---|---|---|
+| phlox (110★), scribeHC (26★), MediNotes (32★), FreeScribe, AI-Scribe | Record a visit and write a note | No standards-checked structured records; no rerunnable evaluation |
+| Infherno (19★) | Text notes → structured records (FHIR) | No audio; recommends a proprietary model; agent-style multi-step design |
+| AWS HealthScribe | Evidence-linked notes, a commercial cloud service | Cloud only; proprietary output format |
+| Medplum, OpenEMR | Health record platforms | Not scribes; they are where Auris output could go |
+
+Within these searches we found no open-source tool that goes from audio to
+standards-checked structured records with an evaluation anyone can rerun. That gap
+is what Auris is for.
+
+## 3. The question we are answering
+
+> **Can open AI models running entirely on a laptop turn a clinical
+> conversation into standards-compliant medical records that are
+> traceable, honestly labelled and measurably accurate — and can we prove
+> it in a way anyone can rerun?**
+
+We do not assume the answer is yes. The plan is built so that the
+evaluation can say no.
+
+## 4. Our solution — six principles
+
+1. **Structured records first, summary second.** The records are the
+   product; the summary is rendered from them, never the other way round.
+2. **Every fact has a receipt.** Each record carries the quote it came
+   from, the time in the audio and who said it. A reviewer can click and
+   listen.
+3. **Honest labels.** Each record says exactly which checks it passed. The
+   word "validated" is used only when every check, including medical
+   coding, has passed. On the default laptop install no record says
+   "validated": checking codes against official value sets needs a
+   terminology server, which the offline default lacks, so default records
+   say "profile-checked, coding not checked".
+4. **Auris is built not to invent.** The extraction step cannot add codes,
+   doses, dates or patient details; anything unsaid stays empty and is
+   flagged. One gap remains and we measure it: speech-to-text can write
+   words nobody said. That is why labels say "transcript-supported" and why
+   review plays the audio.
+5. **The clinician stays in charge.** Medication orders are drafts only.
+   Anything risky goes to a review queue. Auris never signs or activates
+   anything.
+6. **Local and open.** Open-licence models and code, running offline after
+   a one-time setup download.
+
+## 5. What it involves — how Auris works
+
+### A few terms first
+
+| Term | Plain meaning |
+|---|---|
+| **FHIR** | The international standard format for exchanging health records between systems. We use version **R4**, which is what US health software supports today. |
+| **US Core** | US rules on top of FHIR saying exactly which fields each record must have. We pin version **6.1.0**. |
+| **Resource** | One FHIR record, such as an Observation (a measurement) or an AllergyIntolerance (an allergy). |
+| **Terminology / codes** | Standard code lists so systems agree on meaning: LOINC for measurements, ICD-10-CM for diagnoses, RxNorm for drugs, SNOMED CT for clinical concepts (licensed). |
+| **Validator** | The official HL7 program that checks a record against FHIR and US Core rules. |
+| **ASR** | Automatic speech recognition (speech-to-text). |
+| **Diarisation** | Working out "who spoke when" in a recording. |
+
+### The journey from audio to records
+
+1. **Record.** A visit is recorded on a single room microphone, the setup
+   we test by default. A separate microphone per person makes the next
+   steps easier but isn't required.
+2. **Transcribe.** Speech-to-text turns the audio into text with
+   timestamps.
+3. **Who spoke when.** Diarisation splits the audio by voice. It only knows
+   "Speaker A" and "Speaker B", not who they are.
+4. **Who is who.** A separate step decides which speaker is the clinician,
+   the patient, a companion or unknown. If it isn't sure, a human decides.
+5. **Pull out the facts.** A local AI model reads the transcript and fills
+   in a small, fixed form for each fact. For example: *allergy: penicillin;
+   said by: patient; negated: no; quote: "I come out in a rash with
+   penicillin"*. The model can only answer inside that form, and every fact
+   must quote the transcript.
+6. **Attach standard codes.** Ordinary code, not AI, looks up the official
+   code for each fact (RxNorm for a drug such as amoxicillin, and so on). A
+   drug family such as penicillin has no single code, so it stays as text
+   and is flagged for review. The AI may only choose from the candidates
+   found, or answer "none".
+7. **Check against the standards.** Each record is checked in five
+   separate "lanes". Auris's own checks cover the first two: form (does it
+   fit our fixed form?) and evidence (does the quote really appear in the
+   transcript?). The official validator covers the other three: FHIR
+   rules, US Core rules and coding. Each lane reports PASS, FAIL or NOT
+   CHECKED.
+8. **Clinician review.** Risky items wait in a review queue: medicines,
+   allergies, anything negated, and anything about someone other than the
+   patient.
+9. **Write the summary.** Fixed templates, not AI, write the SOAP summary
+   from the accepted records.
+
+### What Auris captures in version 1
+
+| Said in the visit | What Auris makes |
+|---|---|
+| A vital sign: "BP is 128 over 82" | Observation record (blood-pressure panel, heart rate, …) |
+| A diagnosis the clinician makes or confirms | Condition record (encounter diagnosis) |
+| A condition the patient reports | Condition record (problem list, "unconfirmed") |
+| A new medicine the clinician orders | **Draft** MedicationRequest (a proposal, never active) |
+| An allergy the patient states | AllergyIntolerance record ("unconfirmed") |
+
+Some things are kept in the summary or review list but deliberately **not**
+turned into records in v1: symptoms ("cough for three days") go into the
+summary as quoted text; medicines the patient is already taking go to the
+review list; "no known allergies" becomes a record only if you supply a
+licensed SNOMED code set and a clinician confirms it. Everything Auris
+couldn't capture is shown as "discussed, not captured" so nothing silently
+disappears.
+
+## 6. Tools, stack and models — what we chose and why
+
+Every licence below was checked against its source during review; the
+exact files we download are checked again when we pin them (Appendix A11).
+"MIT" and "Apache-2.0" are permissive licences that allow commercial use.
+
+| Job | We chose | Why | Considered, not chosen (for now) |
+|---|---|---|---|
+| Speech-to-text engine | **faster-whisper** (MIT) | Proven, fast on ordinary CPUs, permissive | WhisperX: adds heavy dependencies for timing we may not need |
+| Speech-to-text model (laptop) | **Whisper large-v3-turbo** (MIT), converted by us to a compact INT8 format | Near large-v3 quality at much lower cost; supports many languages. No official faster-whisper copy exists, so we convert OpenAI's original ourselves rather than trust an unknown copy | distil-large-v3: English-only. NVIDIA Parakeet: heavier toolkit, later |
+| Speech-to-text model (server) | **Whisper large-v3** (Apache-2.0 on its Hugging Face card) | Best quality when a GPU is available | — |
+| Who spoke when (default) | **Silero VAD** (MIT) + **SpeechBrain** speaker embeddings (Apache-2.0) + clustering | Needs no account or token, so it runs anywhere | — |
+| Who spoke when (comparison) | **pyannote community-1** (CC-BY-4.0, requires accepting terms) | Likely more accurate; we measure whether it is worth the friction | NVIDIA Sortformer v1: non-commercial licence |
+| Fact-extraction AI | **Qwen3-8B**, official GGUF build, Q4_K_M (Apache-2.0) | Fits a 16 GB laptop next to the other stages; permissive; strong at following a fixed form | Qwen3-14B/32B and gpt-oss-20b: too big for the laptop budget (on the list for servers). Llama-family medical models: custom licences |
+| Running the AI | **llama.cpp** on Mac; **vLLM + XGrammar** on Linux (all permissive) | Both can force the AI's answer to match our form exactly | Ollama: works, but not our tested path |
+| Medical codes | **LOINC** subset (vitals), **ICD-10-CM** (public domain), **RxNorm Current Prescribable Content** (free, no licence needed) | Free to use. Only a small LOINC vital-signs table ships with Auris, with its licence notice; everything else is downloaded at setup | SNOMED CT: needs a licence, so only if you supply your own |
+| Record checking | **Official HL7 FHIR Validator** (Apache-2.0) on **Java 21 (Temurin)** | It is the authority on FHIR and US Core rules | `fhir.resources` Python library: current releases don't support R4 4.0.1 |
+| Standards | **FHIR R4 4.0.1 + US Core 6.1.0** | R4 is what US systems use; US Core 6.1.0 matches the current US data rules (USCDI v3) | FHIR R5: US Core doesn't support it |
+| Summary writing | **Jinja2** templates | Deterministic: no AI can add words that weren't in the records | AI-written summary: could add unsupported claims |
+| Packaging | Python via **mise/uv**; **Docker** images containing code only | Reproducible installs; models and code lists are downloaded at setup, never redistributed | — |
+| Evaluation baseline | A rules pipeline we build with **medspaCy** (MIT) | Shows whether the AI actually beats simple rules | — |
+
+**Terms in this table.** *INT8* and *Q4_K_M*: ways of storing a model's
+numbers more compactly so it fits in laptop memory, at a small cost in
+accuracy. *GGUF*: the file format llama.cpp uses for such compact models.
+*VAD* (voice activity detection): finds the parts of the audio where
+someone is speaking. *XGrammar*: a library that forces the AI's output to
+follow our fixed form. *USCDI*: the US government's list of health data
+that systems must be able to exchange.
+
+**Reference machines.** Laptop: Apple M2 with 16 GB of memory, the whole
+pipeline under 12 GB, at most 20 minutes to process 10 minutes of audio
+(to be measured and published). Server: a 24 GB-memory GPU with 64 GB of
+RAM.
+
+## 7. What the final product looks like
+
+**One command for a first look.** On a laptop, after a one-time setup
+download, a single command processes the bundled sample visit (a
+fictional, professionally recorded consultation) and writes three files:
+
+| File | What it is |
+|---|---|
+| `bundle.json` | The FHIR records, in the standard format health record systems accept (v1 proves this by loading them into a local test server) |
+| `validation.json` | Which checks each record passed, failed or skipped |
+| `note.md` | The readable SOAP summary |
+
+**An illustrative summary** (a fictional example of the format, not real
+output):
+
+```
+S — Subjective (quoted from the transcript; not FHIR records in v1)
+  • Cough for three days                     [02:14 · patient]
+  • Denies fever                             [02:31 · patient]
+O — Objective
+  • Blood pressure 128/82 mmHg               [04:10 · clinician]
+      profile-checked · coding not checked
+A — Assessment
+  • Acute bronchitis (provisional)           [06:02 · clinician]
+      profile-checked · coding not checked
+P — Plan
+  • DRAFT — amoxicillin 500 mg three times daily   [06:40 · clinician]
+      ⚠ needs clinician review · not validated
+Needs review — not validated
+  • Allergy: "rash with penicillin"          [01:48 · patient]
+      drug family, kept as text · needs coding review
+Discussed, not captured as records
+  • Smoking cessation advice                 [07:20]
+```
+
+In real output every line carries its label; nothing appears unlabelled.
+
+**A review page.** A simple local web page lists every record with its
+quote. Click to hear that moment of the audio, correct a speaker or a
+fact, then approve. Any edit re-runs the checks and rewrites the summary.
+
+**Deployment.** Runs on a Mac, Linux (with or without a GPU), or Docker.
+It works on air-gapped machines by importing a prepared download cache.
+Nothing is sent anywhere, and telemetry is off everywhere.
+
+**Evaluation kit.** One command reruns our published evaluation, so anyone
+can check our numbers.
+
+## 8. Rules Auris is built and tested to enforce
+
+- Never invents a code, dose, date, patient detail or prescriber.
+- Never turns a medicine *discussion* into an order; orders are drafts and
+  are never activated or signed.
+- Never records a denial ("not allergic to penicillin") as if it were an
+  allergy.
+- Never calls a record "validated" unless every check, including coding,
+  passed.
+- Review can resolve or dismiss a flag but can never override a failed
+  check.
+- Never sends audio or text off the machine; transcript text is never
+  written to logs.
+- Never claims clinical approval. Auris is research software, not cleared
+  for clinical use, and clinician review is mandatory.
+
+## 9. Acceptance criteria — how we know it works
+
+**The product succeeds when:**
+
+1. One command turns the sample recording and its fictional intake details
+   into the three files on a laptop, fully offline after setup.
+2. Every record carries its evidence (quote, audio time, speaker) and an
+   honest label of which checks it passed.
+3. A stranger can rerun our published evaluation on the public data and get
+   our numbers.
+4. Any stage (speech-to-text, diariser, extraction AI, validator) can be
+   swapped without touching the others.
+
+**Each build stage ("slice", described in section 11) has a measurable
+finish line:**
+
+| Stage | Done when |
+|---|---|
+| Slice 1 | Every record type and every expected refusal is covered by a test case; every check lane appears in the output; the offline test passes |
+| Slice 2 | Speaker roles ≥ 90% correct while covering ≥ 85% of turns; using real speaker detection loses ≤ 5 points of accuracy versus perfect speaker labels; every edit re-checks correctly; no unreviewed critical error |
+| Slice 3 | On a clean machine our saved predictions reproduce the published numbers exactly, and a full rerun lands within 1 point |
+
+**Release (research preview) requires** (a) zero critical errors in any
+export that no human reviewed, and (b) a published pre-review
+critical-error rate, meaning how often Auris proposed such an error before
+anyone looked, with a 95% upper bound per error type. Medicines, allergies
+and negations always go to review, so (a) alone says little about the
+model. The five critical errors are: an allergy denial flipped into an
+allergy; the wrong drug or dose exported; a fact attributed to the wrong
+person; an order that was never given; a ruled-out or denied condition
+recorded as present. An accuracy score (F1) of 0.80 is our **target**, not
+a promise.
+
+## 10. How we evaluate
+
+**The idea.** Two clinically trained people independently write down every
+fact in each recorded visit, without seeing Auris's output. Disagreements
+are settled by a third reviewer. Auris's output is then scored against
+these "gold" answers.
+
+**The data.**
+
+| Dataset | What it is | How we use it |
+|---|---|---|
+| PriMock57 (CC BY 4.0) | 57 mock UK GP consultations with separate audio for doctor and patient, plus human transcripts | 17 for development, 40 kept untouched for the final audio test |
+| ACI-Bench (CC BY 4.0) | 207 doctor–patient conversations as text (no public audio) | 23 for development, 60 for a text-only test |
+| Private commissioned set | New recordings made for us, never published | Size is the owner's decision (10–30 proposed) |
+
+PriMock57 was recorded over telemedicine with one clean channel per
+speaker, so it has almost no measured vital signs, few dosed orders,
+British drug names and only two speakers. Before splits are frozen we
+count candidate facts per record type in its human transcripts and publish
+the counts. The private set is scripted to fill the gaps: at least 25 each
+of spoken vital signs, dosed orders with US drug names and affirmed
+allergies, on a single room microphone, with a companion in a third of
+visits.
+
+**What we measure.**
+
+- **Each stage:** speech-to-text error rate, with drug names and numbers
+  counted separately; invented-phrase rate against the human transcripts;
+  speaker-split accuracy; role accuracy.
+- **Facts:** how many real facts Auris found (recall), how many of its
+  facts were right (precision), and F1, a single 0–1 score that balances
+  the two, per record
+  type. A strict score also requires exact values, units and doses.
+- **Checks:** pass rates for each validation lane, reported separately.
+- **Review burden:** how much a clinician had to correct.
+- **Where errors come from:** the same tests rerun with perfect transcripts
+  and perfect speaker labels.
+- **Baselines:** a simple rules system, the AI without our structure, and a
+  larger AI model.
+
+**Honesty rules.**
+
+- Public datasets may have been seen by AI models during training, and we
+  say so beside every result.
+- Any result based on fewer than 25 examples is marked as low-confidence.
+- PriMock57 is British, while our codes are American; results are reported
+  per dataset.
+- Until a clinic partner with consent is found, all results are labelled
+  "mock consultation" results.
+
+**Annotation budget.** Working formula: 65 h + 2.4 h per test visit + 1.5 h
+per development visit. That gives ≈ 365 annotator-hours for the full design
+(100 public test visits) or ≈ 269 h for a reduced one (60: 40 PriMock57 + 20
+ACI-Bench). Neither includes the private set, which adds 2.4 h per visit.
+All are re-priced after a timed 5–10 visit pilot.
+Annotation guidelines are frozen only when the two annotators agree well:
+they find the same facts (detection F1 ≥ 0.80) and label them the same way
+(kappa ≥ 0.70; kappa is a standard 0–1 measure of agreement beyond
+chance). If they can't get there after three
+rounds, we simplify what we annotate rather than lower the bar.
+
+## 11. Build plan
+
+1. **Slice 1 — prove the contract.** Generate a checklist of every required
+   field for each record type, straight from the official definitions. Run
+   the full pipeline on human-written transcripts with known speakers,
+   then on the one commissioned sample recording. Offline testing from day
+   one.
+2. **Slice 2 — real speakers and review.** Freeze the dataset splits. Add
+   speaker detection, roles, overlap handling and the review page.
+3. **Slice 3 — research and deployment.** Publish the locked evaluation
+   with speed, memory and hardware figures. Add Linux, Mac and Docker
+   install paths, the air-gapped install and data-retention rules, and a
+   test that the records load correctly into a local FHIR test server.
+
+## 12. Time, cost and people
+
+**Timeline (rough estimate, not yet validated).** About 4–6 weeks per
+slice for one full-time engineer, so roughly 3–4½ months to the research
+preview. Annotation runs in parallel with Slices 1 and 2. Each slice ends
+at its finish line in section 9, not on a date; the estimate is replaced
+with a measured one after Slice 1.
+
+**People.**
+- One engineer building the pipeline.
+- Two clinically trained annotators (for example nurses, physicians or
+  professional medical scribes) and a third clinician to settle their
+  disagreements.
+- A FHIR-literate reviewer for the 30-visit independent FHIR subset.
+- Actors with signed voice releases for the commissioned recordings.
+
+Who fills each role is the owner's decision.
+
+**Money.**
+- **Annotation:** cost = annotator hours × hourly rate (rate set by the
+  owner). Hours are ≈ 365 or ≈ 269 (section 10), plus 2.4 h per private
+  visit, plus ≈ 40 h for the 30-visit independent FHIR subset. The subset
+  sits outside the formula; the ≈ 40 h figure is Fable's round-2 estimate.
+- **Recordings:** Codex proposed a $3,000 allowance for actors, releases
+  and studio time; to be confirmed.
+- **Compute:** the laptop path needs no new hardware. A rented 24 GB GPU is
+  needed only for the server profile.
+
+**If the answer is "no".** We publish it with the same care as a "yes":
+the numbers, the error analysis, the evaluation kit and the annotations
+(where dataset licences allow). The pipeline remains usable as a reference
+with clinician review. What we try next is chosen from the error analysis,
+not guessed: a larger model on the server profile, a narrower set of
+facts, or better audio capture.
+
+## 13. Decisions needed from the owner at "go"
+
+1. Confirm **Apache-2.0** as the licence for Auris's own code.
+2. Choose the annotation budget: **≈ 365 h** (100 public test visits) or
+   **≈ 269 h** (60: 40 PriMock57 + 20 ACI-Bench). Neither includes the
+   private set, which adds 2.4 h per visit.
+3. Choose the **private recording set** size (10–30 visits) and its budget.
+4. Accept **US-only code defaults** while our development data is British.
+5. Approve the **sample recording**: a fictional consultation recorded by
+   actors with signed voice releases and an explicit licence, and its cost.
+6. Name the **people** (annotators, adjudicator, FHIR reviewer) and the
+   hourly rate.
+
+---
+
+# Appendix A — Technical contract (for implementers)
+
+## A1. Intake contract
+
+Intake context must supply these, never extracted or invented: Patient
+(identifier system+value, name, gender), Practitioner (identifier
+system+value, name.family), Encounter (status, class, type, subject,
+`period.start`). These are the US Core 6.1.0 minimums. A run without them
+refuses to export. The demo ships a fictional `intake.json`.
+
+## A2. Profiles, fixed elements and validation lanes
+
+- **Profiles.** `meta.profile` is always set; a resource without it claims
+  base R4 only. The mapper injects every fixed or required element listed
+  in [fhir-reference.md](fhir-reference.md): category slices, fixed
+  LOINC/UCUM codes, `subject`, and `encounter` = the intake Encounter.
+- **Checklist.** Slice 1 task zero generates a required/fixed-element
+  checklist per claimed profile from the 6.1.0 StructureDefinitions, with
+  each element's source (extracted / intake-inherited / fixed). The matrix
+  below is amended if the checklist disagrees.
+- **Lanes.** reduced schema → evidence and consistency → base R4 → US Core
+  profile → terminology. Each reports PASS / FAIL / NOT_CHECKED.
+- **How lanes are decided.** From each checker's declared scope plus issue
+  code/expression, never from severity alone. A skipped or unsupported
+  check is NOT_CHECKED.
+- **Tiers.** Tier 0 (default): local code tables, validator terminology
+  off, no network; the terminology lane is always NOT_CHECKED. Tier 1
+  (opt-in): a self-hosted terminology server with user-licensed content;
+  only tier 1 can report terminology PASS.
+- **Mapper flags are not lanes.** Flags such as `uncoded_text_only` are
+  review reasons.
+- **Repair.** Validator feedback may trigger one evidence-grounded
+  structural repair, never invented facts.
+
+## A3. Export and acceptance matrix
 
 | Assertion | Polarity | Resource / profile | Fixed semantics & mapper rules | Export rule |
 |---|---|---|---|---|
-| Vital sign (value+unit) | Affirmed | Observation, specific US Core vital profile | `status=preliminary`, UCUM unit. Blood pressure = panel 85354-9 with systolic/diastolic in `component`, never root `value[x]`. Unspoken measurement time deterministically inherits `Encounter.period.start` with a provenance note (context inheritance, not an extracted fact) | Export if lanes pass; else review |
-| Symptom | Affirmed/negated | No resource in v1 | Ledger entry with polarity; rendered under S as transcript-supported text (pertinent positives/negatives) | Review-visible; not claimed as FHIR |
-| Clinician-assessed problem | Affirmed | Condition (encounter-diagnosis) | `verificationStatus=provisional` | Only if clinician stated/confirmed it |
+| Vital sign (value+unit) | Affirmed | Observation, specific US Core vital profile | `status=preliminary`; category VSCat `vital-signs`; fixed LOINC + UCUM per profile (e.g. HR 8867-4 `/min`). BP = 85354-9 with systolic 8480-6 / diastolic 8462-4 components in `mm[Hg]`, root `value[x]` omitted. An in-visit measurement with no spoken time inherits `Encounter.period.start` with a provenance note; reported or historical readings need a spoken date at day precision (vs-1) | Export if lanes pass. Missing BP component, a unit-mismatched value, a missing spoken unit where the claimed profile does not fix exactly one unit (blood pressure and heart rate fix one, so the mapper supplies it), or a historical reading without a date → review. Never silently converted or padded with dataAbsentReason |
+| Symptom | Affirmed/negated | No resource in v1 | Ledger entry with polarity; rendered under S as transcript-supported text | Review-visible; not claimed as FHIR |
+| Clinician-assessed problem | Affirmed | Condition (us-core-condition-encounter-diagnosis) | `category=encounter-diagnosis`; `verificationStatus=provisional`; `clinicalStatus` from explicit temporality (current → `active`, explicitly resolved → `resolved`); onset/abatement only from explicit evidence | Only if a clinician stated or confirmed it; historical or unclear status → review |
 | Clinician-ruled-out problem | Negated | Condition (encounter-diagnosis) | `verificationStatus=refuted`, `clinicalStatus` omitted | Review queue by default; export only after clinician confirmation |
-| Patient-reported condition | Affirmed | Condition (problems/health-concerns) | `verificationStatus=unconfirmed` | Experiencer must be patient; negated history stays in the ledger |
-| Explicit new spoken order | Affirmed | MedicationRequest (US Core) | `status=draft`, `intent=proposal` until review, `requester` = intake Practitioner, dose verbatim or absent | Ambiguous/negated discussion never becomes a request; Auris never activates/signs |
-| Reported/continuing medication | Any | No MedicationRequest in v1 | Ledger + review queue (MedicationStatement is a deliberate post-v1 scope decision) | Never exported as an order |
-| Allergy statement | Affirmed | AllergyIntolerance (US Core) | `verificationStatus=unconfirmed` (R4 codes are only unconfirmed/confirmed/refuted/entered-in-error — verified) | Explicit statement only; non-drug allergens text-only set terminology lane NEEDS_CODING_REVIEW |
-| Allergy refutation / NKA | Negated | No AllergyIntolerance without a valid refutation code (SNOMED-dependent) | Ledger + review; rendered under S as transcript-supported denial | Never exported as `unconfirmed` (that would invert its meaning) |
+| Patient-reported condition | Affirmed | Condition (us-core-condition-problems-health-concerns) | `category=problem-list-item`; `verificationStatus=unconfirmed`; `clinicalStatus` from explicit temporality | Experiencer must be the patient; historical or unclear → review; negated history stays in the ledger |
+| Explicit new spoken order | Affirmed | MedicationRequest (us-core-medicationrequest) | `status=draft`, `intent=proposal`. `requester` = the identified initiating clinician, confirmed against the intake Practitioner (Auris policy; US Core requires requester only for order intents). `authoredOn` inherits `Encounter.period.start` with provenance; `reportedBoolean=false`; RxNorm or text-only medication; dose verbatim in `dosageInstruction.text` or absent | An ambiguous or negated discussion, or an ambiguous prescriber, never becomes a request. Never activated or signed |
+| Reported/continuing medication | Any | No MedicationRequest in v1 | Ledger + review queue (MedicationStatement is post-v1) | Never exported as an order |
+| Allergy statement | Affirmed | AllergyIntolerance (us-core-allergyintolerance) | `clinicalStatus=active` (ait-1; a historical reaction is still active risk) and `verificationStatus=unconfirmed`; `type` omitted unless stated; `reaction` only with a stated manifestation; drug allergens via RxNorm, others text-only with `uncoded_text_only`. A drug-family allergen (penicillin, sulfa) is never mapped to a single ingredient; it stays text-only with `uncoded_text_only` | Explicit statement only. Explicitly outgrown or resolved → review; exportable as `resolved` only after clinician confirmation. A clinician may approve text-only coding in review |
+| No known allergies / allergy denial | Negated | AllergyIntolerance only with SNOMED 716186003, `verificationStatus=confirmed` and `clinicalStatus=active` (US Core NKA guidance; ait-1 requires clinicalStatus) | Requires user-supplied SNOMED and clinician confirmation; tier 0 → ledger + review, rendered under S as a transcript-supported denial | Never exported as `unconfirmed` |
 
-"Material assertion" = any medication, allergy, negated/refuted, or
-non-patient-experiencer assertion. Material + unmapped or
-validation-failing ⇒ final export blocked until review resolves or
-dismisses it (preview still allowed; pertinent negatives cleanly routed
-to the ledger do not block). Integration proof builds a self-contained
-`transaction` Bundle with `urn:uuid:` fullUrls for the intake anchors
-plus extracted resources, posted to a local R4 test server with reference
-resolution tested; storing a collection Bundle proves storage only.
+## A4. Material assertions, review and export
 
-## Steps (each demoable; no step stubs extractor, mapper, or validator)
+- **Material assertion:** any medication, allergy, negated or refuted, or
+  non-patient-experiencer assertion.
+- **Review is required** for every material assertion before final export.
+- **Material + unmapped or failing** ⇒ final export is blocked until review
+  resolves or dismisses it. A preview is still allowed. Pertinent negatives
+  routed cleanly to the ledger don't block.
+- **Review cannot waive a validation FAIL.**
+- **Non-material resources** that pass schema, evidence, R4 and profile
+  lanes may be final-exported at tier 0, labelled "profile-checked,
+  terminology NOT_CHECKED".
+- **Review log.** Review actions go to a local append-only log: reviewer
+  name and role as entered, time, target resource version hash and diff.
+  This is attribution, not authentication.
+- **Edits.** Any edit invalidates approval and validation and triggers
+  revalidate-and-rerender.
+- **No Provenance resource in v1.**
 
-1. **Slice 1 — contract proof.** Text-in on human transcripts (oracle
-   speakers/roles): schemas, extraction, mapping, §3 matrix, HL7 validator
-   (pinned JAR, warm service, setup-seeded package cache), renderer, review
-   block, eval-harness skeleton, network-disabled test in CI from day one.
-   Then one commissioned fictional dual-channel audio encounter (signed
-   voice releases, explicit licence) through real ASR with an oracle
-   speaker timeline; one example per resource type plus one
-   export-refusal case.
-2. **Slice 2 — real speakers + review.** Portable diariser (+ pyannote
-   comparison measured on frozen dev recordings), roles, overlap/unknown
-   handling, minimal review surface (static report with click-to-audio
-   evidence and structured edits; interactive UI is stretch),
-   revalidate-and-rerender after edits. Exit is measured (see Validation),
-   not a single demo refusal.
-3. **Slice 3 — research + deployment.** Locked evaluation published with
-   latency/memory/hardware; Linux CPU/GPU + Apple Silicon install paths;
-   Docker one-command demo with published download size and measured
-   runtime; air-gapped cache import and retention lifecycle (original
-   audio, evidence playback, deletion/expiry reconciled explicitly);
-   tier-1 local terminology; integration proof to a local test server.
+## A5. Extraction details
 
-Licensing throughout: Auris code Apache-2.0 (owner confirms at "go");
-weights/terminology never vendored — published Docker images contain
-code and runtimes only; models, RxNorm tables, and FHIR package caches are
-fetched by a setup step into a mounted cache volume (with cache
-export/import for air-gapped installs). Artifact manifest with source,
-revision, checksum, licence, access conditions, and upstream dataset
-provenance (e.g. VoxCeleb-trained speaker embeddings flagged as
-academic-dataset provenance for enterprise deployers); NC and custom-licence
-weights excluded from defaults (e.g. the verified CC-BY-NC-4.0 Sortformer
-checkpoint is out of v1 scope); unknown training provenance is recorded,
-not laundered by a permissive weight licence; dependency licence audit in
-CI across Python/Java/native/model artifacts; telemetry off everywhere
-(including inference-server and hub defaults). `fhir.resources` is dropped
-(verified: current releases provide R5/R4B/STU3, not R4 4.0.1); our own
-builders + the HL7 validator are the authority. README scope language:
-research software, not cleared/approved for clinical use, clinician review
-mandatory; regulatory classification is deployment-specific.
+- **Model and decoding.** Thinking mode off; temperature 0 as the
+  candidate, confirmed in Slice 1 against the model card's sampling
+  settings, with output length capped; `n_ctx=8192`.
+  Backend contract tests prove AST-level schema conformance and identical
+  rejection of invalid structures on llama.cpp and vLLM+XGrammar; token
+  streams need not be bit-identical.
+- **Evidence.** Spans are segment id + quote, aligned by case- and
+  punctuation-normalised token spans to exact character/audio offsets.
+  Unaligned quotes fail the evidence lane; aligned quotes are labelled
+  "transcript-supported", never "verified".
+- **Chunking.** Whole encounters go in one pass when they fit with
+  headroom. Otherwise use ~4,096-token segment-boundary windows with
+  2-segment overlap, merged on (class, normalised concept, polarity,
+  experiencer, evidence-span overlap). Conflicts go to review.
+- **Extractor selection.** On the 40-encounter development set (17
+  PriMock57 + 23 ACI-Bench; separate from the 40 PriMock57 test visits), a
+  larger model
+  replaces 8B only with ≥ 3 F1 points at equal coverage, no increase in
+  critical errors, and within the hardware budget. Bootstrap CIs are
+  reported; if the CI half-width is > 3 points, the default is labelled
+  "provisional".
 
-## Validation Plan
+## A6. Frozen reference configuration (pinned in Slice 1)
 
-Evaluation is a shipped product surface.
+| Item | Value |
+|---|---|
+| FHIR | R4 4.0.1; `hl7.fhir.us.core#6.1.0` (configurable) |
+| Laptop ASR | whisper-large-v3-turbo → CTranslate2 INT8, CPU; conversion command, source revision and SHA-256 recorded |
+| ASR decoding | VAD gating on; `condition_on_previous_text=False`; `word_timestamps=True` with `hallucination_silence_threshold`; model loaded from the local converted path only, never faster-whisper's built-in `turbo` alias (it downloads a third-party copy). Parameter names confirmed at pin |
+| Extractor | `Qwen/Qwen3-8B-GGUF` Q4_K_M; revision, SHA-256 and chat-template hash recorded |
+| Validator | Pinned `validator_cli.jar` is the reference; the `validator-wrapper` warm service is used only after a contract test shows identical OperationOutcomes |
+| JVM | Temurin 21 via mise, heap ≤ 2 GB |
+| Load order | ASR → diariser → unload → extractor → unload → validate |
 
-- **Gold:** two clinically trained annotators, blind to system output, no
-  LLM pre-annotation; fact-level annotation primary, plus a stratified
-  30-encounter independent-FHIR subset encoded from adjudicated facts to
-  isolate mapper bias; out-of-scope clinically important assertions also
-  recorded. Annotations stored as offsets+hashes (evidence quotes would
-  not be stand-off); release licence decided only after adaptation rights
-  are confirmed per corpus.
-- **Splits and leakage discipline:** PriMock57 recordings used in Slice 2
-  development are excluded from held-out claims; ACI-Bench items without
-  usable audio support text metrics only (verify at setup); a private set
-  must be newly commissioned (public dialogues with withheld labels are
-  not unseen, and both public corpora may be in LLM training data — stated
-  beside every result). PriMock57 is UK primary care: code metrics are
-  stratified by dataset with a declared UK→US synonym policy. Spoken
-  physical vital signs may be sparse in mock/telemedicine corpora
-  (distribution verified at setup): per-class denominator counts are
-  always reported, any class with N < 25 test assertions is flagged
-  low-power, and no headline class-level claim is made for it without a
-  targeted vitals/orders stress suite.
-- **Budget (owner decision at "go"):** full design ≈375 annotator-hours
-  (117 test + 20 dev, double-annotated, adjudication, FHIR subset) or
-  reduced ≈190 hours (30+30 test) with wider CIs declared up front. A
-  timed 5–10 encounter pilot replaces both estimates with a formula.
-  Guidelines freeze after pilot only at detection F1 ≥0.80 / kappa ≥0.70;
-  if unmet after 3 rounds, narrow the schema — never lower the bar.
-- **Metrics:** per-stage (WER + critical-token errors; DER/JER with
-  settings; role accuracy/coverage/abstention), assertion P/R/F1 per
-  class at declared coverage — computed by optimal bipartite (Hungarian)
-  matching over (resource class, experiencer, polarity, clinical concept),
-  with a secondary strict match requiring evidence-span overlap and code
-  equivalence — medication-component exactness,
-  unsupported-order rate, validation lanes separately, correction burden,
-  encounter-level bootstrap CIs. Observed human agreement (not "ceiling")
-  published per type. Cascade ablations: gold vs ASR transcript, oracle
-  vs actual roles. Baselines: a rules/medspaCy pipeline we actually build
-  (toolkit, not a ready baseline), unadapted extractor, larger extractor.
-  Critical-error classes (allergy-negation flip, wrong drug/dose
-  exported, wrong experiencer, invented order) are release blockers; the
-  owner adjudicates failures. F1 ≥0.80 remains a target, not a result.
+## A7. Integration proof
 
-## Positioning (bounded, gh-inspected 2026-11-10; stars are dated snapshots)
+- **Bundle.** A `transaction` Bundle with client-assigned ids and `PUT`
+  requests for the anchors and the extracted resources, posted to a local
+  R4 test server.
+- **Must pass.** References resolve, and submitting twice creates no
+  duplicates.
+- **Reporting.** Server acceptance is reported separately from validator
+  lanes.
 
-Most inspected ambient-scribe apps are note-first (phlox 110★ local-first
-agent requiring external inference endpoints, scribeHC 26★, MediNotes 32★
-capstone, FreeScribe/AI-Scribe copyleft apps — inspected READMEs and repo
-descriptions show notes, not validated FHIR export). Infherno (19★) does text→FHIR; its
-README reports local models were substantially less reliable in their
-experiments and recommends a proprietary model — constrained decoding +
-validation is our proposed response, to be demonstrated, not a proven
-win. Architecturally, Auris also avoids multi-step agentic tool loops
-(single-pass constrained extraction + deterministic mapping instead), and
-aims to be an open-source, zero-egress counterpart to AWS HealthScribe's
-evidence-linked design, outputting native US Core R4 instead of
-proprietary JSON. Platforms (Medplum, OpenEMR) are integration targets via FHIR, not
-competitors to rebuild. Within these dated searches, no OSS
-audio→validated-FHIR pipeline with a rerunnable evaluation was found;
-that combination is Auris's claim to the category.
+## A8. Licensing, data and privacy
 
-## Risks / Open Questions
+- **Auris code:** Apache-2.0 (owner confirms).
+- **No vendoring.** Weights and terminology are never bundled, except the
+  LOINC vitals subset with its licence notice. Docker images contain code
+  and runtimes only; models, RxNorm, ICD-10-CM and FHIR packages are
+  fetched at setup into a mounted cache, with export/import for air-gapped
+  installs.
+- **NOTICE** carries the LOINC short licence and a UCUM terms inventory.
+- **Artifact manifest:** source, revision, checksum, licence, access
+  conditions and upstream dataset provenance. For example, VoxCeleb-trained
+  speaker embeddings are flagged as academic-dataset provenance for
+  enterprise deployers.
+- **Excluded weights.** Non-commercial and custom-licence weights are
+  excluded from defaults. Unknown training provenance is recorded, not
+  laundered by a permissive licence.
+- **Licence audit** runs in CI across Python, Java, native code and models.
+  Telemetry is off everywhere.
+- **Privacy.** Outputs are written `0600` under a `0700` workdir; no
+  transcript text appears in info logs; review-page audio links are local
+  only.
+- **Scope language:** research software, not cleared or approved for
+  clinical use, clinician review mandatory; regulatory classification is
+  deployment-specific.
 
-- Owner at "go": Apache-2.0 confirmation; annotation envelope (375h vs
-  190h); US-only terminology defaults vs UK data reality.
-- Verify at pin time (recorded, not assumed): exact ASR artifact licences
-  and conversions, ECAPA checkpoint card, US Core transitive package
-  redistribution for offline Docker, per-dataset licences, PyAV/FFmpeg
-  build obligations (present from day one via ASR dependencies).
-- Real clinic audio requires a consented partner; until then all accuracy
-  claims are mock-consultation claims, labelled as such.
+## A9. Evaluation details
 
-## Sources
+- **Gold annotation.** Fact-level gold plus a stratified 30-encounter
+  independent-FHIR subset encoded from adjudicated facts, to isolate mapper
+  bias. Out-of-scope important facts are recorded too.
+- **Concept matching.** Concept equivalence uses blind adjudicated gold
+  concept IDs, never the production mapper's lexicon.
+- **Roles.** Speaker and role gold is adjudicated; ACI-Bench speaker tags
+  are known to be swapped in places.
+- **Storage.** Annotations are stored as offsets and hashes.
+- **Scoring.** Hungarian matching over (resource class, experiencer,
+  polarity, concept). The strict match adds evidence overlap, code
+  equivalence, value + UCUM unit for vitals, and dose/route/frequency for
+  medications.
+- **Reporting.** Observed human agreement is published per type. Splits are
+  frozen before Slice 2, seed-recorded, with IDs in the eval config.
 
-- https://hl7.org/fhir/R4/valueset-allergyintolerance-verification.html
-- https://hl7.org/fhir/R4/validation.html
-- https://huggingface.co/api/models/nvidia/diar_sortformer_4spk-v1
-- https://huggingface.co/api/models/pyannote/speaker-diarization-community-1
-- https://huggingface.co/api/models/Qwen/Qwen3-8B
-- https://raw.githubusercontent.com/nazrulworld/fhir.resources/main/README.rst
-- https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html
-- https://github.com/SYSTRAN/faster-whisper
-- https://github.com/snakers4/silero-vad
-- https://github.com/speechbrain/speechbrain
-- https://github.com/pyannote/pyannote-audio
-- https://github.com/ggml-org/llama.cpp
-- https://github.com/vllm-project/vllm
-- https://github.com/mlc-ai/xgrammar
-- https://github.com/hapifhir/hapi-fhir
-- https://github.com/medspacy/medspacy
-- https://github.com/j-frei/Infherno
-- https://github.com/bloodworks-io/phlox
-- https://github.com/trevorpfiz/scribeHC
-- https://github.com/yuki-2025/MediNotes
-- https://github.com/aws-samples/aws-healthscribe-demo
-- https://github.com/medplum/medplum
-- https://github.com/openemr/openemr
-- https://github.com/ClinicianFOCUS/FreeScribe
-- https://github.com/1984Doc/AI-Scribe
-- https://chandravikram.com/papers/07-auris.html
+## A10. Considered and deferred
+
+| Item | Why deferred | Revisit when |
+|---|---|---|
+| "No diariser" text-only role baseline | Two-profile comparison comes first | Slice 2, if the profiles differ by < 2 F1 |
+| gpt-oss-20b, Mistral Small | Over the laptop budget | Linux profile, Slice 3 |
+| Parakeet second-opinion ASR on drug/allergy spans | Toolkit and licence review | Drug/allergy word errors above target in Slice 2 |
+| Loudspeaker-replay noise test set | Needs room recordings | After Slice 2 |
+| distil-large-v3 | English-only | If turbo misses the laptop runtime budget |
+| HealthSage comparison | Model location unverified | Slice 3 positioning refresh |
+| MedicationStatement, CarePlan, ServiceRequest, Provenance | Outside the v1 contract | After the v1 evaluation is published |
+
+## A11. Risks and items to verify at pin time
+
+- **Verify when pinning:**
+  - ASR conversion and checksums
+  - ECAPA checkpoint card
+  - US Core transitive package redistribution for offline Docker
+  - PyAV/FFmpeg build obligations
+  - value-set expansions for extensible bindings.
+- **Clinic data:** real clinic audio needs a consented partner. Until then,
+  all accuracy claims are mock-consultation claims.
+
+## A12. Sources
+
+- FHIR: [fhir-reference.md](fhir-reference.md) (HL7 R4 4.0.1 and US Core STU6.1 pages, read 2026-11-10)
+- Datasets: https://github.com/babylonhealth/primock57 · https://github.com/wyim/aci-bench
+- Models: https://huggingface.co/openai/whisper-large-v3-turbo · https://huggingface.co/Qwen/Qwen3-8B-GGUF · https://huggingface.co/api/models/Qwen/Qwen3-8B · https://huggingface.co/api/models/pyannote/speaker-diarization-community-1 · https://huggingface.co/api/models/nvidia/diar_sortformer_4spk-v1
+- Terminology: https://loinc.org/kb/license/ · https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html
+- Software: https://github.com/SYSTRAN/faster-whisper · https://github.com/snakers4/silero-vad · https://github.com/speechbrain/speechbrain · https://github.com/pyannote/pyannote-audio · https://github.com/ggml-org/llama.cpp · https://github.com/vllm-project/vllm · https://github.com/mlc-ai/xgrammar · https://github.com/hapifhir/hapi-fhir · https://github.com/hapifhir/org.hl7.fhir.validator-wrapper · https://github.com/medspacy/medspacy · https://raw.githubusercontent.com/nazrulworld/fhir.resources/main/README.rst
+- Prior art: https://github.com/j-frei/Infherno · https://github.com/bloodworks-io/phlox · https://github.com/trevorpfiz/scribeHC · https://github.com/yuki-2025/MediNotes · https://github.com/ClinicianFOCUS/FreeScribe · https://github.com/1984Doc/AI-Scribe · https://github.com/aws-samples/aws-healthscribe-demo · https://github.com/medplum/medplum · https://github.com/openemr/openemr
+- Original manuscript: https://chandravikram.com/papers/07-auris.html
