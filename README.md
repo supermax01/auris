@@ -70,12 +70,29 @@ an audio player. **Approve** confirms your review of this exact item version.
 record sections, retaining it in a dismissed list. **Undo** revokes the latest
 action. Every action rewrites the note, bundle and validation report locally.
 
-Review can never override a failed check, supply missing codes or facts,
-activate an order, or make unchecked coding “validated.” Reported medicines
+**Correct fact** opens the fields for that assertion kind. You can change the
+kind, clear an unstated field, or correct a field, then choose **Save correction
+and re-check**. Beside each quote, you can correct its segment's speaker role
+to clinician, patient or other. The transcript and evidence quotes stay
+unchanged; correcting transcript words needs audio and is deferred to Slice 2.
+
+Every correction makes earlier approval stale and runs the same evidence,
+consistency, mapping and FHIR checks as extracted output. While **Re-checking**
+is visible, final export is blocked; you can still read the page and review
+unaffected items. A failed or timed-out check stays blocked and offers **Retry
+checks**. **Undo fact correction** and **Undo speaker correction** append a
+revocation and restore the previous version, including applicable receipts.
+
+A number absent from the quote fails even when a clinician enters it. You
+cannot approve that failure: dismiss the item and document the correct value
+in your own system. Review cannot supply missing codes, activate an order,
+or make unchecked coding “validated.” Reported medicines
 remain outside the order bundle; allergy denials remain ledger entries at the
-default tier. Names and roles are attribution, not authentication. Fact and
-speaker editing comes in step 12b. See [step 12a](docs/engineering/step-12a.md)
-for the export rules and fictional walkthrough.
+default tier. **Ready to export** also counts items needing review that are
+absent from the bundle and items kept only in the ledger; it does not mean
+every discussed item is exported. Names and roles are attribution, not
+authentication. See [step 12b](docs/engineering/step-12b.md) for correction
+storage, re-check behavior and the fictional walkthrough.
 
 ## Licence
 

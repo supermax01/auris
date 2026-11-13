@@ -1,12 +1,12 @@
 // Execute the real review page against FICTIONAL API snapshots, offline.
 const assert = require('node:assert/strict');
 class Element {
-  constructor(tag) {this.tag = tag; this.children = []; this.text = '';}
+  constructor(tag) {this.tag = tag; this.children = []; this.text = ''; this.listeners = {};}
   set textContent(value) {this.text = value ?? ''; this.children = [];}
   get textContent() {return this.text + this.children.map(n => n.textContent).join(' ');}
   append(...nodes) {this.children.push(...nodes);}
   replaceChildren(...nodes) {this.children = [...nodes];}
-  addEventListener() {}
+  addEventListener(name, callback) {this.listeners[name] = callback;}
   focus() {}
 }
 const nodes = new Map();
@@ -29,6 +29,7 @@ function descendants(node, tag) {
   ]);
 }
 function visibleText(node) {
+  if (node.hidden) return '';
   const children = node.tag === 'details' && !node.open
     ? node.children.filter(child => child.tag === 'summary') : node.children;
   return node.text + children.map(visibleText).join(' ');
@@ -37,7 +38,7 @@ function visibleText(node) {
   const statuses = [
     'Final export blocked: 7 items block export',
     'Final export blocked: 1 item blocks export',
-    'Ready to export',
+    snapshots[2].ready_message,
   ];
   for (snapshotIndex = 0; snapshotIndex < snapshots.length; snapshotIndex++) {
     await load();
@@ -72,9 +73,27 @@ function visibleText(node) {
         assert.ok(!visibleText(context).includes(descendants(context, 'mark')[0].textContent));
       }
       const row = snapshot.review.find(row => row.id === item.id);
+      if (row.editable) {
+        const editor = descendants(article, 'form')[0];
+        assert.ok(editor.hidden);
+        const toggle = descendants(article, 'button').find(button => button.textContent === 'Correct fact');
+        toggle.listeners.click();
+        assert.equal(editor.hidden, false);
+        const kind = descendants(editor, 'select')[0];
+        assert.equal(kind.value, snapshot.assertions[item.id].kind);
+        for (const control of [...descendants(editor, 'input'), ...descendants(editor, 'textarea')]) {
+          assert.equal(control.maxLength, 4000);
+        }
+        kind.value = 'explicit_new_order'; kind.listeners.change();
+        assert.equal(descendants(editor, 'input').length, 4); // concept, dose, route, frequency
+        assert.equal(descendants(editor, 'select').length, 5); // kind and four classifications
+        assert.ok(!visibleText(editor).includes('Evidence quote'));
+      }
       if (row.state === 'approve') {
         const buttons = descendants(article, 'button').map(button => button.textContent);
-        assert.deepEqual(buttons, ['Dismiss', 'Undo latest action']);
+        assert.ok(!buttons.includes('Approve'));
+        assert.ok(buttons.includes('Dismiss') && buttons.includes('Undo latest action'));
+        if (row.editable) assert.ok(buttons.includes('Correct fact'));
       }
     }
   }

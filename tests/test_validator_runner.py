@@ -188,3 +188,25 @@ def test_duplicate_inputs_refused_and_empty_run_does_not_start_java(runner, monk
     resource = golden_resources()[0]
     with pytest.raises(ValueError, match="duplicate"):
         runner.validate([resource, resource])
+
+
+def test_separate_workdir_keeps_inputs_private_and_reuses_package_home(
+    runner, tmp_path, monkeypatch
+):
+    work_parent = tmp_path / "private-work"
+    work_parent.mkdir(mode=0o700)
+    runner.work_directory = work_parent
+
+    def run(command, **kwargs):
+        work = kwargs["cwd"]
+        assert work.parent == work_parent
+        assert f"-Duser.home={runner.cache / 'home'}" in command
+        assert f"-Djava.io.tmpdir={work}" in command
+        assert not (work / "home").exists()  # no per-check copy of the package cache
+        (work / "outcomes.json").write_text(json.dumps(_recorded()))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    result = runner.validate(golden_resources()[:1])
+    assert result.failure is None
+    assert not list(work_parent.iterdir())

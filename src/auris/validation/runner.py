@@ -61,11 +61,13 @@ class ValidatorRunner:
         *,
         timeout_seconds: float = 180,
         allow_example_urls: bool = False,
+        work_directory: Path | None = None,
     ) -> None:
         self.config = config
         self.cache = cache.resolve()
         self.timeout_seconds = timeout_seconds
         self.allow_example_urls = allow_example_urls
+        self.work_directory = work_directory
 
     def preflight(self) -> tuple[str, Path]:
         java = find_java()
@@ -90,8 +92,14 @@ class ValidatorRunner:
             java, jar = self.preflight()
             # TemporaryDirectory is 0700. Inputs, output and logs can contain
             # clinical data; no resource text is emitted to application logs.
-            with tempfile.TemporaryDirectory(prefix="run-", dir=self.cache) as temporary:
+            with tempfile.TemporaryDirectory(
+                prefix="run-", dir=self.work_directory or self.cache
+            ) as temporary:
                 work = Path(temporary)
+                # Same pinned package home as `auris run`; copying ~1 GB per review
+                # re-check is too slow. A separate work directory only relocates
+                # inputs, outputs and JVM temp files into the private run folder.
+                validator_home = self.cache / "home"
                 names = []
                 for index, resource in enumerate(resources):
                     for scope, value in (
@@ -105,7 +113,8 @@ class ValidatorRunner:
                 command = (
                     java,
                     f"-Xmx{self.config.jvm.heap_gb}g",
-                    f"-Duser.home={self.cache / 'home'}",
+                    *((f"-Djava.io.tmpdir={work}",) if self.work_directory is not None else ()),
+                    f"-Duser.home={validator_home}",
                     "-jar",
                     str(jar),
                     *names,

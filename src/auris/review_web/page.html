@@ -9,8 +9,8 @@
 main {max-width: 68rem; margin: auto; padding: 1rem} h1 {font-size: 1.4rem; margin: 0} h2 {font-size: 1.25rem}
 a {color: inherit; overflow-wrap: anywhere} header a {display: block; font-size: .85rem}
 article, form {background: white; border: 1px solid #bed0d2; border-radius: .5rem; padding: 1rem; margin: 1rem 0; overflow-wrap: anywhere}
-label {display: block; margin: .5rem 0} input, textarea, button {font: inherit; padding: .6rem; border: 1px solid #758e93; border-radius: .3rem}
-input, textarea {width: 100%; max-width: 35rem} textarea {display: block; min-height: 5rem}
+label {display: block; margin: .5rem 0} input, textarea, select, button {font: inherit; padding: .6rem; border: 1px solid #758e93; border-radius: .3rem}
+input, textarea, select {width: 100%; max-width: 35rem} textarea {display: block; min-height: 5rem}
 button {cursor: pointer; margin: .5rem .5rem 0 0; background: #eef4f4; min-height: 44px} button:disabled {opacity: .5; cursor: wait}
 :focus-visible {outline: 3px solid #c85b0c; outline-offset: 3px} .fail, #error {color: #952323; font-weight: 650}
 .lanes {display: flex; flex-wrap: wrap; gap: .5rem} .lane {border: 1px solid #afc2c6; padding: .3rem; border-radius: .2rem}
@@ -25,7 +25,8 @@ mark {display: block; padding: .5rem; background: #fff0ba; color: #192d36} .neig
 <header><h1>Auris clinician review</h1><div id="status" role="status" aria-live="polite">Loading review…</div><nav id="outputs" aria-label="Rewritten files"></nav></header>
 <main>
 <p id="scope">Research software; clinician review mandatory. Text transcript receipts only; no audio recording is available.</p>
-<p>Approve confirms review of this version. It preserves every check and the original resource. Dismiss with a reason withholds the item. Undo revokes the latest action. Names and roles provide attribution, not authentication.</p>
+<p>Approve confirms review of this version. It preserves every check and this version's content. Dismiss with a reason withholds the item. Undo revokes the latest action. Names and roles provide attribution, not authentication.</p>
+<p>Correct a fact or a cited speaker below. Every correction re-runs the checks and rewrites the summary; earlier approval becomes stale. Evidence quotes and transcript text cannot be edited. A number missing from the quote fails the checks even when entered by a clinician. Dismiss the item and document the correct value in your own system.</p>
 <p id="stale" role="status"></p>
 <p id="error" role="alert" tabindex="-1"></p>
 <form id="identity"><h2>Reviewer for this session</h2><label>Name as entered <input id="name" required maxlength="200" autocomplete="name"></label><label>Role as entered <input id="role" required maxlength="200"></label><button type="submit">Start review</button></form>
@@ -37,6 +38,8 @@ mark {display: block; padding: .5rem; background: #fff0ba; color: #192d36} .neig
 const token = new URLSearchParams(location.hash.slice(1)).get('token') || '';
 const $ = id => document.getElementById(id);
 let state;
+let poll;
+const reasonDrafts = {};
 function el(tag, text, cls) {const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n;}
 async function api(path, data) {
   const response = await fetch(path, {method: data === undefined ? 'GET' : 'POST', headers: {'X-Auris-Token': token, 'Content-Type': 'application/json'}, body: data === undefined ? undefined : JSON.stringify(data)});
@@ -44,11 +47,12 @@ async function api(path, data) {
 }
 function error(e) {$('error').textContent = e.message; $('error').focus();}
 const titles = {reduced_schema:'Extracted form', evidence:'Evidence and consistency', base_r4:'FHIR rules', us_core_profile:'US Core profile', terminology:'Medical coding'};
-async function load() {try {
+async function load(polling = false) {try {
   state = await api('/api/state'); $('error').textContent = '';
+  if (polling && state.busy) {poll = setTimeout(() => load(true), 750); return;}
   $('stale').textContent = state.stale_review_count ? `${state.stale_review_count} earlier review entries no longer apply: item versions changed or targets are absent.` : '';
   const count = state.export.blocking_ids.length;
-  $('status').textContent = state.ready ? 'Ready to export' : count ? `Final export blocked: ${count} ${count === 1 ? 'item blocks' : 'items block'} export` : 'Final export blocked: intake checks incomplete';
+  $('status').textContent = state.busy ? 'Re-checking — final export blocked' : state.ready ? (state.ready_message || 'Ready to export') : count ? `Final export blocked: ${count} ${count === 1 ? 'item blocks' : 'items block'} export` : 'Final export blocked: intake checks incomplete';
   $('identity').hidden = !!state.reviewer;
   $('reviewer').textContent = state.reviewer ? `Reviewing as ${state.reviewer.name}, ${state.reviewer.role} (attribution only)` : '';
   $('scope').textContent = (state.fictional ? 'FICTIONAL DEMO — no real patient data. ' : '') + 'Research software; clinician review mandatory. Text transcript receipts only; no audio recording is available.';
@@ -61,7 +65,74 @@ async function load() {try {
     } catch(e) {error(e);}}); $('outputs').append(link);
   }
   render();
+  clearTimeout(poll); if (state.busy) poll = setTimeout(() => load(true), 750);
 } catch(e) {error(e);}}
+async function correct(path, data, affected) {
+  try {
+    state.busy = true;
+    for (const row of state.review) if (affected.includes(row.id)) row.check_status = 'rechecking';
+    $('status').textContent = 'Re-checking — final export blocked'; render();
+    await api(path, data); await load();
+  } catch(e) {await load(); error(e);}
+}
+const choices = {
+  polarity:['affirmed','negated'], experiencer:['patient','family_member','other','unknown'],
+  temporality:['current','past','resolved','future','unclear'],
+  medication_intent:['new_order','continuing','historical','discussed','unclear'],
+};
+const fieldNames = {concept_text:'Concept text', polarity:'Polarity', experiencer:'Experiencer', temporality:'Temporality', value_text:'Value', unit_text:'Unit', stated_time_text:'Stated time', medication_intent:'Medication intent', dose_text:'Dose', route_text:'Route', frequency_text:'Frequency', allergen_text:'Allergen', reaction_manifestation_text:'Reaction', stated_resolution_text:'Stated resolution'};
+function select(values, value) {
+  const input = el('select');
+  for (const v of values) {const option = el('option', v === '' ? 'Not stated' : v.replaceAll('_',' ')); option.value = v; input.append(option);}
+  input.value = value ?? ''; return input;
+}
+function factEditor(item) {
+  const box = el('div'); const button = el('button', 'Correct fact'); button.type = 'button'; button.disabled = !!state.busy;
+  const form = el('form'); form.hidden = true; form.append(el('h4', 'Correct assertion fields'));
+  const original = state.assertions[item.id]; const kind = select(Object.keys(state.edit_schema), original.kind);
+  const kindLabel = el('label', 'Kind'); kindLabel.append(kind); form.append(kindLabel);
+  const fields = el('div'); const inputs = {};
+  function draw() {
+    const previous = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, input.value]));
+    fields.replaceChildren(); for (const key of Object.keys(inputs)) delete inputs[key];
+    for (const key of state.edit_schema[kind.value]) {
+      if (key === 'kind') continue;
+      const value = previous[key] ?? original[key];
+      const input = choices[key] ? select(['', ...choices[key]], value) : el('input');
+      if (!choices[key]) {input.type = 'text'; input.maxLength = 4000; input.value = value ?? '';}
+      inputs[key] = input; const label = el('label', fieldNames[key] || key); label.append(input); fields.append(label);
+    }
+  }
+  kind.addEventListener('change', draw); draw(); form.append(fields);
+  form.append(el('p', 'The quote stays unchanged. Unsupported numbers fail and cannot be approved.'));
+  const save = el('button', 'Save correction and re-check'); save.type = 'submit'; form.append(save);
+  form.addEventListener('submit', event => {
+    event.preventDefault(); const values = {kind:kind.value};
+    for (const [key, input] of Object.entries(inputs)) values[key] = input.value || null;
+    correct('/api/fact', {target_id:item.id, target_sha256:item.review.target_sha256, fields:values}, [item.id]);
+  });
+  button.addEventListener('click', () => {form.hidden = !form.hidden; if (!form.hidden) kind.focus();});
+  box.append(button, form);
+  if (item.review.undo_edit) {
+    const undo = el('button', 'Undo fact correction'); undo.type = 'button'; undo.disabled = !!state.busy;
+    undo.addEventListener('click', () => correct('/api/undo-edit', {target_id:item.id, target_sha256:item.review.target_sha256}, [item.id])); box.append(undo);
+  }
+  return box;
+}
+function speakerEditor(evidence) {
+  const speaker = state.speakers[evidence.segment_id]; if (!speaker) return el('div');
+  const box = el('div'); const label = el('label', `Correct speaker role · ${evidence.segment_id}`);
+  const role = select(['clinician','patient','other'], speaker.role); label.append(role); box.append(label);
+  const affected = Object.keys(state.evidence).filter(id => state.evidence[id].some(e => e.segment_id === evidence.segment_id));
+  const data = {target_id:evidence.segment_id, target_sha256:speaker.target_sha256};
+  const save = el('button', 'Save speaker and re-check'); save.type = 'button'; save.disabled = !!state.busy;
+  save.addEventListener('click', () => correct('/api/speaker', {...data, speaker_role:role.value}, affected)); box.append(save);
+  if (speaker.undo_edit) {
+    const undo = el('button', 'Undo speaker correction'); undo.type = 'button'; undo.disabled = !!state.busy;
+    undo.addEventListener('click', () => correct('/api/undo-edit', data, affected)); box.append(undo);
+  }
+  return box;
+}
 function render() {
   const root = $('records'); root.replaceChildren();
   const review = Object.fromEntries(state.review.map(r => [r.id, r]));
@@ -84,6 +155,11 @@ function card(item) {
   const row = item.review; const card = el('article'); const heading = el('h3', (item.reference ? item.reference + ' — ' : '') + item.fact); heading.tabIndex = -1; heading.id = 'item-' + item.id; card.append(heading);
   if (state.export.blocking_ids.includes(item.id)) card.append(el('p', 'blocks final export', 'badge'));
   card.append(el('p', item.label));
+  if (row.check_status === 'rechecking') card.append(el('p', 'Re-checking — final export blocked', 'badge'));
+  else if (row.check_message) card.append(el('p', row.check_message, 'fail'));
+  if (row.check_status === 'blocked' || (row.check_status === 'rechecking' && !state.busy)) {
+    if (state.reviewer) {const retry = el('button', 'Retry checks'); retry.type = 'button'; retry.disabled = !!state.busy; retry.addEventListener('click', () => correct('/api/recheck', {target_id:item.id, target_sha256:row.target_sha256}, [item.id])); card.append(retry);}
+  }
   if (row.stale_message) card.append(el('p', row.stale_message, 'fail'));
   if (row.receipt) card.append(el('p', `${row.state === 'approve' ? 'Clinician-approved' : 'Dismissed'} by ${row.receipt.reviewer}, ${row.receipt.role} · ${row.receipt.timestamp}${row.receipt.reason ? ' · ' + row.receipt.reason : ''}`));
   const lanes = el('div', undefined, 'lanes');
@@ -93,6 +169,7 @@ function card(item) {
     for (const issue of lane.issues || []) label.append(el('p', issue.details?.text || issue.diagnostics || issue.code, 'small'));
     lanes.append(label);
   } card.append(lanes);
+  if (state.lanes[item.id]?.evidence?.state === 'FAIL') card.append(el('p', 'This fact is not supported by its quote. Approval cannot override this. Dismiss it and document the correct value in your own system.', 'fail'));
   if (item.reasons.length) {const list = el('ul'); for (const reason of item.reasons) list.append(el('li', reason)); card.append(list);}
   for (const evidence of state.evidence[item.id] || []) {
     card.append(el('blockquote', evidence.quote));
@@ -103,12 +180,13 @@ function card(item) {
     if (!evidence.neighbors.length) detail.append(el('p', 'Cited segment unavailable; no transcript context.'));
     for (const segment of evidence.neighbors) detail.append(el(segment.cited ? 'mark' : 'p', `[${segment.receipt} · ${segment.role} · ${segment.id}] ${segment.text}`, 'neighbor'));
     card.append(detail);
+    if (state.reviewer && row.editable) card.append(speakerEditor(evidence));
   }
   if (state.reviewer) {
     const controls = el('div'); const reasonId = 'reason-' + item.id; const label = el('label', 'Reason (required to dismiss)'); label.htmlFor = reasonId;
-    const reason = el('textarea'); reason.id = reasonId; reason.maxLength = 4000; controls.append(label, reason);
+    const reason = el('textarea'); reason.id = reasonId; reason.maxLength = 4000; reason.value = reasonDrafts[item.id] || ''; reason.addEventListener('input', () => {reasonDrafts[item.id] = reason.value;}); controls.append(label, reason);
     for (const action of row.allowed_actions) {
-      const button = el('button', action === 'undo' ? 'Undo latest action' : action === 'approve' ? 'Approve' : 'Dismiss'); button.type = 'button';
+      const button = el('button', action === 'undo' ? 'Undo latest action' : action === 'approve' ? 'Approve' : 'Dismiss'); button.type = 'button'; button.disabled = !!state.busy && row.check_status === 'rechecking';
       button.addEventListener('click', async () => {try {
         if (action === 'dismiss' && !reason.value.trim()) {reason.setCustomValidity('Enter a reason to dismiss this item.'); reason.reportValidity(); reason.focus(); return;}
         reason.setCustomValidity(''); button.disabled = true;
@@ -116,6 +194,7 @@ function card(item) {
         await load(); $('item-' + item.id)?.focus();
       } catch(e) {error(e);} finally {button.disabled = false;}}); controls.append(button);
     } card.append(controls);
+    if (row.editable) card.append(factEditor(item));
   }
   return card;
 }
