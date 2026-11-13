@@ -324,7 +324,14 @@ def note_items(
     return tuple(items)
 
 
-def render_note(items: Sequence[NoteItem], metadata: NoteMetadata, *, export_summary: str) -> str:
+def render_note(
+    items: Sequence[NoteItem],
+    metadata: NoteMetadata,
+    *,
+    export_summary: str,
+    malformed_item_count: int = 0,
+    unresolved_malformed_count: int | None = None,
+) -> str:
     lines = ["# Auris visit summary", ""]
     if metadata.fictional_demo:
         lines.extend(
@@ -350,6 +357,20 @@ def render_note(items: Sequence[NoteItem], metadata: NoteMetadata, *, export_sum
             "",
         ]
     )
+    if malformed_item_count:
+        unresolved = (
+            malformed_item_count
+            if unresolved_malformed_count is None
+            else unresolved_malformed_count
+        )
+        status = "review required" if unresolved else "reviewed and dismissed with reasons"
+        lines.extend(
+            [
+                f"**{malformed_item_count} extracted item(s) were malformed and withheld "
+                f"— {status}**",
+                "",
+            ]
+        )
     sections = (
         (
             "S — Subjective (quoted from the transcript; symptoms are not FHIR records in v1)",

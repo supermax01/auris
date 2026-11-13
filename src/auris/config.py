@@ -119,6 +119,26 @@ class AsrConfig(_FrozenModel):
     laptop: LaptopAsrConfig
 
 
+class CardSampling(_FrozenModel):
+    """A-priori upstream non-thinking settings, never selected on Auris data."""
+
+    source_repo: str = Field(min_length=1)
+    revision: str = Field(pattern=r"^[0-9a-f]{40}$")
+    readme_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    mode: Literal["non-thinking"]
+    temperature: float = Field(gt=0, allow_inf_nan=False)
+    top_p: float = Field(gt=0, le=1)
+    top_k: int = Field(ge=0)
+    min_p: float = Field(default=0.0, ge=0, le=1)
+    presence_penalty: float = Field(default=0.0, allow_inf_nan=False)
+    repeat_penalty: float = Field(default=1.0, gt=0, allow_inf_nan=False)
+
+
+class LoopGuardConfig(_FrozenModel):
+    version: Literal["loop-guard-v1"] = "loop-guard-v1"
+    identical_assertion_limit: Literal[4] = 4
+
+
 class ExtractorCandidate(_FrozenModel):
     id: str = Field(pattern=r"^[a-z0-9_-]+$")
     repo: str = Field(min_length=1)
@@ -132,6 +152,7 @@ class ExtractorCandidate(_FrozenModel):
     bytes: int | None = Field(default=None, gt=0)
     generation_tokens_per_second: float = Field(default=20, gt=0, allow_inf_nan=False)
     prompt_tokens_per_second: float = Field(default=100, gt=0, allow_inf_nan=False)
+    card_sampling: CardSampling | None = None
 
     @model_validator(mode="after")
     def _pins(self) -> ExtractorCandidate:
@@ -149,6 +170,9 @@ class ExtractorCandidate(_FrozenModel):
 
 class ExtractorConfig(_FrozenModel):
     extraction_profile: ExtractionProfile = "full-v0"
+    seed: int | None = Field(default=None, ge=0, le=4294967295)
+    temperature_override: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    loop_guard: LoopGuardConfig = LoopGuardConfig()
     model: str = Field(min_length=1)
     revision: str = Field(min_length=1)
     gguf_filename: str = Field(min_length=1)

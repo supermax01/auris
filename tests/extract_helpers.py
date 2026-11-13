@@ -68,3 +68,29 @@ def completion(assertions=(), *, finish_reason="stop", content=None):
         ],
         "usage": {"prompt_tokens": 111, "completion_tokens": 222, "total_tokens": 333},
     }
+
+
+def sse_response(response):
+    """Synthetic pinned-server framing; accepts only authored fictional fixtures."""
+    choice = response["choices"][0]
+    events = [
+        {
+            "choices": [
+                {"index": 0, "delta": {"role": "assistant", "content": None}, "finish_reason": None}
+            ]
+        },
+        {
+            "choices": [
+                {
+                    "index": 0,
+                    "delta": {"content": choice["message"]["content"]},
+                    "finish_reason": None,
+                }
+            ]
+        },
+        {"choices": [{"index": 0, "delta": {}, "finish_reason": choice["finish_reason"]}]},
+        {"choices": [], **{k: response[k] for k in ("usage", "timings") if k in response}},
+    ]
+    return (
+        "".join("data: " + json.dumps(e) + "\n\n" for e in events) + "data: [DONE]\n\n"
+    ).encode()

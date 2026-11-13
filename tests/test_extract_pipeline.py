@@ -229,7 +229,7 @@ def test_schema_failure_is_fail_not_not_checked(terminology, units, intake, tmp_
     mapper = Mapper(intake, transcript, terminology, units)
     config = load_frozen_config().extractor
     run = extract(
-        FakeBackend([completion(content='{"assertions": [42]}')]),
+        FakeBackend([completion(content='{"assertions": {}}')]),
         transcript,
         config,
         config.candidate(),

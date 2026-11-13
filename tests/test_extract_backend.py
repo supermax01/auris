@@ -9,7 +9,7 @@ from unittest.mock import Mock
 from urllib.error import HTTPError
 
 import pytest
-from extract_helpers import completion
+from extract_helpers import completion, sse_response
 
 from auris.assertions import extraction_json_schema
 from auris.config import load_frozen_config
@@ -49,7 +49,7 @@ def test_http_request_preserves_schema_and_decoding(monkeypatch):
 
     def open_(request, timeout):
         seen.append(json.loads(request.data))
-        return io.BytesIO(json.dumps(completion()).encode())
+        return io.BytesIO(sse_response(completion()))
 
     client.opener.open = open_
     schema = extraction_json_schema()
@@ -98,7 +98,7 @@ def test_rendered_input_uses_same_chat_settings_as_completion():
     assert template.args[1] == {
         key: value
         for key, value in complete.args[1].items()
-        if key not in ("temperature", "max_tokens", "stream")
+        if key not in ("temperature", "max_tokens", "stream", "stream_options")
     }
 
 

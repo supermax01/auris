@@ -10,9 +10,11 @@ from typing import TYPE_CHECKING, Any
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from auris._storage import write_private_text
+from auris.extract.quarantine import QuarantinedItem, QuarantineReview
 from auris.fhir.common import build_anchors
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.intake import Intake
+from auris.review import unresolved_quarantines
 
 if TYPE_CHECKING:
     from auris.validation.models import ValidationRun
@@ -35,12 +37,18 @@ def build_collection(
     *,
     preview: bool = False,
     validation: ValidationRun | None = None,
+    quarantined_items: Sequence[QuarantinedItem] = (),
+    quarantine_reviews: Sequence[QuarantineReview] = (),
 ) -> dict[str, Any]:
     """Include checked resources, or all built previews when requested.
     References are rewritten only in copies to resolve against urn fullUrls.
     Unresolved material mappings block the default collection as a whole (A4).
     Intentional, evidence-passing ledger rows do not block it.
     """
+    if not preview and unresolved_quarantines(quarantined_items, quarantine_reviews):
+        raise ValueError(
+            "malformed_item_quarantined requires dismissal before final export (PLAN A4)"
+        )
     if not preview and any(
         outcome.is_material
         and (

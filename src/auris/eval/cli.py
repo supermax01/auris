@@ -30,7 +30,9 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         help="Repeat to compare profiles of each selected model in one run",
     )
     run.add_argument("--out", type=Path, required=True)
-    run.add_argument("--seed", type=int, default=1729)
+    run.add_argument("--seed", type=int, default=1729, help="Bootstrap seed")
+    run.add_argument("--extractor-seed", type=int, help="Extractor RNG seed (card default: 0)")
+    run.add_argument("--temperature", type=float)
     run.add_argument("--bootstrap-samples", type=int, default=2000)
     run.add_argument(
         "--locked-test-run",
@@ -115,6 +117,21 @@ def _command(args: argparse.Namespace) -> int:
         print("wrote report.md and report.json")
         return 0
     config = load_frozen_config()
+    from auris.config import ExtractorConfig
+
+    overrides = {}
+    if args.extractor_seed is not None:
+        overrides["seed"] = args.extractor_seed
+    if args.temperature is not None:
+        overrides["temperature_override"] = args.temperature
+    if overrides:
+        config = config.model_copy(
+            update={
+                "extractor": ExtractorConfig.model_validate(
+                    {**config.extractor.model_dump(), **overrides}
+                )
+            }
+        )
     core = config.fhir.package("hl7.fhir.r4.core")
     assert core is not None
     try:

@@ -15,7 +15,13 @@ reasons are added by later stages. This module does not authorize export.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from enum import StrEnum
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from auris.extract.quarantine import QuarantinedItem, QuarantineReview
 
 from auris.assertions import (
     AllergyStatementAssertion,
@@ -104,3 +110,73 @@ def review_reasons(assertion: AssertionBase) -> tuple[ReviewReason, ...]:
     ):
         reasons.append(ReviewReason.ALLERGY_RESOLUTION_STATED)
     return tuple(reasons)
+
+
+def review_quarantined_item(
+    item: QuarantinedItem,
+    *,
+    action: str,
+    reason: str,
+    reviewer: str,
+    role: str,
+    log_path: Path,
+) -> QuarantineReview:
+    """Append an attributed dismissal bound to these exact private item bytes.
+
+    A malformed item cannot be approved, edited into a fact, or waive a lane.
+    The caller retains the receipt with the run for subsequent export/rendering.
+    """
+    import json
+    import os
+    import stat
+    from datetime import UTC, datetime
+
+    from auris.extract.quarantine import QuarantineReview
+    from auris.fhir.models import resource_digest
+
+    if item.transcript_sha256 is None:
+        raise ValueError("quarantine review requires a visit transcript hash")
+    if action != "dismiss":
+        raise ValueError("malformed_item_quarantined can only be dismissed, never approved")
+    if not all(value.strip() for value in (reason, reviewer, role)):
+        raise ValueError("dismissal requires a reason, reviewer and role")
+    receipt = QuarantineReview(
+        target_id=item.id,
+        target_sha256=resource_digest(item.model_dump(mode="json")),
+        action="dismiss",
+        reason=reason.strip(),
+        reviewer=reviewer.strip(),
+        role=role.strip(),
+        timestamp=datetime.now(UTC).isoformat(),
+    )
+    log_path.parent.mkdir(mode=0o700, exist_ok=True)
+    if stat.S_IMODE(log_path.parent.stat().st_mode) != 0o700:
+        raise ValueError("review workdir must have permissions 0700")
+    descriptor = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(descriptor, "a", encoding="utf-8") as handle:
+        if stat.S_IMODE(os.fstat(handle.fileno()).st_mode) != 0o600:
+            raise ValueError("review log must have permissions 0600")
+        handle.write(
+            json.dumps({**receipt.model_dump(mode="json"), "diff": {"dismissed": True}}) + "\n"
+        )
+        handle.flush()
+        os.fsync(handle.fileno())
+    return receipt
+
+
+def unresolved_quarantines(
+    items: Sequence[QuarantinedItem], reviews: Sequence[QuarantineReview] = ()
+) -> tuple[str, ...]:
+    from auris.fhir.models import resource_digest
+
+    return tuple(
+        item.id
+        for item in items
+        if not any(
+            review.target_id == item.id
+            and review.target_sha256 == resource_digest(item.model_dump(mode="json"))
+            and review.action == "dismiss"
+            and all(v.strip() for v in (review.reason, review.reviewer, review.role))
+            for review in reviews
+        )
+    )

@@ -1,7 +1,12 @@
 """Record the selected wire contract, including order-sensitive schema identity."""
 
+from __future__ import annotations
+
 import hashlib
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from auris.config import ExtractorCandidate
 
 from auris.assertions import extraction_json_schema
 from auris.extract.grammar import GRAMMAR_VERSIONS, json_grammar
@@ -9,7 +14,12 @@ from auris.extract.profiles import ExtractionProfile, profile_contract, sampling
 from auris.extract.prompt import WINDOW_INSTRUCTION, WINDOW_PROMPT_VERSION, prompt_sha256
 
 
-def profile_identity(profile: ExtractionProfile) -> dict[str, Any]:
+def profile_identity(
+    profile: ExtractionProfile,
+    candidate: ExtractorCandidate | None = None,
+    *,
+    seed: int | None = None,
+) -> dict[str, Any]:
     contract = profile_contract(profile)
     schema = extraction_json_schema(contract.schema_version, property_order=contract.property_order)
     identity = {
@@ -25,8 +35,15 @@ def profile_identity(profile: ExtractionProfile) -> dict[str, Any]:
             for variant in schema["properties"]["assertions"]["items"]["oneOf"]
         },
     }
-    if sampling := sampling_parameters(profile):
+    if sampling := sampling_parameters(profile, candidate, seed=seed):
         identity["sampling_parameters"] = sampling
+    if profile == "full-v0-card":
+        if candidate is None:
+            from auris.config import load_frozen_config
+
+            candidate = load_frozen_config().extractor.candidate()
+        assert candidate.card_sampling is not None
+        identity["card_sampling"] = candidate.card_sampling.model_dump(mode="json")
     if contract.grammar_whitespace is not None:
         identity.update(
             grammar_version=GRAMMAR_VERSIONS[contract.grammar_whitespace],

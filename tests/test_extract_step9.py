@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from urllib.error import URLError
 
 import pytest
-from extract_helpers import case_input, completion
+from extract_helpers import case_input, completion, sse_response
 
 from auris.config import load_frozen_config
 from auris.extract.backend import ExtractionError, ExtractionTimeoutError, FakeBackend, HttpBackend
@@ -158,7 +158,7 @@ def test_timeout_arithmetic_scales_with_generation_prompt_and_speed():
 def test_timeout_has_distinct_safe_error(error):
     backend = HttpBackend("http://127.0.0.1:8000")
     backend.opener.open = Mock(side_effect=error)
-    with pytest.raises(ExtractionTimeoutError, match="request timed out") as caught:
+    with pytest.raises(ExtractionTimeoutError, match="first_chunk stream timed out") as caught:
         backend.complete([], {}, temperature=0, max_tokens=4096)
     assert "private" not in str(caught.value)
     backend.opener.open.side_effect = URLError(ConnectionRefusedError("private"))
@@ -169,7 +169,7 @@ def test_timeout_has_distinct_safe_error(error):
 
 def test_timeout_is_passed_to_http_and_recorded():
     backend = HttpBackend("http://127.0.0.1:8000")
-    backend.opener.open = Mock(return_value=io.BytesIO(json.dumps(completion()).encode()))
+    backend.opener.open = Mock(return_value=io.BytesIO(sse_response(completion())))
     backend.complete([], {}, temperature=0, max_tokens=4096, timeout=351)
     assert backend.opener.open.call_args.kwargs["timeout"] == 351
     transcript, _ = case_input("vital_sign")
@@ -227,7 +227,7 @@ def test_discarded_storage_is_private_and_never_parsed(
     assert discarded.stat().st_mode & 0o777 == 0o600
     assert path.stat().st_mode & 0o777 == 0o700
     assert content not in (path / "extraction.json").read_text()
-    assert run.calls[0]["repetition"]["version"] == "repetition-v1"
+    assert run.calls[0]["repetition"]["version"] == "repetition-v2"
 
 
 def test_repetition_metrics_cover_pretty_and_compact_output():

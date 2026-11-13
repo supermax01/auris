@@ -25,19 +25,13 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 from auris.config import ExtractorCandidate
+from auris.extract.errors import ExtractionError, ExtractionTimeoutError
+from auris.extract.stream import read_stream
 from auris.extract.timeout import TimeoutBudget
 from auris.setup.fhir_packages import sha256_file
 
 TESTED_RUNTIME = "version: 0.9.0 (build 12110, commit cd959bae9)"
 MAX_RESPONSE_BYTES = 16 * 1024 * 1024
-
-
-class ExtractionError(ValueError):
-    """A safe-to-log failure reason; never includes clinical response text."""
-
-
-class ExtractionTimeoutError(ExtractionError):
-    """A local request exceeded its budget; distinct from connection failures."""
 
 
 @dataclass
@@ -63,6 +57,8 @@ class Backend(Protocol):
         grammar: str | None = None,
         timeout: float | None = None,
         sampling: dict[str, object] | None = None,
+        first_chunk_timeout: float | None = None,
+        identical_assertion_limit: int = 4,
     ) -> dict[str, Any]: ...
 
     def tokenize(self, text: str) -> int | None: ...
@@ -119,7 +115,13 @@ class HttpBackend:
         self.opener = build_opener(ProxyHandler({}), _NoRedirect())
 
     def request(
-        self, path: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None
+        self,
+        path: str,
+        payload: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        first_chunk_timeout: float | None = None,
+        identical_assertion_limit: int = 4,
     ) -> dict[str, Any]:
         if path not in (
             "/health",
@@ -133,8 +135,23 @@ class HttpBackend:
         request = Request(
             self.base_url + path, data=data, headers={"Content-Type": "application/json"}
         )
+        streaming = path == "/v1/chat/completions" and payload is not None and payload.get("stream")
+        total_timeout = timeout or self.timeout
+        first_timeout = first_chunk_timeout if first_chunk_timeout is not None else total_timeout
+        started = time.monotonic()
+        open_timeout_phase = "total" if total_timeout < first_timeout else "first_chunk"
         try:
-            with self.opener.open(request, timeout=timeout or self.timeout) as response:
+            with self.opener.open(
+                request, timeout=min(total_timeout, first_timeout) if streaming else total_timeout
+            ) as response:
+                if streaming:
+                    return read_stream(
+                        response,
+                        started=started,
+                        timeout=total_timeout,
+                        first_chunk_timeout=first_timeout,
+                        identical_assertion_limit=identical_assertion_limit,
+                    )
                 raw = response.read(MAX_RESPONSE_BYTES + 1)
             if len(raw) > MAX_RESPONSE_BYTES:
                 raise ExtractionError("extractor response exceeds size limit")
@@ -146,10 +163,20 @@ class HttpBackend:
             # Do not include server diagnostics: they may echo the transcript.
             raise ExtractionError(f"local extractor HTTP {exc.code}") from None
         except TimeoutError:
-            raise ExtractionTimeoutError("local extractor request timed out") from None
+            raise ExtractionTimeoutError(
+                f"local extractor {open_timeout_phase} stream timed out"
+                if streaming
+                else "local extractor request timed out",
+                phase=open_timeout_phase if streaming else "request",
+            ) from None
         except URLError as exc:
             if isinstance(exc.reason, TimeoutError):
-                raise ExtractionTimeoutError("local extractor request timed out") from None
+                raise ExtractionTimeoutError(
+                    f"local extractor {open_timeout_phase} stream timed out"
+                    if streaming
+                    else "local extractor request timed out",
+                    phase=open_timeout_phase if streaming else "request",
+                ) from None
             raise ExtractionError("local extractor connection failed") from None
         except (OSError, ValueError) as exc:
             if isinstance(exc, ExtractionError):
@@ -166,6 +193,8 @@ class HttpBackend:
         grammar: str | None = None,
         timeout: float | None = None,
         sampling: dict[str, object] | None = None,
+        first_chunk_timeout: float | None = None,
+        identical_assertion_limit: int = 4,
     ) -> dict[str, Any]:
         # Pipeline calls supply their measured rendered-input budget. Direct
         # transport callers get a conservative byte estimate, never a fixed cap.
@@ -178,10 +207,13 @@ class HttpBackend:
                 **_chat_input(messages, schema, grammar=grammar),
                 "temperature": temperature,
                 "max_tokens": max_tokens,
-                "stream": False,
+                "stream": True,
+                "stream_options": {"include_usage": True},
                 **(sampling or {}),
             },
             timeout=timeout,
+            first_chunk_timeout=first_chunk_timeout,
+            identical_assertion_limit=identical_assertion_limit,
         )
 
     def tokenize(self, text: str) -> int:
@@ -300,6 +332,8 @@ class ManagedLlamaServer:
                     "-ngl",
                     "99",
                     "--no-webui",
+                    "--parallel",
+                    "1",
                     *self.candidate.runtime_flags,
                 ],
                 stdin=subprocess.DEVNULL,
@@ -403,6 +437,8 @@ class FakeBackend:
         grammar: str | None = None,
         timeout: float | None = None,
         sampling: dict[str, object] | None = None,
+        first_chunk_timeout: float | None = None,
+        identical_assertion_limit: int = 4,
     ) -> dict[str, Any]:
         self.calls.append(
             dict(messages=messages, schema=schema, temperature=temperature, max_tokens=max_tokens)
@@ -410,6 +446,8 @@ class FakeBackend:
         if grammar is not None:
             self.calls[-1]["grammar"] = grammar
         self.calls[-1]["timeout"] = timeout
+        self.calls[-1]["first_chunk_timeout"] = first_chunk_timeout
+        self.calls[-1]["identical_assertion_limit"] = identical_assertion_limit
         if sampling:
             self.calls[-1]["sampling"] = sampling
         try:

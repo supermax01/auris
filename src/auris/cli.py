@@ -41,6 +41,8 @@ def _build_parser() -> argparse.ArgumentParser:
     demo_parser = subparsers.add_parser("demo", help="Run the fictional text demo into ./out/demo/")
     demo_parser.add_argument("--model", default=None)
     demo_parser.add_argument("--extraction-profile", choices=PROFILES)
+    demo_parser.add_argument("--seed", type=int)
+    demo_parser.add_argument("--temperature", type=float)
 
     for name, description in (
         ("extract", "Extract facts using a local llama-server"),
@@ -52,6 +54,8 @@ def _build_parser() -> argparse.ArgumentParser:
         run_parser.add_argument("--out", type=Path, required=True)
         run_parser.add_argument("--model", default=None)
         run_parser.add_argument("--extraction-profile", choices=PROFILES)
+        run_parser.add_argument("--seed", type=int, help="Extractor RNG seed (card default: 0)")
+        run_parser.add_argument("--temperature", type=float)
 
     setup_parser = subparsers.add_parser("setup", help="One-time setup downloads")
     setup_subparsers = setup_parser.add_subparsers(dest="setup_command")
@@ -135,7 +139,20 @@ def _cmd_extract(args: argparse.Namespace) -> int:
                 )
             }
         )
+    overrides = {}
+    if getattr(args, "seed", None) is not None:
+        overrides["seed"] = args.seed
+    if getattr(args, "temperature", None) is not None:
+        overrides["temperature_override"] = args.temperature
+    if overrides:
+        from auris.config import ExtractorConfig
+
+        extractor = ExtractorConfig.model_validate({**config.extractor.model_dump(), **overrides})
+        config = config.model_copy(update={"extractor": extractor})
     candidate = config.extractor.candidate(args.model)
+    from auris.extract.profiles import decoding_parameters
+
+    decoding_parameters(config.extractor, candidate)
 
     try:
         transcript = Transcript.load(args.transcript)

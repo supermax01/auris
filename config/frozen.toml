@@ -185,7 +185,11 @@ max_output_tokens = 4096
 min_output_tokens = 1024
 thinking = false
 temperature = 0.0
-temperature_status = "candidate, confirm in Slice 1"
+temperature_status = "greedy baseline; card sampling comparison pre-registered in Step 10"
+
+[extractor.loop_guard]
+version = "loop-guard-v1"
+identical_assertion_limit = 4
 
 # Each call reserves measured input + 256 headroom, up to the output ceiling.
 # Windows also shrink to fit the conservative output estimate (Step 6e).
@@ -207,6 +211,18 @@ role = "default"
 # 4ecc2ba63bcac23ba4a767fc87025b1450f84c9c: apache-2.0, not gated.
 # Q4_0 versus Qwen Q4_K_M is a known quantization confound: ggml-org has
 # no official Q4_K_M. Text-only inference needs no mmproj file.
+# A-priori model-card settings; not chosen from Auris development results.
+[extractor.candidates.card_sampling]
+source_repo = "Qwen/Qwen3-8B-GGUF"
+revision = "7c41481f57cb95916b40956ab2f0b139b296d974"
+readme_sha256 = "913fd918b4afb4511accca0874f701248b024013e804fa7a463639ead74e4dcb"
+mode = "non-thinking"
+temperature = 0.7
+top_p = 0.8
+top_k = 20
+min_p = 0.0
+presence_penalty = 1.5
+
 [[extractor.candidates]]
 id = "gemma-4-e4b-it-q4_0"
 repo = "ggml-org/gemma-4-E4B-it-GGUF"
@@ -234,6 +250,16 @@ role = "comparator"
 # Text-only path, no mmproj. Thinking defaults to xhigh upstream; hc-01
 # smoke tests had zero reasoning with --reasoning off. Keep budget 0 too;
 # any returned reasoning still causes a hard refusal.
+# A-priori model-card settings; not chosen from Auris development results.
+[extractor.candidates.card_sampling]
+source_repo = "google/gemma-4-E4B-it"
+revision = "4ecc2ba63bcac23ba4a767fc87025b1450f84c9c"
+readme_sha256 = "b21e4f69614ccd77baa2f3797d05311040dee07b989cb9f0d25111aa4b605b2c"
+mode = "non-thinking"
+temperature = 1.0
+top_p = 0.95
+top_k = 64
+
 [[extractor.candidates]]
 id = "bonsai-2-9b-q2_0"
 repo = "prism-ml/Ternary-Bonsai-2-9B-gguf"
@@ -247,6 +273,19 @@ runtime_flags = ["--reasoning", "off", "--reasoning-budget", "0"]
 role = "comparator"
 # Base: Qwen/Qwen3.5-9B. Claude's hc-01 smoke: ~68 tok/s generation.
 
+# A-priori model-card settings; not chosen from Auris development results.
+[extractor.candidates.card_sampling]
+source_repo = "prism-ml/Ternary-Bonsai-2-9B-gguf"
+revision = "82265ccc78ddaac4700286a35e9badcc32376dd9"
+readme_sha256 = "6493c7080c4bb5d12dd3418ccb148a8c9907909ebee3f77e2ba6fc9d5e84a5fb"
+mode = "non-thinking"
+temperature = 0.7
+top_p = 0.8
+top_k = 20
+min_p = 0.0
+presence_penalty = 1.5
+repeat_penalty = 1.0
+
 [[extractor.candidates]]
 id = "bonsai-2-27b-q2_0"
 repo = "prism-ml/Ternary-Bonsai-2-27B-gguf"
@@ -259,6 +298,19 @@ quantization = "Q2_0 (ternary)"
 runtime_flags = ["--reasoning", "off", "--reasoning-budget", "0"]
 role = "comparator"
 # Base: Qwen/Qwen3.8-27B. Claude's hc-01 smoke: ~25 tok/s generation.
+
+# A-priori model-card settings; not chosen from Auris development results.
+[extractor.candidates.card_sampling]
+source_repo = "prism-ml/Ternary-Bonsai-2-27B-gguf"
+revision = "839bd57023c1558945afea70a74fa83c054f35f9"
+readme_sha256 = "57fa037cfa812c9e6872e970c963d5227904eade7dda064019ae2a3fd140b500"
+mode = "non-thinking"
+temperature = 0.7
+top_p = 0.8
+top_k = 20
+min_p = 0.0
+presence_penalty = 1.5
+repeat_penalty = 1.0
 
 # ---------------------------------------------------------------------------
 # JVM for the official HL7 FHIR validator (PLAN A6).

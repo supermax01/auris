@@ -466,7 +466,7 @@ def test_transport_and_measurement_use_selected_constraint(profile):
     assert template.args[1] == {
         key: value
         for key, value in body.items()
-        if key not in ("temperature", "max_tokens", "stream")
+        if key not in ("temperature", "max_tokens", "stream", "stream_options")
     }
     assert ("grammar" in body) == (contract.grammar_whitespace is not None)
     assert ("response_format" in body) == (contract.grammar_whitespace is None)
@@ -504,7 +504,22 @@ def test_frozen_profile_request_bytes_remain_replayable(profile, digest):
         max_tokens=1024,
     )
     body = json.dumps(client.request.call_args.args[1], allow_nan=False).encode()
-    assert hashlib.sha256(body).hexdigest() == digest
+    # Step 10 deliberately changes only SSE transport fields. Keep the old
+    # snapshot too, so schema/prompt/decoding drift cannot hide in this update.
+    payload = json.loads(body)
+    assert payload.pop("stream_options") == {"include_usage": True}
+    assert payload["stream"] is True
+    payload["stream"] = False
+    assert hashlib.sha256(json.dumps(payload).encode()).hexdigest() == digest
+    stream_digests = {
+        "full-v0": "89c2393382d5157c4d02ba40352c00e542785f579c3749ddb6d42fdc8b0dc69c",
+        "lean-v1": "4ff7722da4f14d23632db2e2b88aa065e5f0668083eda39b030518d2abb00fe3",
+        "abl-optional": "6f3d7ff8907906a85e31abd3364ecc8a19906a8a3714807b4aa95949ceccdb82",
+        "abl-quotes": "733027b3c6756f7922a649087eefbf8b8b0860c5688939460cf78ac49ee0de42",
+        "abl-compact": "5a73ed837144f2aa3e4bdd6fe15f432c2499baf567296a24ed41206e38cb958c",
+        "abl-order": "847093627eaddf69e3daa53107f5e9efe934a7da434192220c85e69c5ee4f2bd",
+    }
+    assert hashlib.sha256(body).hexdigest() == stream_digests[profile]
 
 
 @pytest.mark.parametrize("profile", GRAMMAR_PROFILES)

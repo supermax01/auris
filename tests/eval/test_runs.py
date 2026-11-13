@@ -33,8 +33,13 @@ def run_factory(tmp_path, terminology, units):
         locked_run=False,
         models=None,
         profiles=None,
+        extractor_seed=None,
     ):
         config = load_frozen_config()
+        if extractor_seed is not None:
+            config = config.model_copy(
+                update={"extractor": config.extractor.model_copy(update={"seed": extractor_seed})}
+            )
         dataset, transcripts = load_dataset(manifest)
         events = []
 
@@ -492,3 +497,28 @@ def test_v2_run_replays_both_scorers_without_mutating_predictions(
         for model in report["models"].values():
             assert ("noncritical_errors" in model) == (version == "3")
         assert all(p.read_bytes() == contents for p, contents in frozen.items())
+
+
+def test_card_seed_and_quarantines_freeze_without_predictions(run_factory, tmp_path):
+    candidate = load_frozen_config().extractor.candidate()
+    dataset, transcripts = load_dataset(MANIFEST)
+    responses = []
+    for encounter in dataset.encounters:
+        raw = [g.extraction_dict(transcripts[encounter.id]) for g in encounter.assertions]
+        # A primitive malformed item cannot enter matching, mapping or scoring.
+        responses.append(completion(content=json.dumps({"assertions": [*raw, 42]})))
+    output, run, _ = run_factory(
+        models=[candidate.id], profiles=["full-v0-card"], extractor_seed=2, responses=responses
+    )
+    identity = f"{candidate.id}@full-v0-card@seed-2"
+    assert run["models"] == [identity]
+    metadata = run["model_metadata"][identity]
+    assert metadata["sampling_parameters"]["seed"] == 2
+    assert metadata["quarantined_item_count"] == 20
+    predictions = json.loads((output / identity / "predictions.json").read_text())
+    assert sum(map(len, predictions.values())) == 60
+    scores = score_run(output, ledger=tmp_path / "ledger.jsonl")
+    assert scores["models"][identity]["lenient"]["micro"]["f1"] == 1
+    assert scores["models"][identity]["metadata"]["quarantined_item_count"] == 20
+    assert run["default_model"] == identity
+    assert compare_run(output)["models"][identity]["metadata"]["quarantined_item_count"] == 20

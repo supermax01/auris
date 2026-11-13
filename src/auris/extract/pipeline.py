@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from pydantic import ValidationError
 
 from auris._storage import prepare_output_directory, write_private_text
 from auris.assertions import (
@@ -33,6 +36,7 @@ from auris.extract.chunking import (
     split_segments,
 )
 from auris.extract.citations import resolve_citations
+from auris.extract.errors import LoopDetectedError
 from auris.extract.grammar import json_grammar
 from auris.extract.identity import profile_identity
 from auris.extract.measurements import (
@@ -44,10 +48,11 @@ from auris.extract.measurements import (
 from auris.extract.profiles import (
     ExtractionProfile,
     SchemaVersion,
+    decoding_parameters,
     profile_contract,
-    sampling_parameters,
 )
 from auris.extract.prompt import messages, prompt_text
+from auris.extract.quarantine import ItemError, QuarantinedItem, QuarantineReview
 from auris.extract.timeout import TimeoutBudget
 from auris.extract.tokens import (
     HEADROOM_TOKENS,
@@ -87,8 +92,31 @@ def _reject_constant(_: str) -> None:
     raise SchemaResponseError("schema-invalid extraction response (non-finite JSON number)")
 
 
+def _finite_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number):
+        _reject_constant(value)
+    return number
+
+
+def _item_errors(error: ValidationError, position: int) -> tuple[ItemError, ...]:
+    errors = []
+    for entry in error.errors():
+        location = tuple(entry["loc"])
+        if location[:2] == ("assertions", 0):
+            location = ("assertions", position, *location[2:])
+        errors.append(ItemError(type=entry["type"], location=location))
+    return tuple(errors)
+
+
 def parse_completion(
-    response: dict[str, Any], *, schema_version: SchemaVersion = "1"
+    response: dict[str, Any],
+    *,
+    schema_version: SchemaVersion = "1",
+    quarantined: list[QuarantinedItem] | None = None,
+    call_index: int = 0,
+    window_id: str = "0",
+    transcript_sha256: str | None = None,
 ) -> ExtractionResult:
     try:
         choices = response["choices"]
@@ -108,12 +136,47 @@ def parse_completion(
             raise ExtractionError("extractor message content is not JSON text")
         # Check duplicates before strict pydantic JSON parsing; Python's default
         # JSON parser would silently retain the last clinical field value.
-        json.loads(
+        document = json.loads(
             content,
             object_pairs_hook=_unique_object,
             parse_constant=_reject_constant,
+            parse_float=_finite_float,
         )
-        result = parse_extraction_json(content, schema_version=schema_version)
+        if (
+            not isinstance(document, dict)
+            or set(document) != {"assertions"}
+            or not isinstance(document["assertions"], list)
+        ):
+            raise SchemaResponseError("schema-invalid extraction response; wrong top-level shape")
+        items = document["assertions"]
+        if len(items) >= MAX_ASSERTIONS:
+            raise ExtractionError(
+                "extraction reached assertion bound; completeness cannot be assured"
+            )
+        valid = []
+        for position, item in enumerate(items):
+            try:
+                # Keep strict JSON-mode validation (including strict number types
+                # and v2 optional-null normalization), not coercive Python mode.
+                sibling = parse_extraction_json(
+                    json.dumps({"assertions": [item]}, allow_nan=False),
+                    schema_version=schema_version,
+                )
+                valid.extend(sibling.assertions)
+            except ValidationError as exc:
+                if quarantined is None:
+                    raise  # Legacy direct callers may request all-or-nothing parsing.
+                quarantined.append(
+                    QuarantinedItem(
+                        call_index=call_index,
+                        window_id=window_id,
+                        position=position,
+                        raw_item=item,
+                        transcript_sha256=transcript_sha256,
+                        errors=_item_errors(exc, position),
+                    )
+                )
+        result = ExtractionResult(assertions=tuple(valid))
     except (AttributeError, KeyError, TypeError, ValueError) as exc:
         if isinstance(exc, ExtractionError):
             raise
@@ -133,6 +196,9 @@ class ExtractionRun:
     runtime: RuntimeMetadata
     extraction_profile: ExtractionProfile = "full-v0"
     measurements: dict[str, Any] = field(default_factory=dict)
+    loop_guard: dict[str, Any] = field(default_factory=dict)
+    quarantined_items: list[QuarantinedItem] = field(default_factory=list)
+    quarantine_reviews: list[QuarantineReview] = field(default_factory=list)
     started_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     prompt_tokens: int | None = None
     prompt_token_count_method: str | None = None
@@ -163,6 +229,11 @@ class ExtractionRun:
                 for position, ids in sorted(self.citation_failures.items())
             ],
             "calls": self.calls,
+            "quarantined_items": [item.model_dump(mode="json") for item in self.quarantined_items],
+            "visit_review_items": [item.review_item() for item in self.quarantined_items],
+            "quarantine_reviews": [
+                review.model_dump(mode="json") for review in self.quarantine_reviews
+            ],
             "metadata": {
                 "model_id": self.model.id,
                 "run_timestamp": self.started_at,
@@ -173,7 +244,10 @@ class ExtractionRun:
                 "quantization": self.model.quantization,
                 "runtime_flags": self.model.runtime_flags,
                 "runtime": asdict(self.runtime),
-                **profile_identity(self.extraction_profile),
+                **profile_identity(
+                    self.extraction_profile, self.model, seed=self.decoding.get("seed")
+                ),
+                "loop_guard": self.loop_guard,
                 "measurements": self.measurements,
                 "prompt_tokens": self.prompt_tokens,
                 "prompt_token_count_method": self.prompt_token_count_method,
@@ -199,11 +273,14 @@ def extract(
     started = time.monotonic()
     profile = config.extraction_profile
     contract = profile_contract(profile)
-    sampling = sampling_parameters(profile)
+    try:
+        temperature, sampling = decoding_parameters(config, model)
+    except ValueError as exc:
+        raise ExtractionError(str(exc)) from None
     run = ExtractionRun(
         model=model,
         decoding={
-            "temperature": config.temperature,
+            "temperature": temperature,
             "max_output_tokens": config.max_output_tokens,
             "min_output_tokens": config.min_output_tokens,
             "headroom_tokens": HEADROOM_TOKENS,
@@ -211,6 +288,10 @@ def extract(
             "thinking": config.thinking,
             "output_estimate": dict(OUTPUT_ESTIMATE),
             "sampling_parameters": sampling,
+            "seed": sampling.get("seed"),
+            "reproducibility": (
+                "sampled decoding requires the same build, hardware, seed and single-slot server"
+            ),
             "json_whitespace": (
                 f"grammar_{contract.grammar_whitespace}_json"
                 if contract.grammar_whitespace is not None
@@ -222,10 +303,9 @@ def extract(
         transcript_sha256=transcript.content_hash,
         runtime=backend.runtime,
         extraction_profile=profile,
+        loop_guard=config.loop_guard.model_dump(mode="json"),
     )
     try:
-        if sampling and config.temperature != 0:
-            raise ExtractionError("full-v0-dry requires temperature 0")
         counter = TokenCounter(backend)
         run.prompt_tokens = counter.count(prompt_text(profile))
         run.prompt_token_count_method = counter.method
@@ -253,10 +333,9 @@ def extract(
 
         def split_window(chunk: Chunk, window_id: str, reason: str) -> None:
             if len(chunk.segments) == 1:
-                if reason == "finish_reason=length":
+                if reason in ("finish_reason=length", "extractor repetition loop"):
                     raise ExtractionError(
-                        "single transcript segment still truncated (finish_reason=length); "
-                        "no partial results"
+                        f"single transcript segment still truncated ({reason}); no partial results"
                     )
                 raise ExtractionError("one transcript segment exceeds the available context budget")
             halves = split_segments(chunk.segments)
@@ -302,6 +381,7 @@ def extract(
                 "planned_output_tokens": chunk.planned_output_tokens,
                 "output_estimate_exceeds_budget": chunk.planned_output_tokens > max_tokens,
                 "repetition": None,
+                "transport": "sse",
             }
             budget = TimeoutBudget(
                 max_tokens,
@@ -309,18 +389,27 @@ def extract(
                 generation_tokens_per_second=model.generation_tokens_per_second,
                 prompt_tokens_per_second=model.prompt_tokens_per_second,
             )
-            call["timeout"] = {**asdict(budget), "seconds": budget.seconds, "source": "configured"}
+            call["timeout"] = {
+                **asdict(budget),
+                "seconds": budget.seconds,
+                "first_chunk_seconds": budget.first_chunk_seconds,
+                "idle_seconds": 60,
+                "source": "configured",
+            }
             call_index = len(run.calls)
             run.calls.append(call)
             call_started = time.monotonic()
-            truncated = False
+            split_reason: str | None = None
+            comparison = {"status": "usage_unavailable"}
             try:
                 response = backend.complete(
                     messages(chunk.segments, profile),
                     schema,
-                    temperature=config.temperature,
+                    temperature=temperature,
                     max_tokens=max_tokens,
                     timeout=budget.seconds,
+                    first_chunk_timeout=budget.first_chunk_seconds,
+                    identical_assertion_limit=config.loop_guard.identical_assertion_limit,
                     **({"sampling": sampling} if sampling else {}),
                     **({"grammar": grammar} if grammar is not None else {}),
                 )
@@ -332,6 +421,7 @@ def extract(
                     if isinstance(message, dict) and isinstance(message.get("content"), str):
                         call["repetition"] = repetition_metrics(message["content"])
                 call["usage"] = response.get("usage")
+                call["output_token_count_method"] = "server_usage"
                 usage = call["usage"]
                 actual = usage.get("completion_tokens") if isinstance(usage, dict) else None
                 call["actual_output_tokens"] = (
@@ -341,7 +431,17 @@ def extract(
                     InputTokens(chunk.input_tokens, chunk.token_count_method), call["usage"]
                 )
                 call["input_token_comparison"] = comparison
-                result = parse_completion(response, schema_version=contract.schema_version)
+                quarantined: list[QuarantinedItem] = []
+                result = parse_completion(
+                    response,
+                    schema_version=contract.schema_version,
+                    quarantined=quarantined,
+                    call_index=call_index,
+                    window_id=window_id,
+                    transcript_sha256=transcript.content_hash,
+                )
+                run.quarantined_items.extend(quarantined)
+                call["quarantined_item_count"] = len(quarantined)
                 call["json_whitespace"] = json_whitespace_stats(
                     response["choices"][0]["message"]["content"]
                 )
@@ -364,6 +464,24 @@ def extract(
                 call["failure_type"] = (
                     "timeout" if isinstance(exc, ExtractionTimeoutError) else type(exc).__name__
                 )
+                if isinstance(exc, ExtractionTimeoutError):
+                    call["timeout_phase"] = exc.phase
+                partial = getattr(exc, "partial_response", None)
+                if partial is not None:
+                    call["raw_response"] = partial
+                    text = partial["choices"][0]["message"]["content"]
+                    call["repetition"] = repetition_metrics(text)
+                    call["usage"] = partial.get("usage")
+                    call["actual_output_tokens"] = partial["usage"]["completion_tokens"]
+                    call["output_token_count_method"] = partial["output_token_count_method"]
+                    call["output_token_count_limitation"] = (
+                        "received content chunks only; captured sample has "
+                        "117 versus 120 usage tokens"
+                    )
+                    call["input_token_comparison"] = {
+                        "status": "usage_unavailable_stream_stopped",
+                        "reason": "final prompt usage was not received",
+                    }
                 if "raw_response" in call:
                     # Kept only in a separate, clearly discarded private artifact.
                     # Never included in the extraction document or assertions.
@@ -377,17 +495,23 @@ def extract(
                     call["output_discarded"] = True
                 if isinstance(exc, TruncatedCompletionError):
                     call["finish_reason"] = "length"
-                    truncated = True
+                    split_reason = "finish_reason=length"
+                elif isinstance(exc, LoopDetectedError):
+                    call["finish_reason"] = "loop_guard"
+                    split_reason = "extractor repetition loop"
                 else:
                     raise
             finally:
                 call["wall_seconds"] = time.monotonic() - call_started
-            if comparison["status"] in ("mismatch", "usage_unavailable"):
+            if split_reason != "extractor repetition loop" and comparison["status"] in (
+                "mismatch",
+                "usage_unavailable",
+            ):
                 raise ExtractionError(
                     "rendered input token count could not be verified against usage.prompt_tokens"
                 )
-            if truncated:
-                split_window(chunk, window_id, "finish_reason=length")
+            if split_reason:
+                split_window(chunk, window_id, split_reason)
             resolved[key] = window_id
 
         for index, chunk in enumerate(chunks):
@@ -408,6 +532,7 @@ def extract(
         run.measurements = extraction_measurements(
             run.assertions, run.calls, transcript, run.citation_failures
         )
+        run.measurements["quarantined_item_count"] = len(run.quarantined_items)
     return run
 
 
@@ -415,6 +540,10 @@ def extract_local(
     transcript: Transcript, config: ExtractorConfig, model: ExtractorCandidate, model_path: Path
 ) -> ExtractionRun:
     """Own the model lifetime, including startup-failure metadata and unload."""
+    try:
+        temperature, sampling = decoding_parameters(config, model)
+    except ValueError as exc:
+        raise ExtractionError(str(exc)) from None
     manager = ManagedLlamaServer(model, model_path, n_ctx=config.n_ctx)
     timestamp = datetime.now(UTC).isoformat()
     started = time.monotonic()
@@ -426,9 +555,12 @@ def extract_local(
             model=model,
             runtime=manager.runtime,
             extraction_profile=config.extraction_profile,
+            loop_guard=config.loop_guard.model_dump(mode="json"),
             transcript_sha256=transcript.content_hash,
             decoding={
-                "temperature": config.temperature,
+                "temperature": temperature,
+                "sampling_parameters": sampling,
+                "seed": sampling.get("seed"),
                 "max_output_tokens": config.max_output_tokens,
                 "min_output_tokens": config.min_output_tokens,
                 "headroom_tokens": HEADROOM_TOKENS,
@@ -511,6 +643,11 @@ def finish_pipeline(
     checked, validation = validate_mappings(validator, mapper.intake, outcomes)
     run.measurements.update(mapped_evidence_measurements(checked))
     write_validation(output_dir / "validation.json", mapper.intake, checked, validation)
+    if run.quarantined_items:
+        # Visit-level failures, separate from accepted siblings' schema lanes.
+        document = json.loads((output_dir / "validation.json").read_text("utf-8"))
+        document["visit_review_items"] = [item.review_item() for item in run.quarantined_items]
+        write_private_text(output_dir / "validation.json", json.dumps(document, indent=2) + "\n")
     # Preserve mapper resources/ledger and exact offsets for downstream review.
     document = run.document()
     document["mappings"] = [outcome.model_dump(mode="json") for outcome in checked]

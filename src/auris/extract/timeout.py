@@ -23,3 +23,10 @@ class TimeoutBudget:
             )
             + self.fixed_margin_seconds
         )
+
+    @property
+    def first_chunk_seconds(self) -> int:
+        return math.ceil(
+            self.margin_multiplier * self.input_tokens / self.prompt_tokens_per_second
+            + self.fixed_margin_seconds
+        )

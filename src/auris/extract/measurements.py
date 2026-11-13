@@ -8,6 +8,7 @@ from typing import Any
 
 from auris.assertions import AssertionBase
 from auris.evidence import EvidenceFailure, align_assertion_evidence, normalised_tokens
+from auris.extract.objects import AssertionScanner
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.transcript import Transcript
 
@@ -17,7 +18,11 @@ def repetition_metrics(text: str) -> dict[str, Any]:
 
     Measure adjacent repeated lexical/punctuation n-grams of widths 1..16;
     report the longest covered run in tokens. Repeated-line ratio counts nonblank
-    lines beyond their first occurrence. Neither metric changes extraction.
+    lines beyond their first occurrence. Width <=16 misses whole-object loops
+    spanning 60–130 tokens. V2 also counts complete top-level assertion objects
+    using the streaming guard's identity. Polarity flip pairs count distinct
+    unordered polarity variants for the same kind, normalized concept, evidence.
+    Incomplete tails are excluded; diagnostics grant no schema acceptance.
     """
     words = re.findall(r"\w+|[^\w\s]", text)
     longest = 0
@@ -29,8 +34,11 @@ def repetition_metrics(text: str) -> dict[str, Any]:
                 if run[i] >= width:
                     longest = max(longest, run[i] + width)
     lines = [line.strip() for line in text.splitlines() if line.strip()]
+    scanner = AssertionScanner()
+    scanner.feed(text)
     return {
-        "version": "repetition-v1",
+        "version": "repetition-v2",
+        **scanner.metrics,
         "longest_repeated_ngram_run_tokens": longest,
         "max_ngram_tokens": 16,
         "repeated_line_ratio": (len(lines) - len(set(lines))) / len(lines) if lines else 0,
@@ -107,11 +115,16 @@ def extraction_measurements(
         "output_tokens_per_assertion": total / len(assertions)
         if total is not None and assertions
         else None,
+        "output_token_count_methods": dict(
+            Counter(c.get("output_token_count_method", "unknown") for c in calls)
+        ),
         "output_token_scope": (
             "all attempts, including discarded output and overlapping windows / merged assertions"
         ),
         "calls_with_output_usage": sum(type(n) is int and n >= 0 for n in counts),
         "call_count": len(calls),
+        "loop_stops": sum(c.get("finish_reason") == "loop_guard" for c in calls),
+        "truncations": sum(c.get("finish_reason") == "length" for c in calls),
         "quote_characters": length_stats(quote_lengths),
         "quote_words": length_stats(word_lengths),
         "evidence_failed_assertions": failed_assertions,

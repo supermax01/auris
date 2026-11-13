@@ -10,12 +10,14 @@ from pydantic import BaseModel, ConfigDict
 from auris._storage import write_private_text
 from auris.extract.pipeline import ExtractionRun, finish_pipeline
 from auris.extract.prompt import PROMPT_VERSION
+from auris.extract.quarantine import QuarantinedItem, QuarantineReview
 from auris.fhir import Mapper
 from auris.fhir.bundle import build_collection, write_bundle
 from auris.fhir.common import build_anchors
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.intake import Intake
 from auris.render import NoteMetadata, note_items, render_note
+from auris.review import unresolved_quarantines
 from auris.validation.models import ValidationRun
 from auris.validation.report import validation_document
 from auris.validation.runner import ValidatorRunner
@@ -30,7 +32,12 @@ class ExportDecision(BaseModel):
 
 
 def export_decision(
-    intake: Intake, outcomes: tuple[MappingOutcome, ...], validation: ValidationRun
+    intake: Intake,
+    outcomes: tuple[MappingOutcome, ...],
+    validation: ValidationRun,
+    *,
+    quarantined_items: tuple[QuarantinedItem, ...] = (),
+    quarantine_reviews: tuple[QuarantineReview, ...] = (),
 ) -> ExportDecision:
     anchors = build_anchors(intake)
     anchors_checked = all(
@@ -43,6 +50,7 @@ def export_decision(
         for outcome in outcomes
         if outcome.is_material and outcome.export_state not in ("final_exportable", "ledger_only")
     )
+    blockers += unresolved_quarantines(quarantined_items, quarantine_reviews)
     exported = (
         tuple(outcome.id for outcome in outcomes if outcome.export_state == "final_exportable")
         if anchors_checked and not blockers
@@ -83,16 +91,36 @@ def finish_run(
     outcomes, validation = finish_pipeline(run, mapper, validator, output_dir)
     if validation is None:
         return None  # Failed extraction retains diagnostics, never a success note/bundle.
-    decision = export_decision(mapper.intake, outcomes, validation)
+    decision = export_decision(
+        mapper.intake,
+        outcomes,
+        validation,
+        quarantined_items=tuple(run.quarantined_items),
+        quarantine_reviews=tuple(run.quarantine_reviews),
+    )
     if decision.blocking_ids or not decision.anchors_checked:
         # Explicit anchors-only transport, NOT a preview of unreviewed clinical resources.
         # Their real validation states remain visible in validation.json and the note.
         bundle = build_collection(mapper.intake, (), preview=True)
     else:
-        bundle = build_collection(mapper.intake, outcomes, validation=validation)
+        bundle = build_collection(
+            mapper.intake,
+            outcomes,
+            validation=validation,
+            quarantined_items=run.quarantined_items,
+            quarantine_reviews=run.quarantine_reviews,
+        )
     items = note_items(outcomes, mapper.transcript, validation)
     document = validation_document(mapper.intake, outcomes, validation)
     document["export"] = decision.model_dump(mode="json")
+    document["visit_review_items"] = [
+        {
+            **item.review_item(),
+            "dismissed": item.id
+            not in unresolved_quarantines(run.quarantined_items, run.quarantine_reviews),
+        }
+        for item in run.quarantined_items
+    ]
     by_id = {item.id: item for item in items}
     for row in document["resources"]:
         if row["id"] in by_id:
@@ -107,6 +135,15 @@ def finish_run(
     write_private_text(output_dir / "validation.json", json.dumps(document, indent=2) + "\n")
     write_bundle(output_dir / "bundle.json", bundle)
     write_private_text(
-        output_dir / "note.md", render_note(items, metadata, export_summary=decision.summary)
+        output_dir / "note.md",
+        render_note(
+            items,
+            metadata,
+            export_summary=decision.summary,
+            malformed_item_count=len(run.quarantined_items),
+            unresolved_malformed_count=len(
+                unresolved_quarantines(run.quarantined_items, run.quarantine_reviews)
+            ),
+        ),
     )
     return decision

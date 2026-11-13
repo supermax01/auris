@@ -33,7 +33,9 @@ def test_committed_frozen_config_loads():
     assert config.extractor.n_ctx == 8192
     assert config.extractor.thinking is False
     assert config.extractor.temperature == 0.0
-    assert config.extractor.temperature_status == "candidate, confirm in Slice 1"
+    assert config.extractor.temperature_status == (
+        "greedy baseline; card sampling comparison pre-registered in Step 10"
+    )
     assert config.jvm.distribution == "temurin-21"
     assert config.jvm.heap_gb == 2
     assert config.reference_machines.laptop.memory_gb == 16

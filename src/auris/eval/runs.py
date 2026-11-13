@@ -87,7 +87,15 @@ def run_dataset(
         raise ValueError("select at least one unique extraction profile")
     for profile in selected_profiles:
         profile_contract(profile)
-    variants = [(c, p, f"{c.id}@{p}") for c in candidates for p in selected_profiles]
+    from auris.extract.profiles import decoding_parameters
+
+    for candidate in candidates:
+        for profile in selected_profiles:
+            decoding_parameters(
+                config.extractor.model_copy(update={"extraction_profile": profile}), candidate
+            )
+    seed_suffix = "" if config.extractor.seed is None else f"@seed-{config.extractor.seed}"
+    variants = [(c, p, f"{c.id}@{p}{seed_suffix}") for c in candidates for p in selected_profiles]
     if samples < 2:
         raise ValueError("bootstrap needs at least two replicates")
     prepare_output_directory(output)
@@ -169,7 +177,7 @@ def run_dataset(
         "bootstrap_samples": samples,
         "models": [identity for _, _, identity in variants],
         "extraction_profiles": selected_profiles,
-        "default_model": f"{config.extractor.candidate().id}@{selected_profiles[0]}",
+        "default_model": f"{config.extractor.candidate().id}@{selected_profiles[0]}{seed_suffix}",
         "leakage": leakage_metadata,
         "test_use": lock,
         "implementation_sha256": digest(
@@ -237,7 +245,9 @@ def run_dataset(
         runtime = next(iter(extractions.values())).runtime
         document["model_metadata"][identity] = {
             "model": candidate.model_dump(mode="json"),
-            **profile_identity(profile),
+            **profile_identity(profile, candidate, seed=extractor_config.seed),
+            "quarantined_item_count": sum(len(r.quarantined_items) for r in extractions.values()),
+            "loop_guard": config.extractor.loop_guard.model_dump(mode="json"),
             "measurements_by_encounter": {key: r.measurements for key, r in extractions.items()},
             "runtime": asdict(runtime),
             "managed_inference_wall_seconds": inference_seconds,
