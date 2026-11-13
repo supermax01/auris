@@ -41,6 +41,7 @@ def test_cli_demo_writes_all_four_files_and_shared_states(
         "validation.json",
         "bundle.json",
         "note.md",
+        "review-inputs.json",
     }
     assert directory.stat().st_mode & 0o777 == 0o700
     assert all(p.stat().st_mode & 0o777 == 0o600 for p in directory.iterdir())

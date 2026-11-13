@@ -77,6 +77,7 @@ def test_demo_outcomes_and_exact_note(demo_outcomes):
 def test_empty_sections_are_explicit():
     note = render_note((), metadata(), export_summary="No extracted records exported.")
     assert note.count("\nnot captured\n") == 6
+    assert "## Dismissed in review" not in note
     assert "FICTIONAL DEMO" in note and "clinician review mandatory" in note
 
 

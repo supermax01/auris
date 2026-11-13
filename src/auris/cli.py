@@ -38,6 +38,9 @@ def _build_parser() -> argparse.ArgumentParser:
     from auris.annotation.cli import add_parser as add_annotation_parser
 
     add_annotation_parser(subparsers)
+    from auris.review_web.cli import add_parser as add_review_parser
+
+    add_review_parser(subparsers)
     demo_parser = subparsers.add_parser("demo", help="Run the fictional text demo into ./out/demo/")
     demo_parser.add_argument("--model", default=None)
     demo_parser.add_argument("--extraction-profile", choices=PROFILES)
@@ -354,6 +357,10 @@ def _cmd_checklist(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.command == "review":
+        from auris.review_web.cli import command
+
+        return _run_guarded(command, args)
     if args.command == "annotate":
         from auris.annotation.cli import command
 

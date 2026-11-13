@@ -40,6 +40,8 @@ class NoteItem(BaseModel):
     in_ledger: bool
     section: Literal["S", "O", "A", "P", "D"]
     reference: str
+    dismissed: bool = False
+    dismissal: str | None = None
 
     def line(self) -> str:
         return f"- {self.reference} — {self.fact} {self.receipts} — {self.label}"
@@ -159,7 +161,7 @@ def _receipts(outcome: MappingOutcome, transcript: Transcript) -> str:
     return " ".join(receipts)
 
 
-def _label(outcome: MappingOutcome) -> str:
+def _label(outcome: MappingOutcome, approval: tuple[str, str] | None = None) -> str:
     labels = []
     if outcome.lanes.evidence == LaneState.PASS:
         labels.append("transcript-supported")
@@ -173,13 +175,16 @@ def _label(outcome: MappingOutcome) -> str:
             "final_exportable": "eligible for export",
         }[state]
     )
-    if state == "ledger_only" and outcome.review_reasons:
+    if approval:
+        labels.append(f"clinician-approved by {_text(approval[0])}, {_text(approval[1])}")
+    if state == "ledger_only" and outcome.review_reasons and not approval:
         labels.append("needs clinician review · not validated")
     if "uncoded_text_only" in outcome.mapper_flags:
         concept = (outcome.resource or {}).get("code", {}).get("text", "")
         family = outcome.kind == "allergy_statement" and normalise(concept) in DRUG_FAMILIES
         labels.append(
-            ("drug family, kept as text" if family else "kept as text") + " · needs coding review"
+            ("drug family, kept as text" if family else "kept as text")
+            + (" · text-only coding approved" if approval else " · needs coding review")
         )
     if outcome.lanes.export_checks_pass:
         if outcome.lanes.terminology == LaneState.PASS and state == "final_exportable":
@@ -302,7 +307,11 @@ def _section(outcome: MappingOutcome) -> Literal["S", "O", "A", "P", "D"]:
 
 
 def note_items(
-    outcomes: Sequence[MappingOutcome], transcript: Transcript, validation: ValidationRun
+    outcomes: Sequence[MappingOutcome],
+    transcript: Transcript,
+    validation: ValidationRun,
+    *,
+    approvals: dict[str, tuple[str, str]] | None = None,
 ) -> tuple[NoteItem, ...]:
     items: list[NoteItem] = []
     counts: dict[str, int] = {}
@@ -316,7 +325,7 @@ def note_items(
                 export_state=outcome.export_state,
                 fact=_fact(outcome),
                 receipts=_receipts(outcome, transcript),
-                label=_label(outcome),
+                label=_label(outcome, (approvals or {}).get(outcome.id)),
                 reasons=_reasons(outcome, validation),
                 in_ledger=outcome.ledger is not None,
                 section=section,
@@ -334,6 +343,8 @@ def render_note(
     malformed_item_count: int = 0,
     unresolved_malformed_count: int | None = None,
 ) -> str:
+    dismissed = [item for item in items if item.dismissed]
+    items = [item for item in items if not item.dismissed]
     lines = ["# Auris visit summary", ""]
     if metadata.fictional_demo:
         lines.extend(
@@ -393,4 +404,9 @@ def render_note(
         [item.line() for item in items if item.in_ledger and item.section == "D"]
         or ["not captured"]
     )
+    if dismissed:
+        lines.extend(["", "## Dismissed in review", ""])
+        lines.extend(
+            f"{item.line()} — {_text(item.dismissal or 'dismissed')}" for item in dismissed
+        )
     return "\n".join(lines) + "\n"

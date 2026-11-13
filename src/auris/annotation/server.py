@@ -3,6 +3,7 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from importlib.resources import files
+from typing import Protocol
 
 from pydantic import ValidationError
 
@@ -14,7 +15,21 @@ MAX_BODY = 2_000_000
 PAGE = files("auris.annotation").joinpath("page.html").read_bytes()
 
 
-def handler_for(session: AnnotationSession | AdjudicationSession) -> type[BaseHTTPRequestHandler]:
+class LocalSession(Protocol):
+    token: str
+
+    def dispatch(self, method: str, path: str, token: str, body: bytes) -> tuple[int, dict]: ...
+
+    def close(self) -> None: ...
+
+
+def handler_for(
+    session: LocalSession,
+    *,
+    page: bytes = PAGE,
+    csp: str | None = None,
+    require_post_origin: bool = False,
+) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_: object) -> None:
             pass  # No transcript text, URLs or tokens in HTTP logs.
@@ -30,11 +45,16 @@ def handler_for(session: AnnotationSession | AdjudicationSession) -> type[BaseHT
             if (
                 self.headers.get("Host") != origin[7:]
                 or self.headers.get("Origin", origin) != origin
+                or (
+                    require_post_origin
+                    and self.command == "POST"
+                    and self.headers.get("Origin") != origin
+                )
             ):
                 self.reply(403, b'{"error":"loopback origin required"}')
                 return
             if self.command == "GET" and self.path == "/":
-                self.reply(200, PAGE, "text/html; charset=utf-8")
+                self.reply(200, page, "text/html; charset=utf-8")
                 return
             try:
                 size = int(self.headers.get("Content-Length", "0"))
@@ -74,7 +94,8 @@ def handler_for(session: AnnotationSession | AdjudicationSession) -> type[BaseHT
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header(
                 "Content-Security-Policy",
-                "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
+                csp
+                or "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
                 "connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
             )
             self.end_headers()

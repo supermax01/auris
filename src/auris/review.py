@@ -2,8 +2,7 @@
 
 A material assertion is any medication, allergy, negated or refuted,
 or non-patient-experiencer assertion. Review is required for every
-material assertion before final export (A4; gating itself is a later
-step).
+material assertion before final export (A4; run projections enforce the gate).
 
 ``review_reasons`` additionally reports abstentions and the A3 review
 triggers visible in this form (historical/unclear conditions and stated
@@ -126,11 +125,9 @@ def review_quarantined_item(
     A malformed item cannot be approved, edited into a fact, or waive a lane.
     The caller retains the receipt with the run for subsequent export/rendering.
     """
-    import json
-    import os
-    import stat
     from datetime import UTC, datetime
 
+    from auris._storage import append_private_jsonl
     from auris.extract.quarantine import QuarantineReview
     from auris.fhir.models import resource_digest
 
@@ -145,22 +142,11 @@ def review_quarantined_item(
         target_sha256=resource_digest(item.model_dump(mode="json")),
         action="dismiss",
         reason=reason.strip(),
-        reviewer=reviewer.strip(),
-        role=role.strip(),
+        reviewer=reviewer,
+        role=role,
         timestamp=datetime.now(UTC).isoformat(),
     )
-    log_path.parent.mkdir(mode=0o700, exist_ok=True)
-    if stat.S_IMODE(log_path.parent.stat().st_mode) != 0o700:
-        raise ValueError("review workdir must have permissions 0700")
-    descriptor = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW, 0o600)
-    with os.fdopen(descriptor, "a", encoding="utf-8") as handle:
-        if stat.S_IMODE(os.fstat(handle.fileno()).st_mode) != 0o600:
-            raise ValueError("review log must have permissions 0600")
-        handle.write(
-            json.dumps({**receipt.model_dump(mode="json"), "diff": {"dismissed": True}}) + "\n"
-        )
-        handle.flush()
-        os.fsync(handle.fileno())
+    append_private_jsonl(log_path, {**receipt.model_dump(mode="json"), "diff": {"dismissed": True}})
     return receipt
 
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
@@ -12,14 +11,12 @@ from auris.extract.pipeline import ExtractionRun, finish_pipeline
 from auris.extract.prompt import PROMPT_VERSION
 from auris.extract.quarantine import QuarantinedItem, QuarantineReview
 from auris.fhir import Mapper
-from auris.fhir.bundle import build_collection, write_bundle
 from auris.fhir.common import build_anchors
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.intake import Intake
-from auris.render import NoteMetadata, note_items, render_note
+from auris.render import NoteMetadata
 from auris.review import unresolved_quarantines
 from auris.validation.models import ValidationRun
-from auris.validation.report import validation_document
 from auris.validation.runner import ValidatorRunner
 
 
@@ -38,6 +35,7 @@ def export_decision(
     *,
     quarantined_items: tuple[QuarantinedItem, ...] = (),
     quarantine_reviews: tuple[QuarantineReview, ...] = (),
+    reviewed_ids: frozenset[str] = frozenset(),
 ) -> ExportDecision:
     anchors = build_anchors(intake)
     anchors_checked = all(
@@ -48,7 +46,18 @@ def export_decision(
     blockers = tuple(
         outcome.id
         for outcome in outcomes
-        if outcome.is_material and outcome.export_state not in ("final_exportable", "ledger_only")
+        if outcome.is_material
+        and outcome.export_state != "final_exportable"
+        and not (
+            outcome.export_state == "ledger_only"
+            and (
+                outcome.id in reviewed_ids
+                or (
+                    outcome.kind in ("symptom", "patient_reported_condition")
+                    and set(outcome.review_reasons) <= {"negated"}
+                )
+            )
+        )
     )
     blockers += unresolved_quarantines(quarantined_items, quarantine_reviews)
     exported = (
@@ -91,59 +100,20 @@ def finish_run(
     outcomes, validation = finish_pipeline(run, mapper, validator, output_dir)
     if validation is None:
         return None  # Failed extraction retains diagnostics, never a success note/bundle.
-    decision = export_decision(
-        mapper.intake,
-        outcomes,
-        validation,
-        quarantined_items=tuple(run.quarantined_items),
-        quarantine_reviews=tuple(run.quarantine_reviews),
-    )
-    if decision.blocking_ids or not decision.anchors_checked:
-        # Explicit anchors-only transport, NOT a preview of unreviewed clinical resources.
-        # Their real validation states remain visible in validation.json and the note.
-        bundle = build_collection(mapper.intake, (), preview=True)
-    else:
-        bundle = build_collection(
-            mapper.intake,
-            outcomes,
-            validation=validation,
-            quarantined_items=run.quarantined_items,
-            quarantine_reviews=run.quarantine_reviews,
-        )
-    items = note_items(outcomes, mapper.transcript, validation)
-    document = validation_document(mapper.intake, outcomes, validation)
-    document["export"] = decision.model_dump(mode="json")
-    document["visit_review_items"] = [
-        {
-            **item.review_item(),
-            "dismissed": item.id
-            not in unresolved_quarantines(run.quarantined_items, run.quarantine_reviews),
-        }
-        for item in run.quarantined_items
-    ]
-    by_id = {item.id: item for item in items}
-    for row in document["resources"]:
-        if row["id"] in by_id:
-            row["note"] = by_id[row["id"]].model_dump(mode="json")
-    metadata = NoteMetadata(
-        model_id=run.model.id,
-        prompt_version=PROMPT_VERSION,
-        run_timestamp=run.started_at,
-        fictional_demo=fictional_demo,
-    )
-    document["note_metadata"] = metadata.model_dump(mode="json")
-    write_private_text(output_dir / "validation.json", json.dumps(document, indent=2) + "\n")
-    write_bundle(output_dir / "bundle.json", bundle)
-    write_private_text(
-        output_dir / "note.md",
-        render_note(
-            items,
-            metadata,
-            export_summary=decision.summary,
-            malformed_item_count=len(run.quarantined_items),
-            unresolved_malformed_count=len(
-                unresolved_quarantines(run.quarantined_items, run.quarantine_reviews)
-            ),
+    # Retain only immutable inputs alongside extraction.json. All mutable outputs
+    # are derived by the same code used after each clinician review action.
+    from auris.review_state import ReviewInputs, ReviewRun
+
+    inputs = ReviewInputs(
+        intake=mapper.intake,
+        transcript=mapper.transcript,
+        validation=validation,
+        note_metadata=NoteMetadata(
+            model_id=run.model.id,
+            prompt_version=PROMPT_VERSION,
+            run_timestamp=run.started_at,
+            fictional_demo=fictional_demo,
         ),
     )
-    return decision
+    write_private_text(output_dir / "review-inputs.json", inputs.model_dump_json(indent=2) + "\n")
+    return ExportDecision.model_validate(ReviewRun(output_dir).rewrite()["export"])

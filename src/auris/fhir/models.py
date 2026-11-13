@@ -57,7 +57,8 @@ class MappingOutcome(BaseModel):
     """Export eligibility is derived, never assigned by review or a caller.
 
     A3 ledger rows use ledger_only. Refused resource mappings keep the full
-    assertion in ledger and use needs_review. No incomplete FHIR is emitted.
+    assertion in ledger and use needs_review until that ledger version is
+    approved. Approval never builds FHIR for a refused mapping.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -84,10 +85,16 @@ class MappingOutcome(BaseModel):
         if LaneState.FAIL in self.lanes.model_dump().values():
             return "validation_failed"
         if self.ledger_only:
-            if self.consistency.review_reasons or "merge_conflict" in self.review_reasons:
+            if (
+                self.consistency.review_reasons or "merge_conflict" in self.review_reasons
+            ) and self.reviewed_resource_digest != resource_digest(self.ledger or {}):
                 return "needs_review"
             return "ledger_only"
         if self.resource is None:
+            if self.ledger is not None and self.reviewed_resource_digest == resource_digest(
+                self.ledger
+            ):
+                return "ledger_only"
             return "needs_review"
         digest = resource_digest(self.resource)
         if (self.is_material or self.review_reasons) and self.reviewed_resource_digest != digest:
