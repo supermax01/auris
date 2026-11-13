@@ -26,13 +26,14 @@ from auris.extract.chunking import (
     plan_chunks,
     split_segments,
 )
+from auris.extract.identity import profile_identity
 from auris.extract.measurements import (
     extraction_measurements,
     json_whitespace_stats,
     mapped_evidence_measurements,
 )
 from auris.extract.profiles import ExtractionProfile, SchemaVersion, profile_contract
-from auris.extract.prompt import messages, prompt_sha256, prompt_text
+from auris.extract.prompt import messages, prompt_text
 from auris.extract.tokens import (
     HEADROOM_TOKENS,
     OUTPUT_ESTIMATE,
@@ -156,10 +157,7 @@ class ExtractionRun:
                 "quantization": self.model.quantization,
                 "runtime_flags": self.model.runtime_flags,
                 "runtime": asdict(self.runtime),
-                "extraction_profile": self.extraction_profile,
-                "schema_version": profile_contract(self.extraction_profile).schema_version,
-                "prompt_version": profile_contract(self.extraction_profile).prompt_version,
-                "prompt_sha256": prompt_sha256(self.extraction_profile),
+                **profile_identity(self.extraction_profile),
                 "measurements": self.measurements,
                 "prompt_tokens": self.prompt_tokens,
                 "prompt_token_count_method": self.prompt_token_count_method,
@@ -195,7 +193,7 @@ def extract(
             "n_ctx": config.n_ctx,
             "thinking": config.thinking,
             "output_estimate": dict(OUTPUT_ESTIMATE),
-            "json_whitespace": "prompt_compact_json" if profile == "lean-v1" else "server_default",
+            "json_whitespace": "prompt_compact_json" if contract.compact_json else "server_default",
         },
         transcript_sha256=transcript.content_hash,
         runtime=backend.runtime,
@@ -205,7 +203,9 @@ def extract(
         counter = TokenCounter(backend)
         run.prompt_tokens = counter.count(prompt_text(profile))
         run.prompt_token_count_method = counter.method
-        schema = extraction_json_schema(contract.schema_version)
+        schema = extraction_json_schema(
+            contract.schema_version, property_order=contract.property_order
+        )
         input_counter = InputTokenCounter(backend, schema, profile=profile)
         chunks = plan_chunks(
             transcript,

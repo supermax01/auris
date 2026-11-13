@@ -9,6 +9,7 @@ from auris._storage import write_private_text
 from auris.config import load_frozen_config
 from auris.eval.gold import canonical_json, load_dataset
 from auris.extract.leakage import FIXTURE_CLINICAL_TERMS, check_leakage, sentence_texts
+from auris.extract.profiles import PROMPT_VERSIONS
 from auris.extract.prompt import PROMPT_VERSION
 
 
@@ -20,7 +21,7 @@ def leakage_report(
     from auris.datasets.splits import PublicSplit
     from auris.setup.datasets import default_cache_dir, verified_corpus
 
-    if prompt_version not in ("extraction_v1", "extraction_v2", "extraction_v3", "extraction_v4"):
+    if prompt_version not in PROMPT_VERSIONS:
         raise ValueError("unsupported prompt version")
     root = _repo_root().resolve()
     public_id = dataset if dataset in ("primock57", "aci-bench") else None

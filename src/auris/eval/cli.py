@@ -6,6 +6,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+from auris.extract.profiles import PROFILES, PROMPT_VERSIONS
+
 
 def add_parser(subparsers: argparse._SubParsersAction) -> None:
     parser = subparsers.add_parser(
@@ -16,7 +18,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     leakage.add_argument("--dataset", required=True, help="Public dataset ID or manifest path")
     leakage.add_argument(
         "--prompt-version",
-        choices=("extraction_v1", "extraction_v2", "extraction_v3", "extraction_v4"),
+        choices=PROMPT_VERSIONS,
     )
     run = commands.add_parser("run")
     run.add_argument("--dataset", type=Path, required=True)
@@ -24,7 +26,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     run.add_argument(
         "--extraction-profile",
         action="append",
-        choices=("full-v0", "lean-v1"),
+        choices=PROFILES,
         help="Repeat to compare profiles of each selected model in one run",
     )
     run.add_argument("--out", type=Path, required=True)
@@ -40,6 +42,8 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     score.add_argument("--scorer-version", choices=("2", "3"), default="3")
     compare = commands.add_parser("compare")
     compare.add_argument("--run", type=Path, required=True)
+    early_stop = commands.add_parser("early-stop", help="Inspect frozen assertion counts and stops")
+    early_stop.add_argument("--run", type=Path, required=True)
     for command in (run, score):
         command.add_argument("--confirm-locked-test-rerun", action="store_true")
 
@@ -56,6 +60,12 @@ def command(args: argparse.Namespace) -> int:
 
 
 def _command(args: argparse.Namespace) -> int:
+    if args.eval_command == "early-stop":
+        from auris.eval.early_stop import early_stop_report
+        from auris.eval.gold import canonical_json
+
+        print(canonical_json(early_stop_report(args.run)), end="")
+        return 0
     if args.eval_command == "leakage-report":
         from auris.eval.leakage_report import leakage_report
         from auris.extract.prompt import PROMPT_VERSION

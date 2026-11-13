@@ -10,6 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from auris import __version__
+from auris.extract.profiles import PROFILES
 
 
 def _repo_root() -> Path:
@@ -39,7 +40,7 @@ def _build_parser() -> argparse.ArgumentParser:
     add_annotation_parser(subparsers)
     demo_parser = subparsers.add_parser("demo", help="Run the fictional text demo into ./out/demo/")
     demo_parser.add_argument("--model", default=None)
-    demo_parser.add_argument("--extraction-profile", choices=("full-v0", "lean-v1"))
+    demo_parser.add_argument("--extraction-profile", choices=PROFILES)
 
     for name, description in (
         ("extract", "Extract facts using a local llama-server"),
@@ -50,7 +51,7 @@ def _build_parser() -> argparse.ArgumentParser:
         run_parser.add_argument("--intake", type=Path, required=True)
         run_parser.add_argument("--out", type=Path, required=True)
         run_parser.add_argument("--model", default=None)
-        run_parser.add_argument("--extraction-profile", choices=("full-v0", "lean-v1"))
+        run_parser.add_argument("--extraction-profile", choices=PROFILES)
 
     setup_parser = subparsers.add_parser("setup", help="One-time setup downloads")
     setup_subparsers = setup_parser.add_subparsers(dest="setup_command")

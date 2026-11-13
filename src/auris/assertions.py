@@ -48,7 +48,7 @@ from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
-from auris.extract.profiles import SchemaVersion
+from auris.extract.profiles import PropertyOrder, SchemaVersion
 from auris.transcript import SpeakerRole
 
 MAX_EVIDENCE_ITEMS = 8
@@ -328,7 +328,9 @@ def _inline_refs(node: Any, defs: dict[str, Any], active: frozenset[str]) -> Any
     return node
 
 
-def extraction_json_schema(schema_version: SchemaVersion = "1") -> dict[str, Any]:
+def extraction_json_schema(
+    schema_version: SchemaVersion = "1", *, property_order: PropertyOrder = "canonical"
+) -> dict[str, Any]:
     """JSON Schema for constrained decoding of :class:`ExtractionResult`.
 
     Reduced to the lowest-common subset described in the module
@@ -336,6 +338,8 @@ def extraction_json_schema(schema_version: SchemaVersion = "1") -> dict[str, Any
     reduced (e.g. a recursive model is introduced later).
     """
     _check_version(schema_version)
+    if property_order not in ("canonical", "evidence-last"):
+        raise ValueError("unsupported extraction property order")
     raw = ExtractionResult.model_json_schema()
     defs = raw.pop("$defs", {})
     schema = _inline_refs(raw, defs, frozenset())
@@ -344,6 +348,13 @@ def extraction_json_schema(schema_version: SchemaVersion = "1") -> dict[str, Any
             variant["required"] = [
                 name for name in variant["required"] if name not in OPTIONAL_DETAIL_FIELDS
             ]
+    if property_order == "evidence-last":
+        for variant in schema["properties"]["assertions"]["items"]["oneOf"]:
+            properties = variant["properties"]
+            variant["properties"] = {
+                **{name: value for name, value in properties.items() if name != "evidence"},
+                "evidence": properties["evidence"],
+            }
     violations = check_schema_subset(schema)
     if violations:
         raise ValueError(
@@ -352,8 +363,14 @@ def extraction_json_schema(schema_version: SchemaVersion = "1") -> dict[str, Any
     return schema
 
 
-def write_extraction_json_schema(path: str | Path, *, schema_version: SchemaVersion = "1") -> None:
-    text = json.dumps(extraction_json_schema(schema_version), indent=2, ensure_ascii=False) + "\n"
+def write_extraction_json_schema(
+    path: str | Path,
+    *,
+    schema_version: SchemaVersion = "1",
+    property_order: PropertyOrder = "canonical",
+) -> None:
+    schema = extraction_json_schema(schema_version, property_order=property_order)
+    text = json.dumps(schema, indent=2, ensure_ascii=False) + "\n"
     Path(path).write_text(text, encoding="utf-8")
 
 

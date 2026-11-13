@@ -24,6 +24,7 @@ from auris.eval.ledger import register_test_use
 from auris.eval.metrics import score_model
 from auris.eval.predictions import Prediction, freeze_prediction
 from auris.extract.backend import Backend, ExtractionError, RuntimeMetadata
+from auris.extract.identity import profile_identity
 from auris.extract.leakage import check_leakage
 from auris.extract.pipeline import ExtractionRun, extract, finish_pipeline
 from auris.extract.profiles import ExtractionProfile, profile_contract
@@ -233,9 +234,7 @@ def run_dataset(
         runtime = next(iter(extractions.values())).runtime
         document["model_metadata"][identity] = {
             "model": candidate.model_dump(mode="json"),
-            "extraction_profile": profile,
-            "schema_version": profile_contract(profile).schema_version,
-            "prompt_version": profile_contract(profile).prompt_version,
+            **profile_identity(profile),
             "measurements_by_encounter": {key: r.measurements for key, r in extractions.items()},
             "runtime": asdict(runtime),
             "managed_inference_wall_seconds": inference_seconds,

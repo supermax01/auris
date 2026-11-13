@@ -17,6 +17,8 @@ from auris.eval.ledger import register_test_use
 from auris.eval.reports import FICTIONAL_BANNER, compare_run
 from auris.eval.runs import run_dataset, score_run
 from auris.extract.backend import FakeBackend
+from auris.extract.identity import profile_identity
+from auris.extract.profiles import PROFILES
 from auris.fhir import Mapper
 
 
@@ -109,6 +111,72 @@ def test_same_model_two_profiles_compare_and_replay(run_factory, tmp_path):
     compare_run(output)
     assert before == [(output / name).read_bytes() for name in ("report.json", "report.md")]
     assert "Profile comparisons" in before[1].decode()
+
+
+def test_all_profiles_freeze_identity_and_early_stop_is_verified_read_only(
+    run_factory, tmp_path, monkeypatch, capsys
+):
+    candidate = load_frozen_config().extractor.candidate()
+    output, run, _ = run_factory(models=[candidate.id], profiles=list(PROFILES))
+    assert run["models"] == [f"{candidate.id}@{p}" for p in PROFILES]
+    assert all(a["leakage_check"] == "pass" for a in run["leakage"]["profiles"].values())
+    for identity, metadata in run["model_metadata"].items():
+        expected = profile_identity(metadata["extraction_profile"])
+        assert all(metadata[key] == value for key, value in expected.items())
+        extraction = json.loads((output / identity / "hc-01/extraction.json").read_text())
+        assert all(extraction["metadata"][key] == value for key, value in expected.items())
+    frozen = {p: p.read_bytes() for p in output.rglob("*") if p.is_file()}
+    monkeypatch.setattr(
+        "auris.extract.backend.ManagedLlamaServer", lambda *_: pytest.fail("analysis inference")
+    )
+    monkeypatch.setattr(
+        "auris.terminology.TerminologyIndex", lambda *_: pytest.fail("analysis terminology")
+    )
+    assert main(["eval", "early-stop", "--run", str(output)]) == 0
+    text = capsys.readouterr().out
+    report = json.loads(text)
+    assert report["notice"] == run["notice"]
+    for row in report["models"].values():
+        assert row["assertions_per_visit"]["mean"] == 3
+        assert row["single_assertion_reference_ge3"] == {
+            "visits": 0,
+            "reference_ge3_visits": 18,
+            "share": 0,
+        }
+        assert row["completion_tokens"]["total"] == 20 * 222
+        assert row["finish_reasons"] == {"stop": 20}
+    assert main(["eval", "early-stop", "--run", str(output)]) == 0
+    assert capsys.readouterr().out == text
+    assert frozen == {p: p.read_bytes() for p in output.rglob("*") if p.is_file()}
+    score_run(output, ledger=tmp_path / "ledger.jsonl")
+    for row in json.loads((output / "scores.json").read_text())["models"].values():
+        assert row["lenient"]["micro"]["f1"] == 1
+    frozen_input = output / run["models"][0] / "hc-01/extraction.json"
+    frozen_input.write_text(frozen_input.read_text() + " ")
+    assert main(["eval", "early-stop", "--run", str(output)]) == 1
+    assert "frozen artifact hash mismatch" in capsys.readouterr().err
+
+
+def test_ablation_run_flags_select_requested_models_and_profiles():
+    from auris.cli import _build_parser
+
+    args = [
+        "eval",
+        "run",
+        "--dataset",
+        str(MANIFEST),
+        "--model",
+        "bonsai-2-27b-q2_0",
+        "--model",
+        "gemma-4-e4b-it-q4_0",
+        "--out",
+        "cache/eval-runs/step-8b-ablation",
+    ]
+    for profile in PROFILES:
+        args.extend(["--extraction-profile", profile])
+    parsed = _build_parser().parse_args(args)
+    assert parsed.model == ["bonsai-2-27b-q2_0", "gemma-4-e4b-it-q4_0"]
+    assert parsed.extraction_profile == list(PROFILES)
 
 
 def test_fake_run_replay_compare_byte_identical(run_factory, tmp_path, monkeypatch, capsys):
@@ -358,6 +426,9 @@ def test_version_one_replay_enriches_from_frozen_artifacts_without_mutation(run_
         "extraction_profile",
         "schema_version",
         "prompt_version",
+        "prompt_sha256",
+        "schema_property_order",
+        "assertion_property_order",
         "measurements_by_encounter",
     ):
         del document["model_metadata"][model][field]

@@ -1,5 +1,9 @@
 # Step 8 — lean extraction profile
 
+Step 8 outcome: **lean-v1 was not adopted** after the owner's real-model
+harness-check run. `full-v0` remains the default. Step 8b's fixed ablation
+contracts and run instructions are recorded below.
+
 Implemented on `slice-1`, 2026-11-12. Read PLAN, its binding A2–A6/A8
 contracts, the FHIR reference and the Step 2b–6e engineering notes. There is
 no separate Step 2a note in this checkout; its schema/tests are present.
@@ -231,3 +235,151 @@ responses were read without modification. Deviations: concept text deliberately
 remains required as allowed by this step; no automatic material-rise threshold
 or unverified server whitespace knob was invented. The historical null annotation
 hash drift and fresh inference remain the follow-ups described above.
+
+## Step 8b — predefined ablations
+
+Implemented on `slice-1`, 2026-11-13. Re-read PLAN and the FHIR reference;
+there is no disagreement with either. The factors below were specified before
+fresh ablation inference. No model inference or prompt tuning was performed.
+The first three profiles isolate individual lean factors against `full-v0`;
+`abl-order` compares the complete lean contract against `lean-v1`, changing
+only the assertion-property order as requested.
+
+| Profile | Schema | Prompt version | Property order | Change |
+|---|---|---|---|---|
+| `full-v0` | `1` | `extraction_v3` | Canonical | Unchanged control |
+| `lean-v1` | `2` | `extraction_v4` | Canonical | Unchanged lean control |
+| `abl-optional` | `2` | `extraction_abl_optional_v1` | Canonical | V3 plus one line: `Omit fields that were not said.` |
+| `abl-quotes` | `1` | `extraction_abl_quotes_v1` | Canonical | V3 with only its evidence bullet replaced by V4's shortest exact span instruction |
+| `abl-compact` | `1` | `extraction_abl_compact_v1` | Canonical | V3 plus one line: `Output compact JSON on a single line.` |
+| `abl-order` | `2` | `extraction_v4` | Evidence last | Detail/classification fields precede evidence in every assertion |
+
+The optional and compact lines are appended after V3's existing text; no other
+wording or examples change. In particular the optional ablation retains V3's
+existing null instructions, while schema V2's required classifications remain
+enforced. `abl-optional` permits pretty JSON. No profile adds a whitespace
+grammar or changes the parser, mapper, scorer, evidence guard or defaults.
+
+Canonical property order is `kind`, `concept_text`, `polarity`, `experiencer`,
+`temporality`, `source_speaker_role`, `evidence`, followed by each kind's
+existing detail/intent fields. The order ablation moves only `evidence` to the
+end of each `properties` object, preserving the other fields' relative order,
+nullable types and `required` lists. This order also survives the schema file
+export. Both schema versions continue to pass `check_schema_subset`.
+
+New versioned prompt SHA-256 values (pinned in offline tests):
+
+| Prompt | SHA-256 |
+|---|---|
+| `extraction_abl_optional_v1` | `0804045f2674259d20d6c9b3a73888f8ddd2780a3eb9ba02ae172478dd093600` |
+| `extraction_abl_quotes_v1` | `fcb8438d00ae90cc7841beada9ae67314772d7ed572e44d32461250a8cb40521` |
+| `extraction_abl_compact_v1` | `657b885e92b4052b6189f7917da6fa4559ea0d8e9fed37a981b029c04f86350f` |
+
+Every new extraction and evaluation model entry records `extraction_profile`,
+`schema_version`, `prompt_version`, `prompt_sha256`, `schema_property_order`,
+and `assertion_property_order` (the exact ordered property names for each kind).
+The six schema/prompt/order identities are distinct, including the two profiles
+that deliberately share V4. Existing frozen runs replay without backfilling
+these fields. Original full/lean schema exports, including property order, and
+V1–V4 prompt bytes are unchanged.
+
+The new prompts each passed the unchanged leakage guard against all verified
+PriMock57 transcripts (57), the eligible verified ACI pool (195), the complete
+fictional harness (20), recursive fixture transcripts, the demo, and annotation
+guide examples. The nine full-corpus/manifest audits report PASS with no
+sentence hits; private reports are under ignored `cache/eval/leakage-reports/`.
+Audits only read text for lexical overlap; they do not perform extraction or
+reserve held-out evaluation.
+
+Claude should run the following exact two-model × six-profile grid, producing
+twelve model/profile entries (all work remains sequential):
+
+```sh
+.venv/bin/auris eval run \
+  --dataset eval/harness-check/manifest.json \
+  --model bonsai-2-27b-q2_0 \
+  --model gemma-4-e4b-it-q4_0 \
+  --extraction-profile full-v0 \
+  --extraction-profile lean-v1 \
+  --extraction-profile abl-optional \
+  --extraction-profile abl-quotes \
+  --extraction-profile abl-compact \
+  --extraction-profile abl-order \
+  --out cache/eval-runs/step-8b-ablation
+.venv/bin/auris eval early-stop --run cache/eval-runs/step-8b-ablation
+.venv/bin/auris eval score --run cache/eval-runs/step-8b-ablation
+.venv/bin/auris eval compare --run cache/eval-runs/step-8b-ablation
+```
+
+`early-stop` writes deterministic, quote-free JSON to stdout and does not write
+or rescore any run files. It first verifies the frozen artifacts through the
+existing replay loader. Each model/profile entry contains assertion counts per
+visit and their count/total/min/max/mean/median, the number and share of visits
+with exactly one assertion **among reference visits with at least three**, total
+completion usage and per-visit statistics, and finish-reason counts. Per-visit
+rows include the reference count, failure indicator, completion tokens, call
+count and finish reasons. These are diagnostic counts, not proof of premature
+termination or a new quality metric.
+
+Failed visits remain in the assertion/eligible-reference denominators. Token
+and finish counts include discarded/truncated attempts and overlap. A visit's
+tokens are unknown when any call lacks valid usage or no call was made; the
+aggregate total then stays null. Token statistics and `known_total` cover only
+visits with complete usage; unknown visits and known-usage calls are counted
+explicitly.
+Missing finish reasons appear as `unknown`; no-call visits have no finish.
+Legacy profile identities remain null when unrecorded.
+
+Read-only analysis of the existing `harness-check-5-profiles` control run gave:
+
+| Model/profile | Assertions/visit | Exactly one / eligible reference visits | Completion tokens | Finish reasons |
+|---|---:|---:|---:|---|
+| Bonsai 27B / full-v0 | 3.10 | 0/18 (0%) | 8,309 | stop: 20 |
+| Bonsai 27B / lean-v1 | 2.30 | 6/18 (33.3%) | 3,332 | stop: 20 |
+| Gemma E4B / full-v0 | 3.05 | 0/18 (0%) | 8,349 | stop: 20 |
+| Gemma E4B / lean-v1 | 2.40 | 5/18 (27.8%) | 4,820 | stop: 20 |
+
+The denominator is 18 because two harness visits have fewer than three
+reference assertions. These are the owner's existing control outputs, not fresh
+ablation results, and did not inform any further prompt changes.
+
+Offline coverage includes all six schema exports and their exact property
+order, pinned prompt hashes and predefined text differences, omitted-optionals
+versus null through parsing/mapping/scoring projections, distinct identities,
+leakage checks, CLI flags, six-profile FakeBackend evaluation and replay,
+read-only/hash-verified analysis, and hand-built failed/missing-usage/legacy/
+discarded-call fixtures. Full-v0/lean-v1 replay regression tests remain in place.
+No dependencies or dependency manifests changed. Follow-up: Claude runs the
+grid, reviews the four ablation effects and commits after review; no adoption
+decision or default change is made here.
+
+Step 8b final verification:
+
+```text
+.venv/bin/ruff check
+All checks passed!
+
+.venv/bin/ruff format --check
+144 files already formatted
+
+.venv/bin/pytest tests/test_extract_profiles.py tests/eval/test_early_stop.py tests/eval/test_runs.py -q --disable-socket --tb=short
+160 passed in 14.69s
+
+.venv/bin/pytest -m 'not llm' -q --disable-socket --tb=short -rs
+1583 passed, 2 deselected, 1 warning in 40.19s
+
+git diff --check
+(no output; exit 0)
+```
+
+The warning is the existing intentional blocked-socket test. Initial new test
+expectations were corrected for the harness's 18 eligible visits and the CLI's
+existing error-return behavior; the passing results above include both fixes.
+Schema V1 and V2 exports were also compared directly against HEAD's exporter:
+their serialized bytes and property orders are identical. On a temporary copy
+of `harness-check-5-profiles`, HEAD's run implementation and Step 8b's produced
+byte-identical `scores.json`, `report.json` and `report.md` with scorer identity
+held fixed to isolate replay behavior. All frozen inputs/predictions remained
+unchanged and the temporary copy was removed. Production records the actual
+current scorer source hash. No install, dependency edit, network operation,
+fresh inference, commit or push was performed.
