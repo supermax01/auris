@@ -12,9 +12,12 @@ Normalisation applies **only** to the comparison, never to the stored
 text: tokens are compared after Unicode NFC normalisation and
 casefolding, with curly/straight in-token apostrophes equivalent and
 punctuation between tokens ignored. Numeric signs and internal numeric
-punctuation stay significant (1.5 cannot match 1 or 1 5). There is no fuzzy
-matching: a quote whose tokens differ from the transcript — a changed
-number, a dropped "no" — does not align and fails the lane.
+punctuation stay significant (1.5 cannot match 1 or 1 5). Exact-v1 is tried
+first. Only when that sequence is absent, disfluency-v2 removes a versioned
+closed filler list and collapses immediate exact repetitions of 1–3 tokens
+on both sides. No other edits or fuzzy scores are allowed. Assent, denial,
+negation and content tokens remain significant. Stored spans retain the
+original text, including fillers/repeats between the matched endpoints.
 
 An exact substring can still omit a negation cue. Conservatively refuse
 a quote containing no negation cue when its surrounding sentence contains
@@ -37,7 +40,7 @@ written words nobody said (PLAN section 4, principle 4).
 from __future__ import annotations
 
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 from typing import Literal
 
@@ -54,6 +57,12 @@ from auris.assertions import AssertionBase, EvidenceItem
 from auris.transcript import Transcript, TranscriptSegment
 
 TRANSCRIPT_SUPPORTED = "transcript-supported"
+EvidenceVersion = Literal["evidence-v1", "evidence-v2"]
+EVIDENCE_CHECKER_VERSION: EvidenceVersion = "evidence-v2"
+DISFLUENCY_FILLERS_VERSION = "fillers-v1"
+# Closed list: assent, denial and negation can change clinical meaning. In
+# particular mm-hmm, mhm, uh-huh, yeah, no and nope must survive comparison.
+DISFLUENCY_FILLERS = frozenset({"um", "umm", "uh", "uhh", "uhm", "er", "erm", "ah"})
 
 _APOSTROPHES = frozenset("'’‘ʼ")
 _NEGATION_CUES = frozenset(
@@ -83,6 +92,7 @@ class EvidenceLane(StrEnum):
 
 
 class EvidenceFailure(StrEnum):
+    CITED_EMPTY_SEGMENT = "cited_empty_segment"
     CITATION_OUTSIDE_WINDOW = "citation_outside_window"
     SEGMENT_NOT_FOUND = "segment_not_found"
     QUOTE_HAS_NO_TOKENS = "quote_has_no_tokens"
@@ -106,6 +116,7 @@ class AlignedEvidence(_EvidenceModel):
     audio_end_seconds: float | None
     audio_approximate: bool | None
     audio_source: Literal["word_timings", "segment_bounds", "human_utterance_bounds", "untimed"]
+    alignment_method: Literal["exact-v1", "disfluency-v2"] = "exact-v1"
     turn_number: int | None = Field(default=None, ge=1)
 
     @model_validator(mode="after")
@@ -158,6 +169,7 @@ class AssertionEvidenceResult(_EvidenceModel):
     lane: EvidenceLane
     label: str | None
     items: tuple[EvidenceItemResult, ...]
+    checker_version: EvidenceVersion = EVIDENCE_CHECKER_VERSION
 
     @property
     def failures(self) -> tuple[EvidenceFailure, ...]:
@@ -289,6 +301,59 @@ def _find_sequence(haystack: list[str], needle: list[str]) -> int | None:
     return None
 
 
+def _disfluency_tokens(tokens: list[_Token]) -> list[_Token]:
+    """Remove closed-list fillers, then collapse adjacent equal 1–3-grams.
+
+    Scan left to right, shortest repeat first, restarting after each collapse
+    until stable. Each retained token covers *all* original copies, including
+    the last copy's character/audio end. Intervening fillers remain in that
+    original span. The exact-v1 tokenizer splits hyphens: protect the assent
+    pair ``uh huh`` (also spelled ``uh-huh``) rather than dropping its ``uh``.
+    """
+    kept = [
+        token
+        for i, token in enumerate(tokens)
+        if token.normalised not in DISFLUENCY_FILLERS
+        or (token.normalised == "uh" and i + 1 < len(tokens) and tokens[i + 1].normalised == "huh")
+    ]
+    start = 0
+    while start < len(kept):
+        for width in range(1, 4):
+            first, second = kept[start : start + width], kept[start + width : start + 2 * width]
+            if len(second) != width or [t.normalised for t in first] != [
+                t.normalised for t in second
+            ]:
+                continue
+            kept[start : start + 2 * width] = [
+                replace(
+                    left,
+                    char_end=right.char_end,
+                    audio_end_seconds=right.audio_end_seconds,
+                    audio_approximate=left.audio_approximate or right.audio_approximate,
+                )
+                for left, right in zip(first, second, strict=True)
+            ]
+            start = 0
+            break
+        else:
+            start += 1
+    return kept
+
+
+def _disfluency_span(tokens: list[_Token], quote: list[_Token]) -> tuple[int, int] | None:
+    normalised = _disfluency_tokens(tokens)
+    needle = _disfluency_tokens(quote)
+    start = _find_sequence([t.normalised for t in normalised], [t.normalised for t in needle])
+    if start is None:
+        return None
+    first, last = normalised[start], normalised[start + len(needle) - 1]
+    # Recover the original token range for timing and the existing context guard.
+    return (
+        next(i for i, token in enumerate(tokens) if token.char_start == first.char_start),
+        next(i + 1 for i, token in enumerate(tokens) if token.char_end == last.char_end),
+    )
+
+
 def _segment_tokens(segment: TranscriptSegment) -> list[_Token]:
     """Segment tokens, with per-token audio times when word timings
     line up exactly with the segment text (same normalised tokens).
@@ -323,9 +388,18 @@ def align_evidence_item(
     transcript: Transcript,
     *,
     allowed_segment_ids: frozenset[str] | None = None,
+    checker_version: EvidenceVersion = EVIDENCE_CHECKER_VERSION,
 ) -> EvidenceItemResult:
     """Align one evidence quote to its segment. Misalignment is
     returned as data (a FAIL reason), never raised."""
+    segment = transcript.segment_by_id(item.segment_id)
+    if checker_version == "evidence-v2" and segment is not None and not _tokenise(segment.text):
+        return EvidenceItemResult(
+            segment_id=item.segment_id,
+            quote=item.quote,
+            aligned=None,
+            failure=EvidenceFailure.CITED_EMPTY_SEGMENT,
+        )
     if allowed_segment_ids is not None and item.segment_id not in allowed_segment_ids:
         return EvidenceItemResult(
             segment_id=item.segment_id,
@@ -333,7 +407,6 @@ def align_evidence_item(
             aligned=None,
             failure=EvidenceFailure.CITATION_OUTSIDE_WINDOW,
         )
-    segment = transcript.segment_by_id(item.segment_id)
     if segment is None:
         return EvidenceItemResult(
             segment_id=item.segment_id,
@@ -354,21 +427,34 @@ def align_evidence_item(
         [token.normalised for token in tokens],
         [token.normalised for token in quote_tokens],
     )
-    if start is None:
+    span = (start, start + len(quote_tokens)) if start is not None else None
+    method: Literal["exact-v1", "disfluency-v2"] = "exact-v1"
+    if span is None and checker_version == "evidence-v2":
+        span = _disfluency_span(tokens, quote_tokens)
+        method = "disfluency-v2"
+    if span is None:
         return EvidenceItemResult(
             segment_id=item.segment_id,
             quote=item.quote,
             aligned=None,
             failure=EvidenceFailure.QUOTE_NOT_FOUND,
         )
-    if _omits_negation_context(segment.text, tokens, start, start + len(quote_tokens)):
+    start, stop = span
+    # A collapsed multi-token repeat can have overlapping original ranges:
+    # e.g. the canonical "pain" in "no pain no pain" spans "pain no pain".
+    # Its convex original span must not introduce a cue absent from the quote.
+    if _omits_negation_context(segment.text, tokens, start, stop) or (
+        method == "disfluency-v2"
+        and _has_negation(tokens[start:stop])
+        and not _has_negation(quote_tokens)
+    ):
         return EvidenceItemResult(
             segment_id=item.segment_id,
             quote=item.quote,
             aligned=None,
             failure=EvidenceFailure.OMITTED_NEGATION_CONTEXT,
         )
-    matched = tokens[start : start + len(quote_tokens)]
+    matched = tokens[start:stop]
     char_start = matched[0].char_start
     char_end = matched[-1].char_end
     if all(token.audio_start_seconds is not None for token in matched):
@@ -400,6 +486,7 @@ def align_evidence_item(
             audio_end_seconds=audio_end,
             audio_approximate=audio_approximate,
             audio_source=audio_source,
+            alignment_method=method,
             turn_number=segment.turn_number,
         ),
         failure=None,
@@ -411,15 +498,26 @@ def align_assertion_evidence(
     transcript: Transcript,
     *,
     allowed_segment_ids: frozenset[str] | None = None,
+    checker_version: EvidenceVersion = EVIDENCE_CHECKER_VERSION,
 ) -> AssertionEvidenceResult:
     """The evidence lane for one assertion: PASS only when every
     quote aligns; PASS carries the "transcript-supported" label."""
     items = tuple(
-        align_evidence_item(item, transcript, allowed_segment_ids=allowed_segment_ids)
+        align_evidence_item(
+            item,
+            transcript,
+            allowed_segment_ids=allowed_segment_ids,
+            checker_version=checker_version,
+        )
         for item in assertion.evidence
     )
     if all(item.ok for item in items):
         return AssertionEvidenceResult(
-            lane=EvidenceLane.PASS, label=TRANSCRIPT_SUPPORTED, items=items
+            lane=EvidenceLane.PASS,
+            label=TRANSCRIPT_SUPPORTED,
+            items=items,
+            checker_version=checker_version,
         )
-    return AssertionEvidenceResult(lane=EvidenceLane.FAIL, label=None, items=items)
+    return AssertionEvidenceResult(
+        lane=EvidenceLane.FAIL, label=None, items=items, checker_version=checker_version
+    )

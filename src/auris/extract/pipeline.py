@@ -21,6 +21,7 @@ from auris.assertions import (
     parse_extraction_json,
 )
 from auris.config import ExtractorCandidate, ExtractorConfig
+from auris.evidence import DISFLUENCY_FILLERS_VERSION, EVIDENCE_CHECKER_VERSION
 from auris.extract.backend import (
     Backend,
     ExtractionError,
@@ -51,7 +52,7 @@ from auris.extract.profiles import (
     decoding_parameters,
     profile_contract,
 )
-from auris.extract.prompt import messages, prompt_text
+from auris.extract.prompt import messages, prompt_text, shown_segments
 from auris.extract.quarantine import ItemError, QuarantinedItem, QuarantineReview
 from auris.extract.timeout import TimeoutBudget
 from auris.extract.tokens import (
@@ -253,6 +254,8 @@ class ExtractionRun:
                 "prompt_token_count_method": self.prompt_token_count_method,
                 "decoding": self.decoding,
                 "transcript_sha256": self.transcript_sha256,
+                "evidence_checker_version": EVIDENCE_CHECKER_VERSION,
+                "disfluency_fillers_version": DISFLUENCY_FILLERS_VERSION,
                 "wall_seconds": self.wall_seconds,
                 "token_usage": [call.get("usage") for call in self.calls],
                 "input_token_comparisons": [
@@ -373,6 +376,8 @@ def extract(
             call: dict[str, Any] = {
                 "window_id": window_id,
                 "segment_ids": [s.id for s in chunk.segments],
+                "allowed_segment_ids": [s.id for s in shown_segments(chunk.segments)],
+                "hidden_segment_count": len(chunk.segments) - len(shown_segments(chunk.segments)),
                 "reserved_input_tokens": chunk.input_tokens,
                 "token_count_method": chunk.token_count_method,
                 "max_tokens": max_tokens,
@@ -445,7 +450,7 @@ def extract(
                 call["json_whitespace"] = json_whitespace_stats(
                     response["choices"][0]["message"]["content"]
                 )
-                allowed = frozenset(s.id for s in chunk.segments)
+                allowed = frozenset(call["allowed_segment_ids"])
                 assertions, resolutions = resolve_citations(
                     result.assertions,
                     chunk.segments,

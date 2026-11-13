@@ -4,11 +4,12 @@ import hashlib
 from collections.abc import Sequence
 from importlib.resources import files
 
+from auris.evidence import normalised_tokens
 from auris.extract.profiles import ExtractionProfile, profile_contract
 from auris.transcript import TranscriptSegment
 
 PROMPT_VERSION = "extraction_v3"
-WINDOW_PROMPT_VERSION = "allowed-segment-ids-v1"
+WINDOW_PROMPT_VERSION = "allowed-segment-ids-v2"
 WINDOW_INSTRUCTION = (
     "Allowed segment_id values for this window (including overlap): {ids}.\n"
     "Copy segment_id from the FIRST field in brackets. The third field is a location, "
@@ -39,7 +40,13 @@ def render_transcript(segments: Sequence[TranscriptSegment]) -> str:
         f"[{s.id} | {s.role} | {segment_location(s)}] "
         + s.text.replace("\r", "\\r").replace("\n", "\\n")
         for s in segments
+        if normalised_tokens(s.text)
     )
+
+
+def shown_segments(segments: Sequence[TranscriptSegment]) -> tuple[TranscriptSegment, ...]:
+    """Model-visible segments; planning and overlap retain the original sequence."""
+    return tuple(s for s in segments if normalised_tokens(s.text))
 
 
 def segment_location(segment: TranscriptSegment) -> str:
@@ -52,11 +59,12 @@ def segment_location(segment: TranscriptSegment) -> str:
 def messages(
     segments: Sequence[TranscriptSegment], profile: ExtractionProfile = "full-v0"
 ) -> list[dict[str, str]]:
+    visible = shown_segments(segments)
     return [
         {"role": "system", "content": prompt_text(profile)},
         {
             "role": "user",
-            "content": WINDOW_INSTRUCTION.format(ids=", ".join(s.id for s in segments) or "none")
-            + render_transcript(segments),
+            "content": WINDOW_INSTRUCTION.format(ids=", ".join(s.id for s in visible) or "none")
+            + render_transcript(visible),
         },
     ]

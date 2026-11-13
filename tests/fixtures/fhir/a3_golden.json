@@ -98,11 +98,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -224,11 +226,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -350,11 +354,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -476,11 +482,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -602,11 +610,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -732,11 +742,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -886,11 +898,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -982,11 +996,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -1076,11 +1092,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "negated"
@@ -1209,11 +1227,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -1332,11 +1352,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "negated",
@@ -1466,11 +1488,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [],
         "mapper_flags": [],
@@ -1560,11 +1584,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "negated"
@@ -1683,11 +1709,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "medication"
@@ -1789,11 +1817,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "medication",
@@ -1895,11 +1925,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "medication"
@@ -1999,11 +2031,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "medication",
@@ -2135,11 +2169,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "allergy"
@@ -2263,11 +2299,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "allergy",
@@ -2365,11 +2403,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "allergy",
@@ -2466,11 +2506,13 @@
                 "audio_start_seconds": 0.0,
                 "audio_end_seconds": 5.0,
                 "audio_approximate": true,
-                "audio_source": "segment_bounds"
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
               },
               "failure": null
             }
-          ]
+          ],
+          "checker_version": "evidence-v2"
         },
         "review_reasons": [
           "allergy",

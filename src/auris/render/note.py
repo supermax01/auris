@@ -152,6 +152,8 @@ def _receipts(outcome: MappingOutcome, transcript: Transcript) -> str:
         if transcript.timing_mode == "untimed":
             stamp = f"turn {segment.turn_number}" if segment else "turn unknown"
         receipt = f"[{stamp} · {role}]"
+        if item.aligned and item.aligned.alignment_method == "disfluency-v2":
+            receipt += " (matched ignoring fillers/repeats)"
         if receipt not in receipts:
             receipts.append(receipt)
     return " ".join(receipts)

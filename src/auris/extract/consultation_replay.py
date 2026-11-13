@@ -55,6 +55,15 @@ def replay_consultation(
     Do not remerge after alias repair: positions remain paired with the original
     validation rows. This avoids counting deduplication as improved recall.
     """
+    # This historical counterfactual measures Step 9 only. Step 11 has its own
+    # v1/v2 replay; do not silently include its disfluency recoveries here.
+    mapper = Mapper(
+        mapper.intake,
+        mapper.transcript,
+        mapper.terminology,
+        mapper.unit_sets,
+        evidence_checker_version="evidence-v1",
+    )
     if document["metadata"]["transcript_sha256"] != mapper.transcript.content_hash:
         raise ValueError("replay transcript hash mismatch")
     categories: Counter[str] = Counter(

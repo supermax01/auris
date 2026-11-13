@@ -4,10 +4,12 @@ from collections.abc import Sequence
 from typing import Any, Literal
 
 from auris.assertions import AssertionBase
-from auris.extract.prompt import segment_location
+from auris.evidence import normalised_tokens
+from auris.extract.prompt import segment_location, shown_segments
 from auris.transcript import Transcript, TranscriptSegment
 
 CitationClass = Literal[
+    "cited_empty_segment",
     "in_window",
     "adjacent_or_overlap",
     "earlier_window",
@@ -22,7 +24,10 @@ def classify_citation(
     transcript: Transcript,
     earlier_ids: frozenset[str] = frozenset(),
 ) -> CitationClass:
-    allowed = {s.id for s in segments}
+    cited = transcript.segment_by_id(segment_id)
+    if cited is not None and not normalised_tokens(cited.text):
+        return "cited_empty_segment"
+    allowed = {s.id for s in shown_segments(segments)}
     if segment_id in allowed:
         return "in_window"
     if any(segment_id == segment_location(s) for s in transcript.segments):
@@ -51,9 +56,10 @@ def resolve_citations(
     segment. Actual ids (including foreign ids) are never treated as aliases.
     Normal quote alignment and qualifier/negation checks still run afterwards.
     """
-    allowed = {s.id for s in segments}
+    visible = shown_segments(segments)
+    allowed = {s.id for s in visible}
     aliases: dict[str, list[str]] = {}
-    for segment in segments:
+    for segment in visible:
         aliases.setdefault(segment_location(segment), []).append(segment.id)
     resolved = []
     changes = []

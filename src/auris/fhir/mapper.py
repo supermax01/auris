@@ -13,7 +13,13 @@ from auris.assertions import (
     VitalSignAssertion,
 )
 from auris.consistency import check_consistency
-from auris.evidence import AssertionEvidenceResult, EvidenceFailure, align_assertion_evidence
+from auris.evidence import (
+    EVIDENCE_CHECKER_VERSION,
+    AssertionEvidenceResult,
+    EvidenceFailure,
+    EvidenceVersion,
+    align_assertion_evidence,
+)
 from auris.fhir.allergies import build_allergy
 from auris.fhir.common import build_anchors, resource_id
 from auris.fhir.conditions import (
@@ -44,11 +50,14 @@ class Mapper:
         transcript: Transcript,
         terminology: TerminologyIndex,
         unit_sets: UnitSets,
+        *,
+        evidence_checker_version: EvidenceVersion = EVIDENCE_CHECKER_VERSION,
     ) -> None:
         self.intake = intake
         self.transcript = transcript
         self.terminology = terminology
         self.unit_sets = unit_sets
+        self.evidence_checker_version = evidence_checker_version
         self.anchors = build_anchors(intake)
 
     def map_assertion(
@@ -62,7 +71,10 @@ class Mapper:
         if position < 0:
             raise ValueError("assertion position must be non-negative")
         aligned = align_assertion_evidence(
-            assertion, self.transcript, allowed_segment_ids=allowed_segment_ids
+            assertion,
+            self.transcript,
+            allowed_segment_ids=allowed_segment_ids,
+            checker_version=self.evidence_checker_version,
         )
         if evidence is not None and evidence != aligned:
             raise ValueError("evidence result does not belong to this assertion and transcript")
@@ -85,6 +97,8 @@ class Mapper:
             reasons.append("evidence_failed")
         if EvidenceFailure.CITATION_OUTSIDE_WINDOW in aligned.failures:
             reasons.append(EvidenceFailure.CITATION_OUTSIDE_WINDOW.value)
+        if EvidenceFailure.CITED_EMPTY_SEGMENT in aligned.failures:
+            reasons.append(EvidenceFailure.CITED_EMPTY_SEGMENT.value)
         cited_roles = {
             segment.role
             for item in assertion.evidence
