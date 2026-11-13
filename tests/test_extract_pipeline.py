@@ -36,7 +36,7 @@ def test_prompt_snapshot_and_hash():
             "content": "Transcript:\n[s3 | patient | 00:42.1–00:45.0] I have no cough.",
         },
     ]
-    assert prompt_sha256() == "a66c105f84af129589e5047c1eb3b4457a13b527cebee495030cb7f05cffa93e"
+    assert prompt_sha256() == "0db6b464e45c02bfe5f16ee9f392f4b8456ecb3ceabcef71611fbdabd31ab581"
     assert "fictional" in prompt_text()
 
 

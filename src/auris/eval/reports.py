@@ -5,11 +5,12 @@ from collections import Counter
 from pathlib import Path
 
 from auris._storage import write_private_text
-from auris.eval import FICTIONAL_BANNER, SCORER_VERSION
+from auris.eval import FICTIONAL_BANNER, REPLAYABLE_SCORERS
 from auris.eval.critical import CRITICAL_ERRORS
 from auris.eval.diagnostics import render_diagnostics
 from auris.eval.gold import Dataset, digest
 from auris.eval.metrics import SCORE_VIEWS, sum_counts
+from auris.eval.noncritical import NONCRITICAL_ERRORS
 from auris.eval.runs import load_run, scorer_hash, write_json
 from auris.eval.statistics import bootstrap
 
@@ -165,6 +166,10 @@ def render_report(report: dict) -> str:
                     + (f"; 3/N≈{m['rule_of_three_when_zero']:.4f}" if m["count"] == 0 else "")
                 )
             lines.append(f"| {stage}: {name} | " + " | ".join(cells) + " |")
+    if report["scorer_version"] == "3":
+        for name in NONCRITICAL_ERRORS:
+            cells = [str(model["noncritical_errors"][name]["count"]) for model in models.values()]
+            lines.append(f"| pre_review non-critical: {name} | " + " | ".join(cells) + " |")
     lines += [
         "",
         "Safety bounds are one-sided exact Clopper–Pearson bounds on encounter incidence. "
@@ -226,7 +231,7 @@ def compare_run(output: Path) -> dict:
         raise ValueError("score receipt mismatch; score frozen predictions first")
     report = json.loads(raw)
     if (
-        report.get("scorer_version") != SCORER_VERSION
+        report.get("scorer_version") not in REPLAYABLE_SCORERS
         or report.get("scorer_sha256") != scorer_hash()
     ):
         raise ValueError("scores use a different scorer; run auris eval score before compare")

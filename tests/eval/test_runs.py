@@ -112,7 +112,7 @@ def test_fake_run_replay_compare_byte_identical(run_factory, tmp_path, monkeypat
     assert FICTIONAL_BANNER in md_bytes.decode()
     assert "## Error analysis" in md_bytes.decode()
     assert "assertion-strict" in md_bytes.decode() and "record-strict" in md_bytes.decode()
-    assert report["scorer_version"] == "2"
+    assert report["scorer_version"] == "3"
     assert report["selection"]["verdict"] == "not applicable: fictional harness-check set"
     assert "not applicable: fictional harness-check set" in capsys.readouterr().out
     for model in report["models"].values():
@@ -308,7 +308,7 @@ def test_version_one_replay_enriches_from_frozen_artifacts_without_mutation(run_
     (output / "run.json").write_text(canonical_json(document))
     frozen_run, frozen_predictions = (output / "run.json").read_bytes(), path.read_bytes()
     result = score_run(output, ledger=tmp_path / "ledger.jsonl")
-    assert result["scorer_version"] == "2"
+    assert result["scorer_version"] == "3"
     assert result["inference_scorer"] == {"version": "1", "sha256": "a" * 64}
     assert result["models"][model]["metadata"]["failure_reasons"] == {}
     compare_run(output)
@@ -317,3 +317,23 @@ def test_version_one_replay_enriches_from_frozen_artifacts_without_mutation(run_
     first = (output / "scores.json").read_bytes()
     score_run(output, ledger=tmp_path / "ledger.jsonl")
     assert (output / "scores.json").read_bytes() == first
+
+
+def test_v2_run_replays_both_scorers_without_mutating_predictions(
+    run_factory, tmp_path, monkeypatch
+):
+    output, document, _ = run_factory(models=[load_frozen_config().extractor.candidate().id])
+    document["scorer_version"] = "2"
+    (output / "run.json").write_text(canonical_json(document))
+    frozen = {p: p.read_bytes() for p in output.rglob("*") if p.is_file()}
+    monkeypatch.setattr(
+        "auris.extract.backend.ManagedLlamaServer", lambda *_: pytest.fail("replay inference")
+    )
+    for version in ("2", "3"):
+        assert main(["eval", "score", "--run", str(output), "--scorer-version", version]) == 0
+        report = compare_run(output)
+        assert report["scorer_version"] == version
+        assert report["inference_scorer"]["version"] == "2"
+        for model in report["models"].values():
+            assert ("noncritical_errors" in model) == (version == "3")
+        assert all(p.read_bytes() == contents for p, contents in frozen.items())

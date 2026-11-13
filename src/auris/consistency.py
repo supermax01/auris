@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterable
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, SerializerFunctionWrapHandler, model_serializer
 
 from auris.assertions import AssertionBase, Experiencer, Polarity
 from auris.evidence import AssertionEvidenceResult, has_negation, normalised_tokens, sentence_texts
@@ -26,6 +27,12 @@ _CLINICIAN_KINDS = frozenset(
     {"clinician_assessed_problem", "clinician_ruled_out_problem", "explicit_new_order"}
 )
 _NUMBER = re.compile(r"[+−-]?(?:\d+(?:[.,]\d+)*|\.\d+)")
+_VALUE_FIELDS = ("value_text", "unit_text", "dose_text")
+_NULLABLE_FIELDS = (*_VALUE_FIELDS, "route_text", "frequency_text", "stated_time_text")
+_LITERAL_NULLS = frozenset({"null", "none", "n/a", "unknown"})
+_COMMENTARY = re.compile(
+    r"[()]|\b(?:implied|not\s+explicitly\s+stated|presumably|likely|context)\b", re.IGNORECASE
+)
 Synonyms = Callable[[str, str], Iterable[str]]
 
 
@@ -33,10 +40,45 @@ class ConsistencyResult(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
     failures: tuple[str, ...] = ()
     review_reasons: tuple[str, ...] = ()
+    informational_flags: tuple[str, ...] = ()
+    normalised_null_fields: tuple[str, ...] = ()
+    unusable_fields: tuple[str, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def serialize(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        for field in ("informational_flags", "normalised_null_fields", "unusable_fields"):
+            if not getattr(self, field):
+                data.pop(field)
+        return data
 
     @property
     def force_material(self) -> bool:
         return bool(self.failures or self.review_reasons)
+
+    def usable_assertion(self, assertion: AssertionBase) -> AssertionBase:
+        """Keep the raw extraction intact; only the mapper sees cleaned fields."""
+        return assertion.model_copy(
+            update={field: None for field in (*self.normalised_null_fields, *self.unusable_fields)}
+        )
+
+
+def _field_hygiene(assertion: AssertionBase) -> ConsistencyResult:
+    nulls, unusable = [], []
+    for field in _NULLABLE_FIELDS:
+        text = getattr(assertion, field, None)
+        if text is None:
+            continue
+        if text.strip().casefold() in _LITERAL_NULLS:
+            nulls.append(field)
+        elif field in _VALUE_FIELDS and _COMMENTARY.search(text):
+            unusable.append(field)
+    return ConsistencyResult(
+        informational_flags=("literal_null_normalised",) if nulls else (),
+        normalised_null_fields=tuple(nulls),
+        review_reasons=("field_contains_commentary",) if unusable else (),
+        unusable_fields=tuple(unusable),
+    )
 
 
 def numeric_tokens(text: str) -> frozenset[str]:
@@ -65,12 +107,14 @@ def check_consistency(
     transcript: Transcript,
     synonyms: Synonyms | None = None,
 ) -> ConsistencyResult:
+    hygiene = _field_hygiene(assertion)
+    assertion = hygiene.usable_assertion(assertion)
     quotes = [item.aligned.aligned_text for item in evidence.items if item.aligned is not None]
     if not quotes:
         # Alignment already fails; don't manufacture clinical conflicts.
-        return ConsistencyResult()
+        return hygiene
     failures: list[str] = []
-    reasons: list[str] = []
+    reasons: list[str] = list(hygiene.review_reasons)
     numbers = frozenset().union(*(numeric_tokens(quote) for quote in quotes))
     for field in ("value_text", "dose_text"):
         text = getattr(assertion, field, None)
@@ -120,4 +164,6 @@ def check_consistency(
         assertion.source_speaker_role != SpeakerRole.CLINICIAN or SpeakerRole.CLINICIAN not in roles
     ):
         reasons.append("kind_role_mismatch")
-    return ConsistencyResult(failures=tuple(failures), review_reasons=tuple(reasons))
+    return hygiene.model_copy(
+        update={"failures": tuple(failures), "review_reasons": tuple(reasons)}
+    )

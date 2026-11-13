@@ -8,9 +8,10 @@ assertions, not medical harm. Each assertion counts at most once per category.
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from auris.eval import REPLAYABLE_SCORERS, SCORER_VERSION
 from auris.eval.gold import GoldAssertion
 from auris.eval.matching import RESOURCE_CLASSES, concept_equal, overlap
-from auris.eval.normalization import normalize_dose
+from auris.eval.normalization import dose_amounts, normalize_dose
 from auris.eval.predictions import Prediction
 
 CRITICAL_ERRORS = (
@@ -37,14 +38,21 @@ class CriticalFinding:
     reason: str
 
 
-def findings(prediction: Prediction, gold: Sequence[GoldAssertion]) -> dict[str, CriticalFinding]:
+def findings(
+    prediction: Prediction, gold: Sequence[GoldAssertion], *, scorer_version: str = SCORER_VERSION
+) -> dict[str, CriticalFinding]:
+    if scorer_version not in REPLAYABLE_SCORERS:
+        raise ValueError("unsupported scorer version")
     result: dict[str, CriticalFinding] = {}
     surface = prediction.allergen_text or prediction.concept_text
     concepts = [g for g in gold if concept_equal(prediction, g)]
     anchored = [g for g in concepts if _anchored(prediction, g)]
     related = anchored or concepts
     if related and prediction.experiencer is not None and prediction.experiencer != "unknown":
-        if all(g.experiencer != prediction.experiencer for g in related):
+        if all(g.experiencer != prediction.experiencer for g in related) and (
+            scorer_version == "2"
+            or all(patient_record_crossing(prediction.experiencer, g.experiencer) for g in related)
+        ):
             result["wrong_person"] = CriticalFinding(
                 tuple(related),
                 f"experiencer {prediction.experiencer!r} vs gold "
@@ -93,13 +101,18 @@ def findings(prediction: Prediction, gold: Sequence[GoldAssertion]) -> dict[str,
                     or bool(set(prediction.codes) & set(g.codes))
                 )
             ]
-            if not correct_drugs or (
-                prediction.dose_text is not None
-                and all(
-                    normalize_dose(prediction.dose_text) != normalize_dose(g.dose_text)
-                    for g in correct_drugs
-                )
-            ):
+            wrong_dose_v2 = prediction.dose_text is not None and all(
+                normalize_dose(prediction.dose_text) != normalize_dose(g.dose_text)
+                for g in correct_drugs
+            )
+            predicted_amounts = dose_amounts(prediction.dose_text)
+            stated_doses = [
+                dose_amounts(g.dose_text) for g in correct_drugs if dose_amounts(g.dose_text)
+            ]
+            wrong_dose_v3 = bool(predicted_amounts and stated_doses) and all(
+                predicted_amounts != dose for dose in stated_doses
+            )
+            if not correct_drugs or (wrong_dose_v2 if scorer_version == "2" else wrong_dose_v3):
                 result["wrong_drug_or_dose"] = CriticalFinding(
                     tuple(correct_drugs or candidates),
                     f"drug/code mismatch for {surface!r} vs gold "
@@ -128,17 +141,31 @@ def findings(prediction: Prediction, gold: Sequence[GoldAssertion]) -> dict[str,
     return result
 
 
-def errors(prediction: Prediction, gold: Sequence[GoldAssertion]) -> frozenset[str]:
-    return frozenset(findings(prediction, gold))
+def patient_record_crossing(first: str | None, second: str | None) -> bool:
+    nonpatient = {"family_member", "other", "companion"}
+    return (first == "patient" and second in nonpatient) or (
+        second == "patient" and first in nonpatient
+    )
 
 
-def critical_events(predictions: Sequence[Prediction], gold: Sequence[GoldAssertion]) -> dict:
+def errors(
+    prediction: Prediction, gold: Sequence[GoldAssertion], *, scorer_version: str = SCORER_VERSION
+) -> frozenset[str]:
+    return frozenset(findings(prediction, gold, scorer_version=scorer_version))
+
+
+def critical_events(
+    predictions: Sequence[Prediction],
+    gold: Sequence[GoldAssertion],
+    *,
+    scorer_version: str = SCORER_VERSION,
+) -> dict:
     result = {
         stage: {name: [] for name in CRITICAL_ERRORS}
         for stage in ("pre_review", "exported_without_review")
     }
     for prediction in predictions:
-        for name in sorted(errors(prediction, gold)):
+        for name in sorted(errors(prediction, gold, scorer_version=scorer_version)):
             result["pre_review"][name].append(prediction.id)
             if prediction.export_state == "final_exportable" and not prediction.reviewed:
                 result["exported_without_review"][name].append(prediction.id)

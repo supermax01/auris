@@ -157,6 +157,8 @@ def build_vital(
     anchors: Anchors,
     unit_sets: UnitSets,
     evidence: AssertionEvidenceResult,
+    *,
+    unit_unusable: bool = False,
 ) -> BuildResult:
     profile = vital_profile(assertion.concept_text)
     if profile is None:
@@ -178,6 +180,12 @@ def build_vital(
             values, spoken = recovered
             notes.append("systolic/diastolic parsed from value and unit text")
             flags.append(BP_SPLIT_FIELDS_FLAG)
+    if unit_unusable:
+        # A commentary-bearing unit is not a spoken unit or permission to
+        # default one. Recover only a known unit directly after these values.
+        spoken = _unit_from_quote(assertion, evidence, unit_sets, bp=bp)
+        if spoken is None:
+            reasons.append("unit_missing")
     if spoken is None:
         unit = fixed_unit
         if unit is None:
@@ -283,3 +291,39 @@ def build_vital(
             "code": unit,
         }
     return BuildResult(profile=profile, resource=resource, flags=tuple(flags), notes=tuple(notes))
+
+
+def _unit_from_quote(
+    assertion: VitalSignAssertion,
+    evidence: AssertionEvidenceResult,
+    unit_sets: UnitSets,
+    *,
+    bp: bool,
+) -> str | None:
+    if evidence.lane != EvidenceLane.PASS:
+        return None
+    expected = _bp_values(assertion.value_text) if bp else [_number(assertion.value_text)]
+    if not expected or None in expected:
+        return None
+    # Reuse exactly the mapper's existing spelling table and profile unit sets.
+    aliases = {unit: unit for units in unit_sets.values() for unit in units}
+    aliases.update({"mm[Hg]": "mm[Hg]", "/min": "/min"})
+    aliases.update(_UNIT_NAMES)
+    found = set()
+    pattern = _BP_PAIR if bp else rf"(?P<value>{_NUMBER})"
+    for item in evidence.items:
+        if item.aligned is None:
+            continue
+        quote = item.aligned.aligned_text
+        for match in re.finditer(rf"(?<![\w.+-]){pattern}(?![\d.])", quote, re.IGNORECASE):
+            values = _bp_values(match.group()) if bp else [_number(match.group())]
+            if values != expected:
+                continue
+            tail = quote[match.end() :].lstrip()
+            for alias, code in sorted(aliases.items(), key=lambda pair: -len(pair[0])):
+                # UCUM codes remain case-sensitive, spoken aliases do not.
+                flags = re.IGNORECASE if alias in _UNIT_NAMES else 0
+                if re.match(re.escape(alias) + r"(?![\w/\[\]])", tail, flags):
+                    found.add(code)
+                    break
+    return next(iter(found)) if len(found) == 1 else None

@@ -88,3 +88,17 @@ def normalize_dose(text: str | None) -> str:
         decimal_text(token) if re.fullmatch(NUMBER, token) else _DOSE_UNIT_LOOKUP.get(token, token)
         for token in tokens
     )
+
+
+def dose_amounts(text: str | None) -> tuple[tuple[str, str], ...]:
+    """Explicit number/unit pairs only, using v2 spelling equivalences.
+
+    Preserve order and units; never convert or interpret frequency as an amount.
+    """
+    tokens = normalize_dose(text).split()
+    units = set(_DOSE_UNIT_LOOKUP.values())
+    return tuple(
+        (number, unit)
+        for number, unit in zip(tokens, tokens[1:], strict=False)
+        if re.fullmatch(NUMBER, number) and unit in units
+    )

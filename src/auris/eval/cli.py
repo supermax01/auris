@@ -12,6 +12,11 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         "eval", help="Run, score and compare frozen evaluation predictions"
     )
     commands = parser.add_subparsers(dest="eval_command", required=True)
+    leakage = commands.add_parser("leakage-report")
+    leakage.add_argument("--dataset", required=True, help="Public dataset ID or manifest path")
+    leakage.add_argument(
+        "--prompt-version", choices=("extraction_v1", "extraction_v2", "extraction_v3")
+    )
     run = commands.add_parser("run")
     run.add_argument("--dataset", type=Path, required=True)
     run.add_argument("--model", action="append", default=None)
@@ -25,6 +30,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     score = commands.add_parser("score")
     score.add_argument("--run", type=Path, required=True)
+    score.add_argument("--scorer-version", choices=("2", "3"), default="3")
     compare = commands.add_parser("compare")
     compare.add_argument("--run", type=Path, required=True)
     for command in (run, score):
@@ -43,6 +49,17 @@ def command(args: argparse.Namespace) -> int:
 
 
 def _command(args: argparse.Namespace) -> int:
+    if args.eval_command == "leakage-report":
+        from auris.eval.leakage_report import leakage_report
+        from auris.extract.prompt import PROMPT_VERSION
+
+        _, sentences = leakage_report(
+            args.dataset, prompt_version=args.prompt_version or PROMPT_VERSION
+        )
+        for sentence in sentences:
+            print(sentence)
+        return 0
+
     from auris.cli import _model_cache, _repo_root
     from auris.config import load_frozen_config
     from auris.eval.reports import compare_run
@@ -58,7 +75,12 @@ def _command(args: argparse.Namespace) -> int:
         Path(os.environ.get("AURIS_CACHE", _repo_root() / "cache")) / "eval" / "test-ledger.jsonl"
     )
     if args.eval_command == "score":
-        report = score_run(args.run, ledger=ledger, confirmed=args.confirm_locked_test_rerun)
+        report = score_run(
+            args.run,
+            ledger=ledger,
+            confirmed=args.confirm_locked_test_rerun,
+            scorer_version=args.scorer_version,
+        )
         print(
             "scored frozen predictions; wrote scores.json"
             + (

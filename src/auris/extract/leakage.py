@@ -107,13 +107,21 @@ def _tokens(text: str) -> tuple[str, ...]:
     )
 
 
-def _sentences(text: str) -> tuple[tuple[str, ...], ...]:
+def sentence_texts(text: str) -> dict[tuple[str, ...], str]:
     # Isolate quoted examples from speaker labels and explanatory arrows. Scan
     # the surrounding rules as well, not just the examples section. Newlines
     # and .?!; delimit sentences; a decimal point between digits stays intact.
     text = re.sub(r'["“]([^"“”\n]+)["”]', r"\n\1\n", text)
     parts = re.split(r"[!?;\n]+|(?<!\d)\.|\.(?!\d)", text)
-    return tuple(dict.fromkeys(tokens for part in parts if (tokens := _tokens(part))))
+    sentences: dict[tuple[str, ...], str] = {}
+    for part in parts:
+        if tokens := _tokens(part):
+            sentences.setdefault(tokens, part.strip())
+    return sentences
+
+
+def _sentences(text: str) -> tuple[tuple[str, ...], ...]:
+    return tuple(sentence_texts(text))
 
 
 def _contains(tokens: tuple[str, ...], term: tuple[str, ...]) -> bool:

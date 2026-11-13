@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from typing import Any
 
+from auris.eval import SCORER_VERSION
 from auris.eval.critical import findings
 from auris.eval.gold import Encounter, Fact, GoldAssertion
 from auris.eval.matching import (
@@ -17,6 +18,7 @@ from auris.eval.matching import (
     strict_reasons,
 )
 from auris.eval.metrics import SCORE_VIEWS
+from auris.eval.noncritical import findings as noncritical_findings
 from auris.eval.normalization import normalize_dose, vital_unit, vital_value
 from auris.eval.predictions import Prediction, record_quantities
 from auris.transcript import Transcript
@@ -71,7 +73,11 @@ def _related(prediction: Prediction, gold: GoldAssertion) -> bool:
 
 
 def encounter_diagnostics(
-    encounter: Encounter, predictions: Sequence[Prediction], transcript: Transcript
+    encounter: Encounter,
+    predictions: Sequence[Prediction],
+    transcript: Transcript,
+    *,
+    scorer_version: str = SCORER_VERSION,
 ) -> dict[str, list[dict[str, Any]]]:
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
@@ -96,7 +102,18 @@ def encounter_diagnostics(
         )
 
     for prediction in predictions:
-        for category, finding in findings(prediction, encounter.assertions).items():
+        if scorer_version == "3":
+            for category, finding in noncritical_findings(prediction, encounter.assertions).items():
+                add(
+                    category,
+                    "pre_review",
+                    finding.gold,
+                    prediction,
+                    [f"non-critical: {category} — {finding.reason}"],
+                )
+        for category, finding in findings(
+            prediction, encounter.assertions, scorer_version=scorer_version
+        ).items():
             stages = ["pre_review"]
             if prediction.export_state == "final_exportable" and not prediction.reviewed:
                 stages.append("exported_without_review")

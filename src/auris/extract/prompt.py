@@ -6,7 +6,7 @@ from importlib.resources import files
 
 from auris.transcript import TranscriptSegment
 
-PROMPT_VERSION = "extraction_v2"
+PROMPT_VERSION = "extraction_v3"
 
 
 def prompt_text() -> str:

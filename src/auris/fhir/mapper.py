@@ -64,7 +64,10 @@ class Mapper:
             raise ValueError("evidence result does not belong to this assertion and transcript")
         identifier = resource_id(self.transcript.content_hash, position, assertion.kind)
         consistency = check_consistency(assertion, aligned, self.transcript, self._synonyms)
-        built = self._build(assertion, identifier, aligned)
+        assertion = consistency.usable_assertion(assertion)
+        built = self._build(
+            assertion, identifier, aligned, unit_unusable="unit_text" in consistency.unusable_fields
+        )
         reasons = [str(reason) for reason in review_reasons(assertion)]
         reasons.extend(built.reasons)
         # This evidence-grounded field repair is informational for evaluation.
@@ -95,7 +98,7 @@ class Mapper:
             evidence=aligned,
             consistency=consistency,
             review_reasons=unique_reasons,
-            mapper_flags=built.flags,
+            mapper_flags=(*built.flags, *consistency.informational_flags),
             provenance_notes=built.notes,
             is_material=material,
             ledger_only=built.ledger_only,
@@ -121,7 +124,12 @@ class Mapper:
         return self.terminology.synonyms(text, system)
 
     def _build(
-        self, assertion: AssertionBase, identifier: str, evidence: AssertionEvidenceResult
+        self,
+        assertion: AssertionBase,
+        identifier: str,
+        evidence: AssertionEvidenceResult,
+        *,
+        unit_unusable: bool = False,
     ) -> BuildResult:
         kind = assertion.kind
         if kind == "symptom":
@@ -190,7 +198,14 @@ class Mapper:
         match kind:
             case "vital_sign":
                 assert isinstance(assertion, VitalSignAssertion)
-                return build_vital(assertion, identifier, self.anchors, self.unit_sets, evidence)
+                return build_vital(
+                    assertion,
+                    identifier,
+                    self.anchors,
+                    self.unit_sets,
+                    evidence,
+                    unit_unusable=unit_unusable,
+                )
             case "clinician_assessed_problem":
                 return build_assessed(assertion, identifier, self.anchors, self.terminology)
             case "clinician_ruled_out_problem":

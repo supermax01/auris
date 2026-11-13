@@ -5,9 +5,12 @@ from collections.abc import Sequence
 from typing import Any
 
 from auris.assertions import AssertionKind
+from auris.eval import REPLAYABLE_SCORERS, SCORER_VERSION
 from auris.eval.critical import CRITICAL_ERRORS, critical_events
 from auris.eval.gold import Dataset, Encounter
 from auris.eval.matching import RESOURCE_CLASSES, match
+from auris.eval.noncritical import NONCRITICAL_ERRORS
+from auris.eval.noncritical import findings as noncritical_findings
 from auris.eval.predictions import Prediction
 from auris.eval.statistics import bootstrap, clopper_pearson_upper
 
@@ -76,7 +79,10 @@ def score_model(
     samples: int = 2000,
     metadata: dict | None = None,
     stratify: bool = True,
+    scorer_version: str = SCORER_VERSION,
 ) -> dict:
+    if scorer_version not in REPLAYABLE_SCORERS:
+        raise ValueError("unsupported scorer version")
     if set(predictions) != {e.id for e in dataset.encounters}:
         raise ValueError("frozen predictions must include every encounter exactly once")
     result: dict[str, Any] = {}
@@ -164,7 +170,10 @@ def score_model(
         "definition": "needs_review state, not measured correction time",
     }
     result["export_states"] = dict(sorted(Counter(p.export_state for p in all_predictions).items()))
-    events = {e.id: critical_events(predictions[e.id], e.assertions) for e in dataset.encounters}
+    events = {
+        e.id: critical_events(predictions[e.id], e.assertions, scorer_version=scorer_version)
+        for e in dataset.encounters
+    }
     result["critical_errors"] = {}
     for stage in ("pre_review", "exported_without_review"):
         stage_report = {}
@@ -183,6 +192,26 @@ def score_model(
             }
         result["critical_errors"][stage] = stage_report
     result["critical_events"] = events
+    if scorer_version == "3":
+        noncritical = {
+            e.id: {
+                name: [
+                    p.id for p in predictions[e.id] if name in noncritical_findings(p, e.assertions)
+                ]
+                for name in NONCRITICAL_ERRORS
+            }
+            for e in dataset.encounters
+        }
+        result["noncritical_events"] = noncritical
+        result["noncritical_errors"] = {
+            name: {
+                "count": sum(len(row[name]) for row in noncritical.values()),
+                "affected_encounters": sum(bool(row[name]) for row in noncritical.values()),
+                "encounter_n": n,
+                "definition": "pre-review assertions; at most once per assertion per category",
+            }
+            for name in NONCRITICAL_ERRORS
+        }
     result["encounter_n"] = n
     result["low_power"] = n < 25
     result["metadata"] = metadata or {}
@@ -200,5 +229,6 @@ def score_model(
                     seed=seed,
                     samples=samples,
                     stratify=False,
+                    scorer_version=scorer_version,
                 )
     return result

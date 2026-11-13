@@ -145,4 +145,6 @@ def test_dose_strict_and_safety_share_independent_normalization(left, right, equ
     proposed = prediction(gold, dose_text=left)
     assert (normalize_dose(left) == normalize_dose(right)) == equal
     assert eligible(proposed, gold, strict=True) == equal
-    assert ("wrong_drug_or_dose" in errors(proposed, [gold])) == (not equal and left is not None)
+    assert ("wrong_drug_or_dose" in errors(proposed, [gold], scorer_version="2")) == (
+        not equal and left is not None
+    )

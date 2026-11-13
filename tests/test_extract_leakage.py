@@ -196,4 +196,4 @@ def test_smoke_skip_records_completed_leakage_check(tmp_path, monkeypatch):
         smoke.test_real_qwen_contrastive_smoke(None, None, None)
     report = json.loads(smoke.REPORT.read_text())
     assert report["status"] == "skipped" and report["leakage_check"] == "pass"
-    assert report["prompt_version"] == "extraction_v2"
+    assert report["prompt_version"] == "extraction_v3"

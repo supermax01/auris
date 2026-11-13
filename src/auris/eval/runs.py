@@ -17,7 +17,7 @@ from pydantic.version import VERSION as PYDANTIC_VERSION
 
 from auris._storage import prepare_output_directory, write_private_text
 from auris.config import ExtractorCandidate, FrozenConfig
-from auris.eval import FICTIONAL_BANNER, SCORER_VERSION
+from auris.eval import FICTIONAL_BANNER, REPLAYABLE_SCORERS, SCORER_VERSION
 from auris.eval.diagnostics import encounter_diagnostics
 from auris.eval.gold import Dataset, canonical_json, digest, load_dataset, relative_file
 from auris.eval.ledger import register_test_use
@@ -245,7 +245,7 @@ def load_run(output: Path) -> tuple[dict, Dataset, dict[str, dict[str, tuple[Pre
     document = json.loads((output / "run.json").read_text("utf-8"))
     if document["status"] != "complete" or document["schema_version"] != "1":
         raise ValueError("evaluation run incomplete or unsupported")
-    if document["scorer_version"] not in ("1", SCORER_VERSION):
+    if document["scorer_version"] not in ("1", *REPLAYABLE_SCORERS):
         raise ValueError("unsupported frozen scorer version")
     for path, expected in document["artifacts"].items():
         if digest(relative_file(output, path).read_bytes()) != expected:
@@ -295,12 +295,16 @@ def load_run(output: Path) -> tuple[dict, Dataset, dict[str, dict[str, tuple[Pre
     return document, dataset, predictions
 
 
-def score_run(output: Path, *, ledger: Path, confirmed: bool = False) -> dict:
+def score_run(
+    output: Path, *, ledger: Path, confirmed: bool = False, scorer_version: str = SCORER_VERSION
+) -> dict:
+    if scorer_version not in REPLAYABLE_SCORERS:
+        raise ValueError("unsupported scorer version")
     document, dataset, predictions = load_run(output)
     register_test_use(ledger, dataset, document["run_id"], "score", confirmed=confirmed)
     result = {
         "schema_version": "1",
-        "scorer_version": SCORER_VERSION,
+        "scorer_version": scorer_version,
         "scorer_sha256": scorer_hash(),
         "inference_scorer": {
             "version": document["scorer_version"],
@@ -325,6 +329,7 @@ def score_run(output: Path, *, ledger: Path, confirmed: bool = False) -> dict:
                 seed=document["seed"],
                 samples=document["bootstrap_samples"],
                 metadata=document["model_metadata"][model],
+                scorer_version=scorer_version,
             )
             for model in document["models"]
         },
@@ -334,7 +339,10 @@ def score_run(output: Path, *, ledger: Path, confirmed: bool = False) -> dict:
         diagnostics: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for encounter in dataset.encounters:
             for error_type, records in encounter_diagnostics(
-                encounter, predictions[model][encounter.id], transcripts[encounter.id]
+                encounter,
+                predictions[model][encounter.id],
+                transcripts[encounter.id],
+                scorer_version=scorer_version,
             ).items():
                 diagnostics[error_type].extend(records)
         result["models"][model]["error_analysis"] = dict(sorted(diagnostics.items()))
