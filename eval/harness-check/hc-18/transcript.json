@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 7.0,
+      "text": "We are beginning fictional practice encounter 18, labeled past condition.",
+      "words": null
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 8.0,
+      "end_seconds": 15.0,
+      "text": "I had anemia during an earlier admission in 2020.",
+      "words": null
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 16.0,
+      "end_seconds": 23.0,
+      "text": "The notes for practice encounter 18 can be checked after this conversation.",
+      "words": null
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 24.0,
+      "end_seconds": 31.0,
+      "text": "My sister has psoriasis that she is treating now.",
+      "words": null
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 32.0,
+      "end_seconds": 39.0,
+      "text": "On this examination I confirm an ingrown toenail.",
+      "words": null
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 40.0,
+      "end_seconds": 47.0,
+      "text": "That concludes the invented past condition encounter numbered 18.",
+      "words": null
+    }
+  ]
+}

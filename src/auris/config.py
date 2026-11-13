@@ -134,7 +134,11 @@ class ExtractorCandidate(_FrozenModel):
         _check_commit_sha(self.revision, field="revision")
         _check_sha256(self.sha256, allow_unpinned=False, field="sha256")
         # Flags cannot override the loopback binding or load remote artifacts.
-        if self.runtime_flags not in ((), ("--reasoning", "off")):
+        if self.runtime_flags not in (
+            (),
+            ("--reasoning", "off"),
+            ("--reasoning", "off", "--reasoning-budget", "0"),
+        ):
             raise ValueError("only the tested reasoning-off runtime flags are supported")
         return self
 

@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 7.0,
+      "text": "We are beginning fictional practice encounter 1, labeled specific denial.",
+      "words": null
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 8.0,
+      "end_seconds": 15.0,
+      "text": "Naproxen has never caused an allergic reaction for me.",
+      "words": null
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 16.0,
+      "end_seconds": 23.0,
+      "text": "The notes for practice encounter 1 can be checked after this conversation.",
+      "words": null
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 24.0,
+      "end_seconds": 31.0,
+      "text": "The ache sits behind my left knee today.",
+      "words": null
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 32.0,
+      "end_seconds": 39.0,
+      "text": "At this check your heart rate reads 68 beats per minute.",
+      "words": null
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 40.0,
+      "end_seconds": 47.0,
+      "text": "That concludes the invented specific denial encounter numbered 1.",
+      "words": null
+    }
+  ]
+}

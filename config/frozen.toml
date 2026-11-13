@@ -213,7 +213,9 @@ sha256 = "a555b900214b477d8880e7832e0b8925e139b0159640036b09fe472b6f2097f2"
 bytes = 4590807392
 license = "Apache-2.0"
 quantization = "Q4_0"
-runtime_flags = ["--reasoning", "off"]
+# Claude's hc-01 probe confirmed zero reasoning with this additional flag.
+# Qwen retains its own tested flags; chat-template behavior is model-specific.
+runtime_flags = ["--reasoning", "off", "--reasoning-budget", "0"]
 role = "comparator"
 
 # ---------------------------------------------------------------------------

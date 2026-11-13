@@ -31,6 +31,9 @@ def _build_parser() -> argparse.ArgumentParser:
         version=f"auris {__version__}",
     )
     subparsers = parser.add_subparsers(dest="command")
+    from auris.eval.cli import add_parser
+
+    add_parser(subparsers)
     demo_parser = subparsers.add_parser("demo", help="Run the fictional text demo into ./out/demo/")
     demo_parser.add_argument("--model", default=None)
 
@@ -299,6 +302,10 @@ def _cmd_checklist(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.command == "eval":
+        from auris.eval.cli import command
+
+        return _run_guarded(command, args)
     if args.command in ("extract", "run"):
         return _run_guarded(_cmd_extract, args)
     if args.command == "demo":

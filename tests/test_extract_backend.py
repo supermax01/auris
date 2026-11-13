@@ -177,6 +177,19 @@ def test_managed_process_terminated_on_success_and_body_crash(managed, crash):
     assert manager.runtime.peak_rss_bytes == 123456
 
 
+def test_managed_gemma_passes_zero_reasoning_budget(managed):
+    manager, _ = managed
+    gemma = load_frozen_config().extractor.candidate("gemma-4-e4b-it-q4_0")
+    # Only bytes/hash are fictional; use the actual per-model frozen flags.
+    manager.candidate = gemma.model_copy(
+        update={"sha256": manager.candidate.sha256, "bytes": manager.model_path.stat().st_size}
+    )
+    with manager:
+        pass
+    args = module.subprocess.Popen.call_args.args[0]
+    assert args[-4:] == ["--reasoning", "off", "--reasoning-budget", "0"]
+
+
 def test_startup_health_failure_still_terminates(managed, monkeypatch):
     manager, process = managed
     monkeypatch.setattr(HttpBackend, "request", Mock(side_effect=ExtractionError("not ready")))

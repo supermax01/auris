@@ -133,6 +133,8 @@ def test_extractor_candidates_are_pinned_and_selected_explicitly():
     assert gemma.role == "comparator"
     assert gemma.license == "Apache-2.0" and gemma.bytes == 4590807392
     assert gemma.quantization == "Q4_0"
+    assert gemma.runtime_flags == ("--reasoning", "off", "--reasoning-budget", "0")
+    assert config.candidate().runtime_flags == ("--reasoning", "off")
     assert config.candidate().quantization == "Q4_K_M"
     assert config.max_output_tokens == 4096
     assert config.min_output_tokens == 1024
@@ -166,6 +168,8 @@ def test_invalid_output_budget_config_is_refused(raw_config, changes):
         ("gguf_filename", "../escape.gguf"),
         ("license", "non-commercial"),
         ("runtime_flags", ["--host", "0.0.0.0"]),
+        ("runtime_flags", ["--reasoning", "on", "--reasoning-budget", "0"]),
+        ("runtime_flags", ["--reasoning", "off", "--reasoning-budget", "1"]),
     ],
 )
 def test_extractor_candidate_pins_and_runtime_flags_are_validated(raw_config, field, value):
