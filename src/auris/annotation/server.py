@@ -6,6 +6,7 @@ from importlib.resources import files
 
 from pydantic import ValidationError
 
+from auris.annotation.adjudication import AdjudicationSession
 from auris.annotation.service import AnnotationSession
 
 BIND_ADDRESS = ("127.0.0.1", 0)
@@ -13,7 +14,7 @@ MAX_BODY = 2_000_000
 PAGE = files("auris.annotation").joinpath("page.html").read_bytes()
 
 
-def handler_for(session: AnnotationSession) -> type[BaseHTTPRequestHandler]:
+def handler_for(session: AnnotationSession | AdjudicationSession) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_: object) -> None:
             pass  # No transcript text, URLs or tokens in HTTP logs.
@@ -82,7 +83,7 @@ def handler_for(session: AnnotationSession) -> type[BaseHTTPRequestHandler]:
     return Handler
 
 
-def serve(session: AnnotationSession) -> None:
+def serve(session: AnnotationSession | AdjudicationSession) -> None:
     try:
         with HTTPServer(BIND_ADDRESS, handler_for(session)) as server:
             print(f"Open http://127.0.0.1:{server.server_port}/#token={session.token}", flush=True)

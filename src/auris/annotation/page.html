@@ -4,14 +4,16 @@
 <style>
 :root{color-scheme:light dark;font:16px/1.5 system-ui,sans-serif;background:light-dark(#fafafa,#17191c);color:light-dark(#20252b,#e9edf2)}
 *{box-sizing:border-box}body{margin:0}header{padding:1rem;border-bottom:1px solid #888}h1{font-size:1.3rem;margin:0}main{display:grid;grid-template-columns:minmax(18rem,1fr) minmax(22rem,1fr);gap:1rem;padding:1rem;max-width:100rem;margin:auto}section,aside{min-width:0}button,input,select,textarea{font:inherit;padding:.4rem;border:1px solid #888;border-radius:.3rem;background:light-dark(white,#262a30);color:inherit}button{cursor:pointer}button:hover{border-color:#237ac1}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid #489cde;outline-offset:2px}button{margin:.2rem}label{display:block;margin:.6rem 0}label input,label select,label textarea{display:block;width:100%}textarea{min-height:4rem}fieldset{margin:1rem 0;border:1px solid #888}legend{font-weight:600}.turn{padding:.7rem;border-bottom:1px solid #888}.turn-text{white-space:pre-wrap;user-select:text;width:100%;border:0;background:transparent;resize:vertical;min-height:4rem}.meta{font-size:.85rem;opacity:.8}.turn select{font-size:.85rem;max-width:15rem}.toolbar{position:sticky;top:0;background:light-dark(#fafafa,#17191c);z-index:1;padding:.5rem 0}.facts{padding-left:1.5rem}#error{white-space:pre-wrap;color:light-dark(#9e1822,#ffadad)}#status{font-size:.9rem}.span{padding:.3rem;background:light-dark(#e7f0fa,#263648);white-space:pre-wrap}.hidden{display:none}summary{cursor:pointer}@media(max-width:800px){main{grid-template-columns:1fr}}@media print{button,.toolbar,form{display:none}main{display:block}}
+aside{position:sticky;top:0;align-self:start;max-height:100dvh;overflow:auto;padding:.4rem}#editor{scroll-margin-top:1rem}#editor .editor-actions{position:sticky;bottom:0;padding:.5rem;background:light-dark(#fafafa,#17191c);border-top:1px solid #888}.editing #error{position:fixed;top:0;right:1rem;max-width:40rem;z-index:30;background:light-dark(#fafafa,#17191c)}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}.comparison pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}.task{border:1px solid #888;padding:.5rem;margin-bottom:1rem}.audit{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
+@media(max-width:800px){aside{position:static;max-height:none;overflow:visible}#editor:not(.hidden){position:fixed;bottom:0;left:0;right:0;z-index:20;max-height:72dvh;overflow:auto;padding:1rem;background:light-dark(#fafafa,#17191c);border-top:2px solid #489cde;box-shadow:0 -4px 20px #0005}body.adjudication aside{position:fixed;bottom:0;left:0;right:0;z-index:5;max-height:50dvh;overflow:auto;background:light-dark(#fafafa,#17191c);border-top:2px solid #888}body.adjudication{padding-bottom:52dvh}.comparison{grid-template-columns:1fr}}
 </style>
 <header><h1>Auris · Independent human annotation</h1><div>Research annotation only · No AI assistance · Keep your work private</div><div id="identity"></div></header>
 <main><section aria-label="Transcript"><div class="toolbar"><label>Encounter <select id="encounter"></select></label><button id="add">Add fact from selection</button><button id="append">Add selected evidence to open fact</button><button id="important">Out-of-scope important fact</button><button id="roles">Confirm all source roles as correct</button><div id="status" role="status"></div></div><div id="transcript"></div></section>
 <aside><div id="error" role="alert"></div><div><button id="save">Save now (Ctrl/⌘ S)</button><button id="done">Encounter done</button></div><p>Save confirms completed facts. Incomplete forms show errors and remain open. Finish or cancel the open fact before changing encounters.</p>
-<form id="editor" class="hidden"><h2 id="editor-title">Fact</h2><label>Kind <select id="kind"></select></label><div id="fields"></div><fieldset id="coding"><legend>Concept and acceptable wordings</legend><label>Local code system <select id="system"><option value="http://www.nlm.nih.gov/research/umls/rxnorm">RxNorm</option><option value="http://hl7.org/fhir/sid/icd-10-cm">ICD-10-CM</option></select></label><label>Local lookup <input id="query" maxlength="200"></label><button type="button" id="lookup">Find local codes</button><div id="candidates"></div><button type="button" id="clear-code">Use an auris: concept instead</button><label>Gold concept ID <input id="concept-id" placeholder="auris:short-meaningful-slug"></label><label>Acceptable surface wordings (one per line) <textarea id="acceptable"></textarea></label><label>Canonical numeric values (optional; one per line, BP systolic first)<textarea id="canonical"></textarea></label><label>Canonical UCUM unit (optional, no unit conversion)<input id="ucum"></label></fieldset>
+<div id="adjudication-tasks" class="hidden" aria-label="Adjudication disagreements"></div><form id="editor" class="hidden" aria-labelledby="editor-title"><h2 id="editor-title">Fact</h2><label>Kind <select id="kind"></select></label><div id="fields"></div><fieldset id="coding"><legend>Concept and acceptable wordings</legend><label>Local code system <select id="system"><option value="http://www.nlm.nih.gov/research/umls/rxnorm">RxNorm</option><option value="http://hl7.org/fhir/sid/icd-10-cm">ICD-10-CM</option></select></label><label>Local lookup <input id="query" maxlength="200"></label><button type="button" id="lookup">Find local codes</button><div id="candidates"></div><button type="button" id="clear-code">Use an auris: concept instead</button><label>Gold concept ID <input id="concept-id" placeholder="auris:short-meaningful-slug"></label><label>Acceptable surface wordings (one per line) <textarea id="acceptable"></textarea></label><label>Canonical numeric values (optional; one per line, BP systolic first)<textarea id="canonical"></textarea></label><label>Canonical UCUM unit (optional, no unit conversion)<input id="ucum"></label></fieldset>
 <fieldset id="critical"><legend>Critical-error attributes</legend><label>Allergy denial scope <select id="denial"><option>none</option><option>specific</option><option>all</option></select></label><label>Condition assertion <select id="condition"><option>none</option><option>present</option><option>absent</option><option>uncertain</option></select></label><label>Order authorization <select id="authorization"><option>none</option><option>explicit</option><option>not_ordered</option></select></label></fieldset>
 <div id="scope-fields" class="hidden"><label>Category <input id="category"></label><label>Reason outside the nine kinds <input id="reason"></label></div>
-<fieldset><legend>Exact supporting words</legend><div id="evidence"></div></fieldset><label>Fact notes <textarea id="fact-notes"></textarea></label><button type="submit">Apply fact and save</button><button type="button" id="cancel">Cancel edits</button></form>
+<fieldset><legend>Exact supporting words</legend><div id="evidence"></div></fieldset><label>Fact notes <textarea id="fact-notes"></textarea></label><label id="decision-reason-label" class="hidden">Required adjudication reason<textarea id="decision-reason"></textarea></label><div class="editor-actions"><button type="submit">Apply fact and save</button><button type="button" id="cancel">Cancel edits</button></div></form>
 <h2>Recorded facts</h2><ol id="facts" class="facts"></ol><h2>Out-of-scope important facts</h2><ol id="outside" class="facts"></ol><label>Encounter notes / breaks / uncertainties <textarea id="notes"></textarea></label><p>Active time counts only while focused and visible, ending 60 seconds after your last interaction. Wall time counts the open encounter until marked done; editing reopens timing. Timing autosaves every 10 seconds; record off-tool work in notes.</p></aside></main>
 <script>
 'use strict';
@@ -20,6 +22,7 @@ const token=new URLSearchParams(location.hash.slice(1)).get('token')||'';
 const enums={
   polarity:['affirmed','negated'],experiencer:['patient','family_member','other'],temporality:['current','past','resolved','future','unclear'],source_speaker_role:['clinician','patient','companion','other','unknown'],medication_intent:['new_order','continuing','historical','discussed','unclear']
 };
+let editorReturn=null,decisionTask=null,adjudicationData=null;
 let session,doc,turns=[],selected=null,edit=null,codes=[],spans=[],lastActivity=performance.now(),saving=Promise.resolve(),dirty=false,editorDirty=false,revision=0,timer,editorTimer;
 const error=e=>{
   $('error').textContent=typeof e==='string'?e: e.message;
@@ -66,6 +69,10 @@ function queued(fn){
 }
 async function save(status){
   if(!doc)return;
+  if(session.mode==='adjudication'){
+    if(status==='done')receiveAdjudication(await api('/api/complete',{encounter_id:doc.encounter_id}));
+    return;
+  }
   const generation=revision;
   const data=await api('/api/save',{
     encounter_id:doc.encounter_id,status:status||doc.status,assertions:doc.assertions,out_of_scope:doc.out_of_scope,segment_roles:doc.segment_roles,notes:$('notes').value
@@ -100,11 +107,13 @@ async function openEncounter(id){
   const data=await api('/api/encounter?id='+encodeURIComponent(id));
   doc=data.document;
   turns=data.turns;
+  adjudicationData=session.mode==='adjudication'?data:null;
   selected=null;
   $('encounter').value=id;
   $('notes').value=doc.notes;
   renderTurns();
   renderFacts();
+  if(adjudicationData){renderTasks();focusTask();}
   setStatus();
   await timing();
 }
@@ -122,6 +131,7 @@ function renderTurns(){
     populateSelect(role,enums.source_speaker_role);
     role.options[0].textContent='Confirm / correct source role';
     role.value=doc.segment_roles[t.id]||'';
+    role.disabled=session.mode==='adjudication';
     role.onchange=()=>{
       if(role.value)doc.segment_roles[t.id]=role.value;
       else delete doc.segment_roles[t.id];
@@ -152,6 +162,7 @@ function renderFacts(){
       const label=document.createElement('span');
       label.textContent=(f.concept_text||f.category||f.gold_concept_id)+' · '+(f.kind||f.reason);
       li.append(label);
+      if(session.mode==='adjudication'){ $(target).append(li); continue; }
       button('Edit',()=>begin(type,f),li);
       button('Delete',async()=>{
         doc[type==='fact'?'assertions':'out_of_scope']=facts.filter(x=>x.id!==f.id);
@@ -246,17 +257,47 @@ async function begin(type,f){
   $('candidates').replaceChildren();
   renderSpans();
   editorDirty=!f;
-  $(type==='fact'?'kind':'category').focus();
+  showEditor(type,evidence);
+}
+// These state functions also support keyboard-only editing of existing facts.
+function editorTarget(type,evidence){
+  return {segmentId:evidence[0]?.segment_id||null,span:evidence[0]||null,focusId:type==='fact'?'kind':'category'};
+}
+function showEditor(type,evidence){
+  editorReturn=editorTarget(type,evidence);
+  document.body.classList.add('editing');
+  $('editor').scrollTop=0;
+  $('editor').scrollIntoView({block:'start'});
+  $(editorReturn.focusId).focus({preventScroll:true});
+}
+function returnToTranscript(target){
+  if(!target)return;
+  const el=Array.from(document.querySelectorAll('.turn-text')).find(x=>x.dataset.segment===target.segmentId);
+  if(!el)return;
+  el.scrollIntoView({block:'center'});
+  el.focus({preventScroll:true});
+  if(target.span){
+    const chars=Array.from(el.value);
+    el.setSelectionRange(chars.slice(0,target.span.char_start).join('').length,chars.slice(0,target.span.char_end).join('').length);
+    captureSelection(el);
+  }
 }
 function cancel(){
+  const returnTarget=editorReturn;
+  editorReturn=null;
+  decisionTask=null;
+  document.body.classList.remove('editing');
+  $('decision-reason-label').classList.add('hidden');
   clearTimeout(editorTimer);
   edit=null;
   editorDirty=false;
   $('editor').classList.add('hidden');
   $('error').textContent='';
+  returnToTranscript(returnTarget);
 }
 async function applyFact(keepOpen=false){
   if(!edit)return;
+  if(session.mode==='adjudication'&&keepOpen)return;
   const f={
     id:edit.id,evidence:spans,notes:$('fact-notes').value
   };
@@ -272,6 +313,11 @@ async function applyFact(keepOpen=false){
   }else{
     f.category=$('category').value;
     f.reason=$('reason').value;
+  }if(session.mode==='adjudication'){
+    const response=await api('/api/decision',{encounter_id:doc.encounter_id,task_id:decisionTask,choice:'correct',reason:$('decision-reason').value,corrected:f});
+    receiveAdjudication(response);
+    cancel();
+    return;
   }const key=edit.type==='fact'?'assertions':'out_of_scope';
   const old=doc[key];
   doc[key]=[...old.filter(x=>x.id!==edit.id),f];
@@ -297,6 +343,7 @@ $('editor').onsubmit=e=>{
   run(()=>queued(applyFact));
 };
 function scheduleEditorSave(){
+  if(session.mode==='adjudication')return;
   editorDirty=true;
   clearTimeout(editorTimer);
   editorTimer=setTimeout(()=>run(()=>queued(async()=>{
@@ -350,6 +397,66 @@ $('roles').onclick=()=>{
   renderTurns();
   autosave();
 };
+function receiveAdjudication(data){
+  doc=data.document;
+  adjudicationData=data;
+  dirty=false;
+  renderFacts();
+  renderTasks();
+  if(!edit)focusTask();
+  setStatus();
+}
+function focusTask(){
+  const next=$('adjudication-tasks').querySelector('[data-pending="true"] textarea');
+  (next||$('done')).focus();
+}
+function answerPreview(answer,task){
+  if(answer===null)return 'No fact';
+  if(typeof answer==='string')return answer+'\n'+(turns.find(t=>t.id===task.segment_id)?.text||'');
+  let text=JSON.stringify(answer,null,2);
+  for(const span of answer.evidence||[]){
+    const turn=turns.find(t=>t.id===span.segment_id);
+    text+='\n'+span.segment_id+' ['+span.char_start+', '+span.char_end+'): '+Array.from(turn.text).slice(span.char_start,span.char_end).join('');
+  }
+  return text;
+}
+function renderTasks(){
+  const root=$('adjudication-tasks');
+  root.replaceChildren();
+  root.classList.remove('hidden');
+  const title=document.createElement('h2'); title.textContent='Adjudication · '+adjudicationData.pending_task_ids.length+' unresolved';root.append(title);
+  for(const task of adjudicationData.tasks){
+    const box=document.createElement('section');box.className='task';
+    box.dataset.pending=String(adjudicationData.pending_task_ids.includes(task.id));
+    const heading=document.createElement('h3');
+    heading.textContent=task.id+' · '+task.attributes.join(', ')+(adjudicationData.pending_task_ids.includes(task.id)?' · unresolved':' · decided');box.append(heading);
+    const comparison=document.createElement('div');comparison.className='comparison';
+    for(const side of ['a','b']){const pre=document.createElement('pre');pre.textContent=side.toUpperCase()+': '+answerPreview(task[side],task);comparison.append(pre);}box.append(comparison);
+    const label=document.createElement('label');label.textContent='Required reason for this decision';
+    const reason=document.createElement('textarea');label.append(reason);box.append(label);
+    const accept=async choice=>{
+      if(edit)throw Error('Apply or cancel the open correction first.');
+      receiveAdjudication(await api('/api/decision',{encounter_id:doc.encounter_id,task_id:task.id,choice,reason:reason.value}));
+    };
+    button('Accept A'+(task.a===null?' (omit fact)':''),()=>accept('a'),box);
+    button('Accept B'+(task.b===null?' (omit fact)':''),()=>accept('b'),box);
+    if(task.category==='role'){
+      const role=document.createElement('select');role.setAttribute('aria-label','Corrected role for '+task.id);populateSelect(role,enums.source_speaker_role);box.append(role);
+      button('Apply corrected role',async()=>{if(edit)throw Error('Apply or cancel the open correction first.');receiveAdjudication(await api('/api/decision',{encounter_id:doc.encounter_id,task_id:task.id,choice:'correct',reason:reason.value,corrected:role.value}));},box);
+    }else{
+      button('Write corrected fact',async()=>{
+        await begin(task.category==='fact'?'fact':'outside',structuredClone(task.a||task.b));
+        decisionTask=task.id;
+        $('decision-reason').value=reason.value;
+        $('decision-reason-label').classList.remove('hidden');
+      },box);
+      button('Omit fact with reason',async()=>{if(edit)throw Error('Apply or cancel the open correction first.');receiveAdjudication(await api('/api/decision',{encounter_id:doc.encounter_id,task_id:task.id,choice:'correct',reason:reason.value,corrected:null}));},box);
+    }
+    root.append(box);
+  }
+  const audit=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Decision audit history';audit.append(summary);
+  const pre=document.createElement('pre');pre.className='audit';pre.textContent=JSON.stringify(adjudicationData.audit,null,2);audit.append(pre);root.append(audit);
+}
 $('notes').oninput=autosave;
 $('encounter').onchange=e=>{
   const id=e.target.value;
@@ -380,6 +487,13 @@ window.addEventListener('beforeunload',e=>{
 });
 run(async()=>{
   session=await api('/api/session');
+  if(session.mode==='adjudication'){
+    document.body.classList.add('adjudication');
+    document.querySelector('h1').textContent='Auris · Third-clinician adjudication';
+    for(const id of ['add','important','roles','notes'])$(id).disabled=true;
+    $('save').textContent='Save correction (Ctrl/⌘ S)';
+    $('done').textContent='Complete adjudication';
+  }
   $('identity').textContent=`Annotator ${session.annotator_id} · guideline ${session.guidelines_sha256.slice(0,12)}`;
   populateSelect($('kind'),Object.keys(session.fields),false);
   populateSelect($('encounter'),session.encounters,false);

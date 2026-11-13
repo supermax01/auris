@@ -189,6 +189,7 @@ class Annotation(Record):
     status: Literal["adjudicated", "harness-authored"]
     independent: bool
     guidelines_version: str = Field(min_length=1)
+    guidelines_sha256: Sha256 | None = None
     # No agreement values are invented when no independent annotation occurred.
     agreement_by_kind: dict[str, dict[str, float]] | None = None
 
@@ -204,6 +205,8 @@ class Encounter(Record):
     id: Identifier
     transcript_path: str
     transcript_sha256: Sha256
+    # Frozen source identity survives adjudicated speaker-role corrections.
+    source_transcript_sha256: Sha256 | None = None
     intake_path: str
     intake_sha256: Sha256
     split: Split
