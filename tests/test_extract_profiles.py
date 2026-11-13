@@ -215,7 +215,11 @@ def test_profile_threads_through_planning_generation_metadata(profile):
     assert metadata["prompt_sha256"] == prompt_sha256(profile)
     assert all(metadata[key] == value for key, value in profile_identity(profile).items())
     assert metadata["decoding"]["json_whitespace"] == (
-        "prompt_compact_json" if contract.compact_json else "server_default"
+        "grammar_compact_json"
+        if contract.grammar_compact
+        else "prompt_compact_json"
+        if contract.compact_json
+        else "server_default"
     )
     assert (
         metadata["measurements"]["output_tokens_per_assertion"]
@@ -327,9 +331,17 @@ def test_ablation_prompts_change_only_the_predefined_factor():
 def test_profile_identities_are_distinct():
     identities = [profile_identity(p) for p in PROFILES]
     assert len({json.dumps(i, sort_keys=True) for i in identities}) == len(PROFILES)
-    # Even without the profile's name, each schema/prompt/order combination is unique.
+    # Grammar is a decoding factor; the new profiles deliberately share prompts.
     assert len(
-        {(i["schema_version"], i["prompt_sha256"], i["schema_property_order"]) for i in identities}
+        {
+            (
+                i["schema_version"],
+                i["prompt_sha256"],
+                i["schema_property_order"],
+                i.get("grammar_sha256"),
+            )
+            for i in identities
+        }
     ) == len(PROFILES)
 
 

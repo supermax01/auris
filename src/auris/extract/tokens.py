@@ -76,17 +76,27 @@ class InputTokens:
 
 class InputTokenCounter:
     def __init__(
-        self, backend: Backend, schema: dict[str, Any], *, profile: ExtractionProfile = "full-v0"
+        self,
+        backend: Backend,
+        schema: dict[str, Any],
+        *,
+        profile: ExtractionProfile = "full-v0",
+        grammar: str | None = None,
     ) -> None:
         self.backend = backend
         self.schema = schema
         self.profile = profile
+        self.grammar = grammar
         self._cache: dict[str, InputTokens] = {}
 
     def count(self, messages: list[dict[str, str]]) -> InputTokens:
         key = json.dumps(messages, ensure_ascii=False)
         if key not in self._cache:
-            measured = self.backend.count_input_tokens(messages, self.schema)
+            measured = self.backend.count_input_tokens(
+                messages,
+                self.schema,
+                **({"grammar": self.grammar} if self.grammar is not None else {}),
+            )
             if measured is None:
                 schema_text = json.dumps(self.schema, separators=(",", ":"), ensure_ascii=False)
                 estimated = estimate_tokens(schema_text) + sum(

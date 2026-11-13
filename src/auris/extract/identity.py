@@ -1,8 +1,10 @@
 """Record the selected wire contract, including order-sensitive schema identity."""
 
+import hashlib
 from typing import Any
 
 from auris.assertions import extraction_json_schema
+from auris.extract.grammar import GRAMMAR_VERSION, compact_grammar
 from auris.extract.profiles import ExtractionProfile, profile_contract
 from auris.extract.prompt import prompt_sha256
 
@@ -10,7 +12,7 @@ from auris.extract.prompt import prompt_sha256
 def profile_identity(profile: ExtractionProfile) -> dict[str, Any]:
     contract = profile_contract(profile)
     schema = extraction_json_schema(contract.schema_version, property_order=contract.property_order)
-    return {
+    identity = {
         "extraction_profile": profile,
         "schema_version": contract.schema_version,
         "prompt_version": contract.prompt_version,
@@ -21,3 +23,9 @@ def profile_identity(profile: ExtractionProfile) -> dict[str, Any]:
             for variant in schema["properties"]["assertions"]["items"]["oneOf"]
         },
     }
+    if contract.grammar_compact:
+        identity.update(
+            grammar_version=GRAMMAR_VERSION,
+            grammar_sha256=hashlib.sha256(compact_grammar(schema).encode("utf-8")).hexdigest(),
+        )
+    return identity

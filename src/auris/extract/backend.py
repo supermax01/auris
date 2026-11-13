@@ -1,7 +1,7 @@
 """Loopback-only constrained chat transport and an owned llama-server process.
 
 No proxies, redirects, downloads, or transcript-bearing application logs.
-The response schema is passed through unchanged. Tests can replace the entire
+The selected schema or grammar is passed through unchanged. Tests can replace the entire
 transport with FakeBackend without opening a socket or starting a process.
 """
 
@@ -55,18 +55,21 @@ class Backend(Protocol):
         *,
         temperature: float,
         max_tokens: int,
+        grammar: str | None = None,
     ) -> dict[str, Any]: ...
 
     def tokenize(self, text: str) -> int | None: ...
 
     def count_input_tokens(
-        self, messages: list[dict[str, str]], schema: dict[str, Any]
+        self, messages: list[dict[str, str]], schema: dict[str, Any], *, grammar: str | None = None
     ) -> int | None: ...
 
 
-def _chat_input(messages: list[dict[str, str]], schema: dict[str, Any]) -> dict[str, Any]:
+def _chat_input(
+    messages: list[dict[str, str]], schema: dict[str, Any], *, grammar: str | None = None
+) -> dict[str, Any]:
     """Identical template-affecting parameters for measurement and inference."""
-    return {
+    result = {
         "messages": messages,
         "response_format": {
             "type": "json_schema",
@@ -74,6 +77,10 @@ def _chat_input(messages: list[dict[str, str]], schema: dict[str, Any]) -> dict[
         },
         "chat_template_kwargs": {"enable_thinking": False},
     }
+    if grammar is not None:
+        del result["response_format"]
+        result["grammar"] = grammar
+    return result
 
 
 class _NoRedirect(HTTPRedirectHandler):
@@ -143,11 +150,12 @@ class HttpBackend:
         *,
         temperature: float,
         max_tokens: int,
+        grammar: str | None = None,
     ) -> dict[str, Any]:
         return self.request(
             "/v1/chat/completions",
             {
-                **_chat_input(messages, schema),
+                **_chat_input(messages, schema, grammar=grammar),
                 "temperature": temperature,
                 "max_tokens": max_tokens,
                 "stream": False,
@@ -164,8 +172,12 @@ class HttpBackend:
             raise ExtractionError("invalid server tokenizer response")
         return len(tokens)
 
-    def count_input_tokens(self, messages: list[dict[str, str]], schema: dict[str, Any]) -> int:
-        rendered = self.request("/apply-template", _chat_input(messages, schema)).get("prompt")
+    def count_input_tokens(
+        self, messages: list[dict[str, str]], schema: dict[str, Any], *, grammar: str | None = None
+    ) -> int:
+        rendered = self.request(
+            "/apply-template", _chat_input(messages, schema, grammar=grammar)
+        ).get("prompt")
         if not isinstance(rendered, str) or not rendered:
             raise ExtractionError("invalid server chat-template response")
         # No schema reservation here: the server decides whether it enters the
@@ -366,10 +378,13 @@ class FakeBackend:
         *,
         temperature: float,
         max_tokens: int,
+        grammar: str | None = None,
     ) -> dict[str, Any]:
         self.calls.append(
             dict(messages=messages, schema=schema, temperature=temperature, max_tokens=max_tokens)
         )
+        if grammar is not None:
+            self.calls[-1]["grammar"] = grammar
         try:
             return next(self.responses)
         except StopIteration:
@@ -379,6 +394,6 @@ class FakeBackend:
         return self.tokenizer(text) if self.tokenizer else None
 
     def count_input_tokens(
-        self, messages: list[dict[str, str]], schema: dict[str, Any]
+        self, messages: list[dict[str, str]], schema: dict[str, Any], *, grammar: str | None = None
     ) -> int | None:
         return self.input_tokenizer(messages, schema) if self.input_tokenizer else None

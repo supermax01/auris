@@ -26,6 +26,7 @@ from auris.extract.chunking import (
     plan_chunks,
     split_segments,
 )
+from auris.extract.grammar import compact_grammar
 from auris.extract.identity import profile_identity
 from auris.extract.measurements import (
     extraction_measurements,
@@ -193,7 +194,13 @@ def extract(
             "n_ctx": config.n_ctx,
             "thinking": config.thinking,
             "output_estimate": dict(OUTPUT_ESTIMATE),
-            "json_whitespace": "prompt_compact_json" if contract.compact_json else "server_default",
+            "json_whitespace": (
+                "grammar_compact_json"
+                if contract.grammar_compact
+                else "prompt_compact_json"
+                if contract.compact_json
+                else "server_default"
+            ),
         },
         transcript_sha256=transcript.content_hash,
         runtime=backend.runtime,
@@ -206,7 +213,8 @@ def extract(
         schema = extraction_json_schema(
             contract.schema_version, property_order=contract.property_order
         )
-        input_counter = InputTokenCounter(backend, schema, profile=profile)
+        grammar = compact_grammar(schema) if contract.grammar_compact else None
+        input_counter = InputTokenCounter(backend, schema, profile=profile, grammar=grammar)
         chunks = plan_chunks(
             transcript,
             schema,
@@ -280,6 +288,7 @@ def extract(
                     schema,
                     temperature=config.temperature,
                     max_tokens=max_tokens,
+                    **({"grammar": grammar} if grammar is not None else {}),
                 )
                 call["raw_response"] = response
                 call["usage"] = response.get("usage")

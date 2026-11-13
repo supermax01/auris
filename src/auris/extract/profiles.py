@@ -4,7 +4,14 @@ from dataclasses import dataclass
 from typing import Literal
 
 ExtractionProfile = Literal[
-    "full-v0", "lean-v1", "abl-optional", "abl-quotes", "abl-compact", "abl-order"
+    "full-v0",
+    "lean-v1",
+    "abl-optional",
+    "abl-quotes",
+    "abl-compact",
+    "abl-order",
+    "grammar-compact",
+    "grammar-compact-quotes",
 ]
 SchemaVersion = Literal["1", "2"]
 PropertyOrder = Literal["canonical", "evidence-last"]
@@ -15,6 +22,8 @@ PROFILES: tuple[ExtractionProfile, ...] = (
     "abl-quotes",
     "abl-compact",
     "abl-order",
+    "grammar-compact",
+    "grammar-compact-quotes",
 )
 
 
@@ -24,6 +33,7 @@ class Profile:
     prompt_version: str
     property_order: PropertyOrder = "canonical"
     compact_json: bool = False
+    grammar_compact: bool = False
 
 
 _CONTRACTS: dict[ExtractionProfile, Profile] = {
@@ -33,6 +43,8 @@ _CONTRACTS: dict[ExtractionProfile, Profile] = {
     "abl-quotes": Profile("1", "extraction_abl_quotes_v1"),
     "abl-compact": Profile("1", "extraction_abl_compact_v1", compact_json=True),
     "abl-order": Profile("2", "extraction_v4", "evidence-last", compact_json=True),
+    "grammar-compact": Profile("1", "extraction_v3", grammar_compact=True),
+    "grammar-compact-quotes": Profile("1", "extraction_abl_quotes_v1", grammar_compact=True),
 }
 PROMPT_VERSIONS = ("extraction_v1", "extraction_v2") + tuple(
     dict.fromkeys(contract.prompt_version for contract in _CONTRACTS.values())
