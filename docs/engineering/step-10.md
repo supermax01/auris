@@ -317,3 +317,54 @@ request snapshots, repetition version and temperature-status expectation;
 those tests were updated explicitly. Formatting used the project venv only.
 No model inference, network setup, dependency installation or git history
 mutation was performed. The comparison above remains for Claude to run.
+
+## Results of the pre-registered comparison (run by Claude, 2026-11-13)
+
+Same 3 PriMock57 dev visits (02, 09, 14), fictional intakes, step-10 code
+(streaming, single-slot server, loop guard, quarantine), seed 0; Qwen card
+sampling also at seeds 1 and 2 on visit 14. Outputs:
+`cache/primock-dev-step10/<model>@<profile>@seed-<n>/<visit>/`. No dev gold
+exists yet, so these are descriptive counts, not accuracy. Step-11 code was
+built in a separate worktree so the runs were not disturbed; wall times are
+approximate because tests ran on the same machine during some runs.
+
+**Transport regression check (full-v0, before vs after step 10).** Bonsai 2
+27B and Bonsai 2 9B produced identical assertions on all 3 visits; Qwen
+visits 02 and 14 identical assertions with the same calls (the loop guard
+ended looping calls earlier). Gemma visit 02 differed by one near-tie token
+("patient" vs "clinician" source role) in one call with an identical prompt:
+the single-slot server changes floating-point reduction order. Greedy output
+is reproducible within one configuration, not across server-slot settings;
+the step-10 runs are the new baseline.
+
+**Loop guard, greedy (Qwen3-8B, 3 visits).** Before: 28.7k + 1.8k (visit
+failed) + 50.4k output tokens, 669 + 44 + 1,211 s. After: 17.0k + 13.3k +
+29.1k tokens, 360 + 288 + 613 s, all three visits complete (19 loop stops;
+visit 09 keeps 14 valid items of its first window and quarantines the
+blank-quote item, then finishes the remaining windows).
+
+**full-v0 vs full-v0-card (3 visits summed, seed 0).**
+
+| Model | Profile | Items | Validation failed | Loop stops | Length stops | Output tokens | Wall s |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Bonsai 2 27B | full-v0 | 139 | 0 | 0 | 0 | 19,002 | 883 |
+| Bonsai 2 27B | full-v0-card | 151 | 5 (omitted negation context) | 0 | 0 | 20,210 | 947 |
+| Bonsai 2 9B | full-v0 | 119 | 2 | 1 | 0 | 19,261 | 302 |
+| Bonsai 2 9B | full-v0-card | 123 | 6 | 0 | 1 | 20,759 | 338 |
+| Gemma 4 E4B | full-v0 | 108 | 3 | 0 | 0 | 15,272 | 279 |
+| Gemma 4 E4B | full-v0-card | 112 | 2 | 0 | 0 | 15,233 | 270 |
+| Qwen3-8B | full-v0 | 178 | 4 | 19 | 0 | 59,415 | 1,261 |
+| Qwen3-8B | full-v0-card | 131 | 3 | 14 | 1 | 41,593 | 1,078 |
+
+Qwen card sampling, visit 14 across seeds 0/1/2: 38/28/33 items, 19/7/11
+calls, 8/2/4 loop stops, 1/6/2 validation failures.
+
+**Reading.** Card sampling did not remove Qwen's object loops (the guard
+still fired 14 times), and it made Qwen's output vary widely between seeds.
+For both Bonsai models it added evidence-lane failures (quotes that omit
+nearby negation context, quotes not found), which the safety checks caught.
+Gemma was similar under both. Greedy decoding (temperature 0) stays the
+extraction baseline; the loop guard, not the sampler, is what fixed Qwen's
+cost. This is a pre-registered descriptive comparison on three visits; no
+parameters were chosen from it, and the decoding decision is re-checked
+against development gold when it exists (PLAN A5).

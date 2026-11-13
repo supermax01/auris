@@ -202,3 +202,13 @@ Proposed A5 Evidence wording (not applied to `docs/PLAN.md`):
 > identify disfluency matches to reviewers. Tokenless segments are not shown
 > or allowed as citations. Unaligned or unsafe quotes fail the evidence lane;
 > aligned quotes are labelled “transcript-supported”, never “verified”.
+
+## Final replay (Claude, after the step-10 comparison finished)
+
+`.venv/bin/python -m auris.extract.evidence_replay cache/primock-dev-models-v2 cache/primock-dev-step10 --out out/step11-replay/final`
+over 39 completed runs (2 failed historical runs skipped): 1,758 assertions,
+1,789 evidence items. All 1,748 items aligned under evidence-v1 keep exactly
+the same span under v2. 15 items move FAIL → PASS (6 of them material, still
+requiring review); 11 validation_failed → needs_review and 4 → ledger_only.
+Remaining evidence failures: 11 quote_not_found, 7 omitted_negation_context,
+7 cited_empty_segment, 1 citation_outside_window. No resource content changed.

@@ -524,10 +524,31 @@ modifies the intake anchors; for example, it does not add
   Backend contract tests prove AST-level schema conformance and identical
   rejection of invalid structures on llama.cpp and vLLM+XGrammar; token
   streams need not be bit-identical.
-- **Evidence.** Spans are segment id + quote, aligned by case- and
-  punctuation-normalised token spans to exact character/audio offsets.
-  Unaligned quotes fail the evidence lane; aligned quotes are labelled
-  "transcript-supported", never "verified".
+  *Card check (Step 10):* all four pinned cards recommend sampling, not
+  greedy, for non-thinking use. A pre-registered comparison on three
+  development visits (`full-v0-card`, settings copied from the cards) did
+  not remove Qwen3-8B's repetition loops and added evidence-lane failures
+  for both Bonsai models, so temperature 0 stays the baseline until
+  development gold says otherwise. Every call streams; a call that repeats
+  one assertion a 4th time is stopped and its window split like a
+  truncation (loop-guard-v1). Greedy output is reproducible only within one
+  server configuration (build, hardware, single slot).
+- **Malformed items (Step 10).** In an otherwise valid response, an item
+  that fails the schema is quarantined, never a fact: a visit-level
+  material, failing review item that blocks final export until dismissed.
+  Broken JSON, wrong top-level shape, truncation and loops still fail the
+  whole response.
+- **Evidence.** Spans are segment id + quote. Case- and punctuation-
+  normalised exact token alignment is tried first. Only if it fails, a
+  versioned closed list of fillers (um, uh, er, …) is removed and
+  immediate 1–3-token repeats are collapsed on both sides, then the quote
+  must still occur exactly (Step 11). Assent, denial, negation, content
+  words and numbers always count. The stored span is the original
+  transcript text with exact character/audio offsets; negation-context
+  checks run on it, and reviewers see when fillers were ignored. Segments
+  with no words (e.g. inaudible markers) are not shown to the model and
+  cannot be cited. Unaligned quotes fail the evidence lane; aligned quotes
+  are labelled "transcript-supported", never "verified".
 - **Chunking.** Whole encounters go in one pass when they fit with
   headroom. Otherwise use ~4,096-token segment-boundary windows with
   2-segment overlap, merged on (class, normalised concept, polarity,

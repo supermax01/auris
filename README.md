@@ -63,9 +63,10 @@ auris review serve --run out/demo
 ```
 
 Open the private loopback URL printed by the command and enter your name and
-role once for the session. Expand an evidence receipt to see its quote and
-surrounding transcript; text-only visits show times or turn numbers, without
-an audio player. **Approve** confirms your review of this exact item version.
+role once for the session. Each record shows its quote and receipt; expand
+"Transcript context" to see the surrounding lines with the cited one
+highlighted. Text-only visits show times or turn numbers, without an audio
+player. **Approve** confirms your review of this exact item version.
 **Dismiss** requires a reason and removes the item from export and the note's
 record sections, retaining it in a dismissed list. **Undo** revokes the latest
 action. Every action rewrites the note, bundle and validation report locally.
