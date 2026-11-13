@@ -58,11 +58,13 @@ differ only by "um"/"uh" or a stutter now match; negations and words like
 ## Try the review page
 
 ```sh
-auris demo
 auris review serve --run out/demo
 ```
 
-Open the printed loopback URL. Every record shows its quote; approve,
+`out/demo` is a fresh fictional demo run from this morning (yesterday's
+run, made before the review page existed, is in `out/demo-2026-11-12`).
+`auris demo` refuses to overwrite a non-empty `out/demo`, so move it aside
+before making a new one. Open the printed loopback URL. Every record shows its quote; approve,
 dismiss with a reason, correct a fact or a speaker (the checks and the
 official validator re-run in ~8 s), undo. The header says when final
 export is ready and what is left out. A correction that puts a number in a
