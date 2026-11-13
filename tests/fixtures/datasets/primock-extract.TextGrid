@@ -1,0 +1,22 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 457.92 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "Doctor" 
+        xmin = 0 
+        xmax = 457.92 
+        intervals: size = 2 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.5334561157322537 
+            text = "" 
+        intervals [2]:
+            xmin = 2.5334561157322537 
+            xmax = 12.499861706065632 
+            text = "Hello? Hi. Um, should we start? Yeah, okay. <UNSURE>Hello how</UNSURE> um. Good morning sir, how can I help you this morning?" 

@@ -28,10 +28,16 @@ def render_transcript(segments: Sequence[TranscriptSegment]) -> str:
     # Escape embedded line breaks, leaving the original text in Transcript
     # for evidence alignment. Quotes must use original words, not escapes.
     return "\n".join(
-        f"[{s.id} | {s.role} | {_timestamp(s.start_seconds)}–{_timestamp(s.end_seconds)}] "
-        + s.text.replace("\r", "\\r").replace("\n", "\\n")
+        f"[{s.id} | {s.role} | {_location(s)}] " + s.text.replace("\r", "\\r").replace("\n", "\\n")
         for s in segments
     )
+
+
+def _location(segment: TranscriptSegment) -> str:
+    if segment.start_seconds is None:
+        return f"turn {segment.turn_number}"
+    assert segment.end_seconds is not None
+    return f"{_timestamp(segment.start_seconds)}–{_timestamp(segment.end_seconds)}"
 
 
 def messages(segments: Sequence[TranscriptSegment]) -> list[dict[str, str]]:

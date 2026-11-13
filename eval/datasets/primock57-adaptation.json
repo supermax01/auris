@@ -1,0 +1,13 @@
+{
+  "empty_extraction_segments": 381,
+  "encounters": 57,
+  "markup_characters_removed": 44223,
+  "markup_removed": {
+    "</UNSURE>": 1132,
+    "<INAUDIBLE_SPEECH/>": 814,
+    "<UNIN/>": 1359,
+    "<UNSURE>": 1132
+  },
+  "silence_intervals_dropped": 6460,
+  "unknown_role_segments": 0
+}

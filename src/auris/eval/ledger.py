@@ -8,16 +8,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
+from auris.datasets.splits import PublicSplit
 from auris.eval.gold import Dataset
 
 
 def register_test_use(
     path: Path,
-    dataset: Dataset,
+    dataset: Dataset | PublicSplit,
     run_id: str,
     action: Literal["run", "score"],
     *,
     confirmed: bool = False,
+    locked_run: bool = False,
 ) -> dict:
     if dataset.split != "test":
         return {"locked_test": False, "confirmed_rerun": False}
@@ -37,23 +39,27 @@ def register_test_use(
         related = [
             e
             for e in entries
-            if e["split_id"] == dataset.split_id or set(e["transcript_hashes"]) & set(hashes)
+            if e["action"] in ("run", "score")
+            and (e["split_id"] == dataset.split_id or set(e["transcript_hashes"]) & set(hashes))
         ]
         own = [e for e in related if e["run_id"] == run_id]
         if action == "score" and not any(e["action"] == "run" for e in own):
             raise ValueError("locked test run has no reservation in the test ledger")
         repeated = bool(related) if action == "run" else any(e["action"] == "score" for e in own)
+        refusal = None
+        if action == "run" and not (locked_run or confirmed):
+            refusal = "locked test extraction requires --locked-test-run"
         if repeated and not confirmed:
-            raise ValueError(
-                "locked test already used; explicit --confirm-locked-test-rerun required"
-            )
+            refusal = "locked test already used; explicit --confirm-locked-test-rerun required"
         entry = {
             "schema_version": "1",
             "split_id": dataset.split_id,
             "dataset_id": dataset.id,
             "transcript_hashes": hashes,
             "run_id": run_id,
-            "action": action,
+            "action": f"{action}_refused" if refusal else action,
+            "locked_run": locked_run,
+            "refusal": refusal,
             "confirmed_rerun": confirmed,
             "repeated": repeated,
             "timestamp": datetime.now(UTC).isoformat(),
@@ -61,4 +67,6 @@ def register_test_use(
         handle.write(json.dumps(entry, sort_keys=True) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
+        if refusal:
+            raise ValueError(refusal)
     return {"locked_test": True, "confirmed_rerun": confirmed, "repeated": repeated}

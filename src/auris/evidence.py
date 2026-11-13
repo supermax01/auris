@@ -41,7 +41,14 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 
 from auris.assertions import AssertionBase, EvidenceItem
 from auris.transcript import Transcript, TranscriptSegment
@@ -94,10 +101,41 @@ class AlignedEvidence(_EvidenceModel):
     aligned_text: str
     char_start: int
     char_end: int
-    audio_start_seconds: float
-    audio_end_seconds: float
-    audio_approximate: bool
-    audio_source: Literal["word_timings", "segment_bounds"]
+    audio_start_seconds: float | None
+    audio_end_seconds: float | None
+    audio_approximate: bool | None
+    audio_source: Literal["word_timings", "segment_bounds", "human_utterance_bounds", "untimed"]
+    turn_number: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def _timing(self) -> AlignedEvidence:
+        if self.audio_source == "untimed":
+            if self.turn_number is None or any(
+                value is not None
+                for value in (
+                    self.audio_start_seconds,
+                    self.audio_end_seconds,
+                    self.audio_approximate,
+                )
+            ):
+                raise ValueError("untimed evidence requires a turn number and no audio extent")
+        elif any(
+            value is None
+            for value in (
+                self.audio_start_seconds,
+                self.audio_end_seconds,
+                self.audio_approximate,
+            )
+        ):
+            raise ValueError("timed evidence requires audio bounds and approximation status")
+        return self
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler) -> dict:
+        data = handler(self)
+        if self.turn_number is None:
+            data.pop("turn_number", None)  # Preserve existing timed evidence/golden artifacts.
+        return data
 
 
 class EvidenceItemResult(_EvidenceModel):
@@ -325,12 +363,17 @@ def align_evidence_item(item: EvidenceItem, transcript: Transcript) -> EvidenceI
         audio_end = matched[-1].audio_end_seconds
         assert audio_start is not None and audio_end is not None
         audio_approximate = any(token.audio_approximate for token in matched)
-        audio_source: Literal["word_timings", "segment_bounds"] = "word_timings"
+        audio_source = "word_timings"
     else:
         audio_start = segment.start_seconds
         audio_end = segment.end_seconds
         audio_approximate = True
         audio_source = "segment_bounds"
+        if transcript.timing_source == "human_utterance_bounds":
+            audio_source = "human_utterance_bounds"
+        elif transcript.timing_mode == "untimed":
+            audio_source = "untimed"
+            audio_approximate = None
     return EvidenceItemResult(
         segment_id=item.segment_id,
         quote=item.quote,
@@ -344,6 +387,7 @@ def align_evidence_item(item: EvidenceItem, transcript: Transcript) -> EvidenceI
             audio_end_seconds=audio_end,
             audio_approximate=audio_approximate,
             audio_source=audio_source,
+            turn_number=segment.turn_number,
         ),
         failure=None,
     )

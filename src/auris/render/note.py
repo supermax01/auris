@@ -149,6 +149,8 @@ def _receipts(outcome: MappingOutcome, transcript: Transcript) -> str:
         stamp = (
             f"{int(seconds) // 60:02d}:{int(seconds) % 60:02d}" if seconds is not None else "--:--"
         )
+        if transcript.timing_mode == "untimed":
+            stamp = f"turn {segment.turn_number}" if segment else "turn unknown"
         receipt = f"[{stamp} · {role}]"
         if receipt not in receipts:
             receipts.append(receipt)
@@ -335,8 +337,12 @@ def render_note(items: Sequence[NoteItem], metadata: NoteMetadata, *, export_sum
             f"Model: {_text(metadata.model_id)} · Prompt: {_text(metadata.prompt_version)} · "
             f"Run: {_text(metadata.run_timestamp)}",
             "",
-            "Evidence times use aligned audio offsets or segment starts; "
-            "segment times are approximate.",
+            (
+                "Evidence cites turn numbers for untimed transcripts; no audio time is inferred."
+                if any("[turn " in item.receipts for item in items)
+                else "Evidence times use aligned audio offsets or segment starts; "
+                "segment times are approximate."
+            ),
             "",
             "Review entries refer to the item labels below (S, O, A, P and D).",
             "",

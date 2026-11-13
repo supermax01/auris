@@ -22,7 +22,15 @@ from auris.fhir import Mapper
 
 @pytest.fixture
 def run_factory(tmp_path, terminology, units):
-    def run(*, manifest=MANIFEST, output=None, responses=None, confirmed=False, models=None):
+    def run(
+        *,
+        manifest=MANIFEST,
+        output=None,
+        responses=None,
+        confirmed=False,
+        locked_run=False,
+        models=None,
+    ):
         config = load_frozen_config()
         dataset, transcripts = load_dataset(manifest)
         events = []
@@ -67,6 +75,7 @@ def run_factory(tmp_path, terminology, units):
             validator_factory=validator,
             ledger=tmp_path / "ledger.jsonl",
             confirmed=confirmed,
+            locked_run=locked_run,
             samples=25,
         )
         return output, result, events
@@ -154,7 +163,7 @@ def test_test_split_run_once_score_once_and_record_confirmation(run_factory, tmp
         e["split"] = "test"
     manifest.write_text(canonical_json(data))
     output, _, _ = run_factory(
-        manifest=manifest, models=[load_frozen_config().extractor.candidate().id]
+        manifest=manifest, models=[load_frozen_config().extractor.candidate().id], locked_run=True
     )
     ledger = tmp_path / "ledger.jsonl"
     score_run(output, ledger=ledger)
@@ -166,8 +175,14 @@ def test_test_split_run_once_score_once_and_record_confirmation(run_factory, tmp
     with pytest.raises(ValueError, match="confirm-locked-test-rerun"):
         run_factory(manifest=manifest, output=tmp_path / "second")
     entries = [json.loads(line) for line in ledger.read_text().splitlines()]
-    assert [e["action"] for e in entries] == ["run", "score", "score"]
-    assert entries[-1]["confirmed_rerun"] and entries[-1]["repeated"]
+    assert [e["action"] for e in entries] == [
+        "run",
+        "score",
+        "score_refused",
+        "score",
+        "run_refused",
+    ]
+    assert entries[-2]["confirmed_rerun"] and entries[-2]["repeated"]
     dataset, _ = load_dataset(manifest)
     # Changing split IDs cannot conceal overlapping held-out transcripts.
     renamed = dataset.model_copy(update={"split_id": "renamed"})

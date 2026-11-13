@@ -18,6 +18,11 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     run.add_argument("--out", type=Path, required=True)
     run.add_argument("--seed", type=int, default=1729)
     run.add_argument("--bootstrap-samples", type=int, default=2000)
+    run.add_argument(
+        "--locked-test-run",
+        action="store_true",
+        help="Authorize the first held-out extraction (Slice 4 only)",
+    )
     score = commands.add_parser("score")
     score.add_argument("--run", type=Path, required=True)
     compare = commands.add_parser("compare")
@@ -96,6 +101,7 @@ def _command(args: argparse.Namespace) -> int:
             ),
             ledger=ledger,
             confirmed=args.confirm_locked_test_rerun,
+            locked_run=args.locked_test_run,
             seed=args.seed,
             samples=args.bootstrap_samples,
         )

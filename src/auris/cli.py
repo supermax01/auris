@@ -49,6 +49,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
     setup_parser = subparsers.add_parser("setup", help="One-time setup downloads")
     setup_subparsers = setup_parser.add_subparsers(dest="setup_command")
+    datasets_parser = setup_subparsers.add_parser(
+        "datasets", help="Verify pinned public dataset checkouts and prepare transcripts offline"
+    )
+    datasets_parser.add_argument("--config", type=Path, default=None)
+    datasets_parser.add_argument("--cache", type=Path, default=None)
+    datasets_parser.add_argument("--manifests", type=Path, default=_repo_root() / "eval/datasets")
     model_parser = setup_subparsers.add_parser(
         "model", help="Verify or fetch the pinned local GGUF"
     )
@@ -266,6 +272,21 @@ def _cmd_setup_terminology(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_setup_datasets(args: argparse.Namespace) -> int:
+    from auris.config import load_frozen_config
+    from auris.setup.datasets import default_cache_dir, setup_datasets
+
+    config = load_frozen_config(args.config)
+    if {pin.id for pin in config.datasets} != {"primock57", "aci-bench"}:
+        raise ValueError("both public datasets must be pinned")
+    corpora = setup_datasets(config.datasets, args.cache or default_cache_dir(), args.manifests)
+    for name, corpus in corpora.items():
+        print(f"{name}: commit and source checksums OK; prepared {len(corpus)} transcripts")
+    print("frozen splits verified; gold: none (awaiting clinician annotation)")
+    print("public clinical-term overlaps are warnings; see prepared/*-leakage.json for counts")
+    return 0
+
+
 def _cmd_checklist(args: argparse.Namespace) -> int:
     from auris.config import load_frozen_config
     from auris.contract import checklist
@@ -318,6 +339,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_guarded(_cmd_setup_terminology, args)
     if args.command == "setup" and args.setup_command == "validator":
         return _run_guarded(_cmd_setup_validator, args)
+    if args.command == "setup" and args.setup_command == "datasets":
+        return _run_guarded(_cmd_setup_datasets, args)
     if args.command == "checklist":
         return _run_guarded(_cmd_checklist, args)
     parser.print_help(sys.stderr)

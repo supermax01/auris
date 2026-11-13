@@ -22,7 +22,14 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 
 from auris._storage import write_private_text
 
@@ -74,22 +81,31 @@ class TranscriptSegment(_TranscriptModel):
     id: str = Field(min_length=1)
     speaker_cluster_id: str = Field(min_length=1)
     role: SpeakerRole
-    start_seconds: float
-    end_seconds: float
+    start_seconds: float | None = None
+    end_seconds: float | None = None
     text: str
     words: tuple[WordTiming, ...] | None = None
+    turn_number: int | None = Field(default=None, ge=1)
+    raw_text: str | None = None
 
     @model_validator(mode="after")
     def _check_extent_and_words(self) -> TranscriptSegment:
-        _check_finite_non_negative(self.start_seconds, "start_seconds")
-        _check_finite_non_negative(self.end_seconds, "end_seconds")
-        if self.end_seconds < self.start_seconds:
-            raise ValueError("segment end_seconds must be >= start_seconds")
+        if self.start_seconds is None or self.end_seconds is None:
+            if self.start_seconds is not None or self.end_seconds is not None:
+                raise ValueError("segment bounds must both be present or absent")
+            if self.words is not None or self.turn_number is None:
+                raise ValueError("untimed segments require a turn number and no word timings")
+        else:
+            _check_finite_non_negative(self.start_seconds, "start_seconds")
+            _check_finite_non_negative(self.end_seconds, "end_seconds")
+            if self.end_seconds < self.start_seconds:
+                raise ValueError("segment end_seconds must be >= start_seconds")
         if not self.id.strip():
             raise ValueError("segment id must not be blank")
         if not self.speaker_cluster_id.strip():
             raise ValueError("speaker_cluster_id must not be blank")
         if self.words is not None:
+            assert self.start_seconds is not None and self.end_seconds is not None
             if len(self.words) == 0:
                 raise ValueError("words must be omitted (null) rather than empty")
             for previous, current in zip(self.words, self.words[1:], strict=False):
@@ -104,6 +120,22 @@ class TranscriptSegment(_TranscriptModel):
         return self
 
 
+class TranscriptSource(_TranscriptModel):
+    dataset: str
+    encounter_id: str
+    repository: str
+    commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    license: str
+    variant: str
+    upstream_split: str
+    source_files: tuple[str, ...]
+    human_transcription: bool
+    speaker_tags: Literal["source roles; not adjudicated", "speaker tags unverified"]
+    markup_removed: dict[str, int] = Field(default_factory=dict)
+    markup_characters_removed: int = Field(default=0, ge=0)
+    silence_intervals_dropped: int = Field(default=0, ge=0)
+
+
 class Transcript(_TranscriptModel):
     """An immutable transcript: an ordered tuple of segments.
 
@@ -113,13 +145,29 @@ class Transcript(_TranscriptModel):
     (e.g. silent audio) and still hashes.
     """
 
-    schema_version: Literal["1"] = "1"
+    schema_version: Literal["1", "2"] = "1"
     segments: tuple[TranscriptSegment, ...] = ()
+    timing_mode: Literal["timed", "untimed"] = "timed"
+    timing_source: Literal["unspecified", "human_utterance_bounds", "none"] = "unspecified"
+    source: TranscriptSource | None = None
 
     @model_validator(mode="after")
     def _check_unique_segment_ids(self) -> Transcript:
+        if self.schema_version == "1" and (
+            self.timing_mode != "timed"
+            or self.timing_source != "unspecified"
+            or self.source is not None
+            or any(s.raw_text is not None or s.turn_number is not None for s in self.segments)
+        ):
+            raise ValueError("extended transcript metadata requires schema version 2")
+        if (self.timing_mode == "untimed") != (self.timing_source == "none"):
+            raise ValueError("untimed transcripts must declare timing source none")
         seen: set[str] = set()
-        for segment in self.segments:
+        for number, segment in enumerate(self.segments, 1):
+            if (segment.start_seconds is None) != (self.timing_mode == "untimed"):
+                raise ValueError("segment bounds disagree with transcript timing mode")
+            if self.timing_mode == "untimed" and segment.turn_number != number:
+                raise ValueError("untimed turn numbers must be consecutive in stored order")
             if segment.id in seen:
                 raise ValueError(f"duplicate segment id: {segment.id!r}")
             seen.add(segment.id)
@@ -131,6 +179,18 @@ class Transcript(_TranscriptModel):
                 return segment
         return None
 
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler) -> dict:
+        data = handler(self)
+        if self.schema_version == "1":
+            # Preserve hashes of already-frozen v1 transcripts and evaluations.
+            for key in ("timing_mode", "timing_source", "source"):
+                data.pop(key, None)
+            for segment in data.get("segments", ()):
+                segment.pop("raw_text", None)
+                segment.pop("turn_number", None)
+        return data
+
     def canonical_bytes(self) -> bytes:
         """Canonical serialisation the content hash is taken over."""
         payload = json.dumps(
@@ -139,7 +199,8 @@ class Transcript(_TranscriptModel):
             separators=(",", ":"),
             ensure_ascii=False,
         )
-        return _HASH_PREFIX + payload.encode("utf-8")
+        prefix = _HASH_PREFIX if self.schema_version == "1" else b"auris.transcript.v2\n"
+        return prefix + payload.encode("utf-8")
 
     @property
     def content_hash(self) -> str:

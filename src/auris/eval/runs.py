@@ -58,25 +58,59 @@ def run_dataset(
     validator_factory: ValidatorFactory,
     ledger: Path,
     confirmed: bool = False,
+    locked_run: bool = False,
     seed: int = 1729,
     samples: int = 2000,
 ) -> dict:
+    from auris.datasets.splits import PublicSplit
+
+    raw = json.loads(manifest.read_text("utf-8"))
+    run_id = uuid.uuid4().hex
+    if raw.get("schema_version") == "public-split-1":
+        public = PublicSplit.model_validate(raw)
+        if public.split == "test" and not (locked_run or confirmed):
+            register_test_use(ledger, public, run_id, "run")  # Logs the refusal.
+        raise ValueError(
+            "public split has no clinician gold or supplied intake; annotation required"
+        )
     dataset, transcripts = load_dataset(manifest)
+    if dataset.split == "test" and not (locked_run or confirmed):
+        register_test_use(ledger, dataset, run_id, "run")  # Before even a prompt audit.
     candidates = [config.extractor.candidate(model) for model in models]
     if not candidates or len({c.id for c in candidates}) != len(candidates):
         raise ValueError("select at least one unique model")
     if samples < 2:
         raise ValueError("bootstrap needs at least two replicates")
     prepare_output_directory(output)
+    corpus = ["\n".join(s.text for s in transcripts[e.id].segments) for e in dataset.encounters]
+    public = any(
+        t.source and t.source.dataset in {"primock57", "aci-bench"} for t in transcripts.values()
+    )
+    if public:
+        # Audit the entire eligible corpus, not just the selected dev/test split.
+        from auris.cli import _repo_root
+        from auris.setup.datasets import default_cache_dir, verified_corpus
+
+        if {pin.id for pin in config.datasets} != {"primock57", "aci-bench"}:
+            raise ValueError("public evaluation requires both pinned dataset corpora")
+        for pin in config.datasets:
+            full = verified_corpus(
+                default_cache_dir() / pin.id,
+                pin,
+                _repo_root() / "eval/datasets" / f"{pin.id}-sources.json",
+            )
+            corpus.extend("\n".join(s.text for s in t.segments) for t in full.values())
     leakage = check_leakage(
         prompt_text(),
-        [s.text for e in dataset.encounters for s in transcripts[e.id].segments],
+        corpus,
         clinical_terms=dataset.clinical_watchlist,
+        clinical_policy="warn" if public else "refuse",
     )
     write_json(output / "leakage.json", leakage.metadata())
     leakage.raise_if_failed()  # Before reservation, mapper, or server startup.
-    run_id = uuid.uuid4().hex
-    lock = register_test_use(ledger, dataset, run_id, "run", confirmed=confirmed)
+    lock = register_test_use(
+        ledger, dataset, run_id, "run", confirmed=confirmed, locked_run=locked_run
+    )
     frozen_encounters = []
     for encounter in dataset.encounters:
         transcript_path = f"dataset/{encounter.id}/transcript.json"

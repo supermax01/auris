@@ -10,8 +10,9 @@ import hashlib
 import json
 import re
 import unicodedata
+from collections import Counter
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -54,10 +55,15 @@ class LeakageReport(_LeakageModel):
     exact_sentences: tuple[SentenceOverlap, ...]
     near_duplicates: tuple[SentenceOverlap, ...]
     clinical_content: tuple[ClinicalOverlap, ...]
+    clinical_policy: Literal["refuse", "warn"] = "refuse"
 
     @property
     def passed(self) -> bool:
-        return not (self.exact_sentences or self.near_duplicates or self.clinical_content)
+        return not (
+            self.exact_sentences
+            or self.near_duplicates
+            or (self.clinical_content and self.clinical_policy == "refuse")
+        )
 
     def raise_if_failed(self) -> None:
         if not self.passed:
@@ -78,6 +84,12 @@ class LeakageReport(_LeakageModel):
                 "exact_sentence_count": len(self.exact_sentences),
                 "near_duplicate_count": len(self.near_duplicates),
                 "clinical_content_count": len(self.clinical_content),
+                "clinical_policy": self.clinical_policy,
+                "clinical_warning_counts": dict(
+                    sorted(Counter(hit.term for hit in self.clinical_content).items())
+                )
+                if self.clinical_policy == "warn"
+                else {},
             },
         }
 
@@ -113,6 +125,7 @@ def check_leakage(
     corpus: Iterable[str],
     *,
     clinical_terms: Iterable[str] = FIXTURE_CLINICAL_TERMS,
+    clinical_policy: Literal["refuse", "warn"] = "refuse",
 ) -> LeakageReport:
     """Compare a prompt with evaluation texts before any model sees them.
 
@@ -170,4 +183,5 @@ def check_leakage(
         exact_sentences=tuple(exact),
         near_duplicates=tuple(near),
         clinical_content=tuple(clinical),
+        clinical_policy=clinical_policy,
     )

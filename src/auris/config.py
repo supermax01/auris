@@ -280,6 +280,14 @@ class TerminologyConfig(_FrozenModel):
     icd10cm: TerminologyPin
 
 
+class DatasetPin(_FrozenModel):
+    id: Literal["primock57", "aci-bench"]
+    repository: str = Field(pattern=r"^https://github.com/")
+    commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    license: Literal["CC-BY-4.0"]
+    manifest_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
 class FrozenConfig(_FrozenModel):
     """Root of ``config/frozen.toml``."""
 
@@ -290,6 +298,14 @@ class FrozenConfig(_FrozenModel):
     validator: ValidatorConfig
     reference_machines: ReferenceMachinesConfig
     terminology: TerminologyConfig
+    datasets: tuple[DatasetPin, ...] = ()
+
+    @field_validator("datasets")
+    @classmethod
+    def _unique_datasets(cls, pins: tuple[DatasetPin, ...]) -> tuple[DatasetPin, ...]:
+        if len({pin.id for pin in pins}) != len(pins):
+            raise ValueError("duplicate dataset pin")
+        return pins
 
 
 def default_config_path() -> Path:

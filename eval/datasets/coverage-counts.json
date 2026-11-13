@@ -1,0 +1,666 @@
+{
+  "datasets": {
+    "aci-bench": {
+      "all": {
+        "all_canonical": {
+          "allergy_denial": {
+            "candidates": 13,
+            "encounters": 11
+          },
+          "allergy_statement": {
+            "candidates": 29,
+            "encounters": 23
+          },
+          "clinician_assessed_problem": {
+            "candidates": 636,
+            "encounters": 181
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 21,
+            "encounters": 19
+          },
+          "dosed_order_candidate": {
+            "candidates": 33,
+            "encounters": 30
+          },
+          "drug_name_mention": {
+            "candidates": 1403,
+            "encounters": 187
+          },
+          "explicit_new_order": {
+            "candidates": 66,
+            "encounters": 55
+          },
+          "family_history_cue": {
+            "candidates": 47,
+            "encounters": 31
+          },
+          "patient_reported_condition": {
+            "candidates": 304,
+            "encounters": 144
+          },
+          "reported_medication": {
+            "candidates": 341,
+            "encounters": 149
+          },
+          "symptom": {
+            "candidates": 1024,
+            "encounters": 174
+          },
+          "vital_sign": {
+            "candidates": 147,
+            "encounters": 62
+          }
+        },
+        "encounters": 195,
+        "human_encounters": 83,
+        "human_only": {
+          "allergy_denial": {
+            "candidates": 7,
+            "encounters": 6
+          },
+          "allergy_statement": {
+            "candidates": 21,
+            "encounters": 18
+          },
+          "clinician_assessed_problem": {
+            "candidates": 283,
+            "encounters": 76
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 7,
+            "encounters": 7
+          },
+          "dosed_order_candidate": {
+            "candidates": 26,
+            "encounters": 23
+          },
+          "drug_name_mention": {
+            "candidates": 769,
+            "encounters": 79
+          },
+          "explicit_new_order": {
+            "candidates": 47,
+            "encounters": 38
+          },
+          "family_history_cue": {
+            "candidates": 21,
+            "encounters": 14
+          },
+          "patient_reported_condition": {
+            "candidates": 127,
+            "encounters": 63
+          },
+          "reported_medication": {
+            "candidates": 148,
+            "encounters": 68
+          },
+          "symptom": {
+            "candidates": 350,
+            "encounters": 73
+          },
+          "vital_sign": {
+            "candidates": 20,
+            "encounters": 11
+          }
+        }
+      },
+      "dev": {
+        "all_canonical": {
+          "allergy_denial": {
+            "candidates": 2,
+            "encounters": 1
+          },
+          "allergy_statement": {
+            "candidates": 2,
+            "encounters": 2
+          },
+          "clinician_assessed_problem": {
+            "candidates": 79,
+            "encounters": 20
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 4,
+            "encounters": 3
+          },
+          "dosed_order_candidate": {
+            "candidates": 4,
+            "encounters": 4
+          },
+          "drug_name_mention": {
+            "candidates": 149,
+            "encounters": 21
+          },
+          "explicit_new_order": {
+            "candidates": 8,
+            "encounters": 7
+          },
+          "family_history_cue": {
+            "candidates": 5,
+            "encounters": 3
+          },
+          "patient_reported_condition": {
+            "candidates": 38,
+            "encounters": 19
+          },
+          "reported_medication": {
+            "candidates": 37,
+            "encounters": 18
+          },
+          "symptom": {
+            "candidates": 119,
+            "encounters": 19
+          },
+          "vital_sign": {
+            "candidates": 17,
+            "encounters": 9
+          }
+        },
+        "encounters": 23,
+        "human_encounters": 10,
+        "human_only": {
+          "allergy_denial": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "allergy_statement": {
+            "candidates": 1,
+            "encounters": 1
+          },
+          "clinician_assessed_problem": {
+            "candidates": 43,
+            "encounters": 9
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 1,
+            "encounters": 1
+          },
+          "dosed_order_candidate": {
+            "candidates": 2,
+            "encounters": 2
+          },
+          "drug_name_mention": {
+            "candidates": 83,
+            "encounters": 9
+          },
+          "explicit_new_order": {
+            "candidates": 6,
+            "encounters": 5
+          },
+          "family_history_cue": {
+            "candidates": 1,
+            "encounters": 1
+          },
+          "patient_reported_condition": {
+            "candidates": 12,
+            "encounters": 8
+          },
+          "reported_medication": {
+            "candidates": 15,
+            "encounters": 7
+          },
+          "symptom": {
+            "candidates": 40,
+            "encounters": 8
+          },
+          "vital_sign": {
+            "candidates": 1,
+            "encounters": 1
+          }
+        }
+      },
+      "test": {
+        "all_canonical": {
+          "allergy_denial": {
+            "candidates": 4,
+            "encounters": 4
+          },
+          "allergy_statement": {
+            "candidates": 9,
+            "encounters": 7
+          },
+          "clinician_assessed_problem": {
+            "candidates": 197,
+            "encounters": 57
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 4,
+            "encounters": 4
+          },
+          "dosed_order_candidate": {
+            "candidates": 11,
+            "encounters": 9
+          },
+          "drug_name_mention": {
+            "candidates": 450,
+            "encounters": 58
+          },
+          "explicit_new_order": {
+            "candidates": 21,
+            "encounters": 18
+          },
+          "family_history_cue": {
+            "candidates": 12,
+            "encounters": 8
+          },
+          "patient_reported_condition": {
+            "candidates": 88,
+            "encounters": 42
+          },
+          "reported_medication": {
+            "candidates": 112,
+            "encounters": 44
+          },
+          "symptom": {
+            "candidates": 313,
+            "encounters": 54
+          },
+          "vital_sign": {
+            "candidates": 37,
+            "encounters": 20
+          }
+        },
+        "encounters": 60,
+        "human_encounters": 29,
+        "human_only": {
+          "allergy_denial": {
+            "candidates": 1,
+            "encounters": 1
+          },
+          "allergy_statement": {
+            "candidates": 5,
+            "encounters": 5
+          },
+          "clinician_assessed_problem": {
+            "candidates": 94,
+            "encounters": 27
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 1,
+            "encounters": 1
+          },
+          "dosed_order_candidate": {
+            "candidates": 8,
+            "encounters": 6
+          },
+          "drug_name_mention": {
+            "candidates": 239,
+            "encounters": 28
+          },
+          "explicit_new_order": {
+            "candidates": 14,
+            "encounters": 11
+          },
+          "family_history_cue": {
+            "candidates": 10,
+            "encounters": 6
+          },
+          "patient_reported_condition": {
+            "candidates": 43,
+            "encounters": 21
+          },
+          "reported_medication": {
+            "candidates": 46,
+            "encounters": 22
+          },
+          "symptom": {
+            "candidates": 127,
+            "encounters": 25
+          },
+          "vital_sign": {
+            "candidates": 7,
+            "encounters": 4
+          }
+        }
+      }
+    },
+    "primock57": {
+      "all": {
+        "all_canonical": {
+          "allergy_denial": {
+            "candidates": 23,
+            "encounters": 17
+          },
+          "allergy_statement": {
+            "candidates": 82,
+            "encounters": 45
+          },
+          "clinician_assessed_problem": {
+            "candidates": 206,
+            "encounters": 52
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 5,
+            "encounters": 5
+          },
+          "dosed_order_candidate": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "drug_name_mention": {
+            "candidates": 233,
+            "encounters": 49
+          },
+          "explicit_new_order": {
+            "candidates": 7,
+            "encounters": 6
+          },
+          "family_history_cue": {
+            "candidates": 63,
+            "encounters": 27
+          },
+          "patient_reported_condition": {
+            "candidates": 151,
+            "encounters": 50
+          },
+          "reported_medication": {
+            "candidates": 64,
+            "encounters": 32
+          },
+          "symptom": {
+            "candidates": 381,
+            "encounters": 49
+          },
+          "vital_sign": {
+            "candidates": 5,
+            "encounters": 3
+          }
+        },
+        "encounters": 57,
+        "human_encounters": 57,
+        "human_only": {
+          "allergy_denial": {
+            "candidates": 23,
+            "encounters": 17
+          },
+          "allergy_statement": {
+            "candidates": 82,
+            "encounters": 45
+          },
+          "clinician_assessed_problem": {
+            "candidates": 206,
+            "encounters": 52
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 5,
+            "encounters": 5
+          },
+          "dosed_order_candidate": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "drug_name_mention": {
+            "candidates": 233,
+            "encounters": 49
+          },
+          "explicit_new_order": {
+            "candidates": 7,
+            "encounters": 6
+          },
+          "family_history_cue": {
+            "candidates": 63,
+            "encounters": 27
+          },
+          "patient_reported_condition": {
+            "candidates": 151,
+            "encounters": 50
+          },
+          "reported_medication": {
+            "candidates": 64,
+            "encounters": 32
+          },
+          "symptom": {
+            "candidates": 381,
+            "encounters": 49
+          },
+          "vital_sign": {
+            "candidates": 5,
+            "encounters": 3
+          }
+        }
+      },
+      "dev": {
+        "all_canonical": {
+          "allergy_denial": {
+            "candidates": 8,
+            "encounters": 7
+          },
+          "allergy_statement": {
+            "candidates": 32,
+            "encounters": 14
+          },
+          "clinician_assessed_problem": {
+            "candidates": 54,
+            "encounters": 16
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 2,
+            "encounters": 2
+          },
+          "dosed_order_candidate": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "drug_name_mention": {
+            "candidates": 70,
+            "encounters": 16
+          },
+          "explicit_new_order": {
+            "candidates": 2,
+            "encounters": 2
+          },
+          "family_history_cue": {
+            "candidates": 17,
+            "encounters": 7
+          },
+          "patient_reported_condition": {
+            "candidates": 51,
+            "encounters": 16
+          },
+          "reported_medication": {
+            "candidates": 21,
+            "encounters": 12
+          },
+          "symptom": {
+            "candidates": 131,
+            "encounters": 17
+          },
+          "vital_sign": {
+            "candidates": 1,
+            "encounters": 1
+          }
+        },
+        "encounters": 17,
+        "human_encounters": 17,
+        "human_only": {
+          "allergy_denial": {
+            "candidates": 8,
+            "encounters": 7
+          },
+          "allergy_statement": {
+            "candidates": 32,
+            "encounters": 14
+          },
+          "clinician_assessed_problem": {
+            "candidates": 54,
+            "encounters": 16
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 2,
+            "encounters": 2
+          },
+          "dosed_order_candidate": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "drug_name_mention": {
+            "candidates": 70,
+            "encounters": 16
+          },
+          "explicit_new_order": {
+            "candidates": 2,
+            "encounters": 2
+          },
+          "family_history_cue": {
+            "candidates": 17,
+            "encounters": 7
+          },
+          "patient_reported_condition": {
+            "candidates": 51,
+            "encounters": 16
+          },
+          "reported_medication": {
+            "candidates": 21,
+            "encounters": 12
+          },
+          "symptom": {
+            "candidates": 131,
+            "encounters": 17
+          },
+          "vital_sign": {
+            "candidates": 1,
+            "encounters": 1
+          }
+        }
+      },
+      "test": {
+        "all_canonical": {
+          "allergy_denial": {
+            "candidates": 15,
+            "encounters": 10
+          },
+          "allergy_statement": {
+            "candidates": 50,
+            "encounters": 31
+          },
+          "clinician_assessed_problem": {
+            "candidates": 152,
+            "encounters": 36
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 3,
+            "encounters": 3
+          },
+          "dosed_order_candidate": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "drug_name_mention": {
+            "candidates": 163,
+            "encounters": 33
+          },
+          "explicit_new_order": {
+            "candidates": 5,
+            "encounters": 4
+          },
+          "family_history_cue": {
+            "candidates": 46,
+            "encounters": 20
+          },
+          "patient_reported_condition": {
+            "candidates": 100,
+            "encounters": 34
+          },
+          "reported_medication": {
+            "candidates": 43,
+            "encounters": 20
+          },
+          "symptom": {
+            "candidates": 250,
+            "encounters": 32
+          },
+          "vital_sign": {
+            "candidates": 4,
+            "encounters": 2
+          }
+        },
+        "encounters": 40,
+        "human_encounters": 40,
+        "human_only": {
+          "allergy_denial": {
+            "candidates": 15,
+            "encounters": 10
+          },
+          "allergy_statement": {
+            "candidates": 50,
+            "encounters": 31
+          },
+          "clinician_assessed_problem": {
+            "candidates": 152,
+            "encounters": 36
+          },
+          "clinician_ruled_out_problem": {
+            "candidates": 3,
+            "encounters": 3
+          },
+          "dosed_order_candidate": {
+            "candidates": 0,
+            "encounters": 0
+          },
+          "drug_name_mention": {
+            "candidates": 163,
+            "encounters": 33
+          },
+          "explicit_new_order": {
+            "candidates": 5,
+            "encounters": 4
+          },
+          "family_history_cue": {
+            "candidates": 46,
+            "encounters": 20
+          },
+          "patient_reported_condition": {
+            "candidates": 100,
+            "encounters": 34
+          },
+          "reported_medication": {
+            "candidates": 43,
+            "encounters": 20
+          },
+          "symptom": {
+            "candidates": 250,
+            "encounters": 32
+          },
+          "vital_sign": {
+            "candidates": 4,
+            "encounters": 2
+          }
+        }
+      }
+    }
+  },
+  "drug_lexicon_names": 33144,
+  "drug_lexicon_sha256": "2fd6220dc2363df2446457c4f7bb28315be71511c24364a86c36f64e745f8120",
+  "method": "lexical_candidates_v1",
+  "schema_version": "1",
+  "sources": {
+    "aci-bench": "287c06dbe5257fc5584218a97f70118bbb8d9a5ba6ec3cfcfb27d56c778d1e00",
+    "primock57": "16a4242232f7b0a4bacaab4989aa99d16502a4d7838d0c47997b8f8d76196373"
+  },
+  "terminology": {
+    "fts5": true,
+    "icd10cm": {
+      "filename": "2027-code-descriptions-tabular-order.zip",
+      "license": "Public domain (US Government)",
+      "md5": null,
+      "release": "FY2027",
+      "sha256": "91c6c9d1117764ce72375a0f3a5493b1725dafbc1ab283b55799076c9e194965",
+      "url": "https://www.cms.gov/files/zip/2027-code-descriptions-tabular-order.zip",
+      "valid_from": "2026-10-01",
+      "valid_to": "2027-09-30"
+    },
+    "icd10cm_valid_from": "2026-10-01",
+    "icd10cm_valid_to": "2027-09-30",
+    "rxnorm": {
+      "filename": "RxNorm_full_prescribe_11022026.zip",
+      "license": "NLM Current Prescribable Content; no licence required",
+      "md5": "cd240fc9655dcd2cb54b1e185f3d8702",
+      "release": "2026-11-02",
+      "sha256": "c742a6c4b2995194aa3479400e08a7c1ad707178bfc80fe9c8cd7afa693ae987",
+      "url": "https://download.nlm.nih.gov/rxnorm/RxNorm_full_prescribe_11022026.zip",
+      "valid_from": null,
+      "valid_to": null
+    },
+    "schema_version": 1
+  }
+}

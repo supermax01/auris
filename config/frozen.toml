@@ -268,3 +268,19 @@ sha256 = "91c6c9d1117764ce72375a0f3a5493b1725dafbc1ab283b55799076c9e194965"
 license = "Public domain (US Government)"
 valid_from = 2026-10-01
 valid_to = 2027-09-30
+
+# Public mock corpora, supplied sparse checkouts; no downloads at runtime.
+
+[[datasets]]
+id = "primock57"
+repository = "https://github.com/babylonhealth/primock57"
+commit = "cd2ac707ad03cb4d2531f4ec6b90c659bf4357c5"
+license = "CC-BY-4.0"
+manifest_sha256 = "16a4242232f7b0a4bacaab4989aa99d16502a4d7838d0c47997b8f8d76196373"
+
+[[datasets]]
+id = "aci-bench"
+repository = "https://github.com/wyim/aci-bench"
+commit = "b909b2bb9cf1d19de08df15cddde7bd0179665e4"
+license = "CC-BY-4.0"
+manifest_sha256 = "287c06dbe5257fc5584218a97f70118bbb8d9a5ba6ec3cfcfb27d56c778d1e00"

@@ -361,3 +361,8 @@ copy of the frozen run. Early failures exposed two tests using version-1 strict
 semantics, formatting, and a mocked Gemma file-size pin; all were corrected before
 the final checks. No installs, dependency edits, setup, inference, commits,
 pushes, or git-history changes were made.
+
+Step 6c adds public source adapters, frozen membership, lexical coverage and a
+required first-test extraction flag. Its behavior supersedes the first-run lock
+and public-corpus clinical-term paragraphs above; see
+[step-6c.md](step-6c.md), including the active prompt's recorded leakage refusal.
