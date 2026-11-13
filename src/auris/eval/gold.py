@@ -279,3 +279,31 @@ def load_dataset(path: Path) -> tuple[Dataset, dict[str, Transcript]]:
 
 def canonical_json(value: object) -> str:
     return json.dumps(value, sort_keys=True, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
+
+
+def convert_annotation(
+    path: Path, transcript: Transcript
+) -> tuple[tuple[GoldAssertion, ...], tuple[OutOfScopeFact, ...]]:
+    """Load completed human work into gold fact types, without claiming adjudication.
+
+    Attribution, timing and guideline hashes remain in the original annotation
+    document. A coordinator must independently adjudicate A/B before creating a
+    scored Dataset with truthful Annotation provenance. This function never
+    creates that provenance or promotes independent work to adjudicated gold.
+    """
+    from auris.annotation.models import AnnotationDocument
+
+    document = AnnotationDocument.model_validate_json(path.read_text("utf-8"))
+    document.verify(transcript)
+    if document.status != "done":
+        raise ValueError("only completed annotations can be converted")
+    return (
+        tuple(
+            GoldAssertion.model_validate(f.model_dump(exclude={"notes"}))
+            for f in document.assertions
+        ),
+        tuple(
+            OutOfScopeFact.model_validate(f.model_dump(exclude={"notes"}))
+            for f in document.out_of_scope
+        ),
+    )

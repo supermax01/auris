@@ -34,6 +34,9 @@ def _build_parser() -> argparse.ArgumentParser:
     from auris.eval.cli import add_parser
 
     add_parser(subparsers)
+    from auris.annotation.cli import add_parser as add_annotation_parser
+
+    add_annotation_parser(subparsers)
     demo_parser = subparsers.add_parser("demo", help="Run the fictional text demo into ./out/demo/")
     demo_parser.add_argument("--model", default=None)
 
@@ -323,6 +326,10 @@ def _cmd_checklist(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.command == "annotate":
+        from auris.annotation.cli import command
+
+        return _run_guarded(command, args)
     if args.command == "eval":
         from auris.eval.cli import command
 

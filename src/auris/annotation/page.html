@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auris · Human annotation</title>
+<style>
+:root{color-scheme:light dark;font:16px/1.5 system-ui,sans-serif;background:light-dark(#fafafa,#17191c);color:light-dark(#20252b,#e9edf2)}
+*{box-sizing:border-box}body{margin:0}header{padding:1rem;border-bottom:1px solid #888}h1{font-size:1.3rem;margin:0}main{display:grid;grid-template-columns:minmax(18rem,1fr) minmax(22rem,1fr);gap:1rem;padding:1rem;max-width:100rem;margin:auto}section,aside{min-width:0}button,input,select,textarea{font:inherit;padding:.4rem;border:1px solid #888;border-radius:.3rem;background:light-dark(white,#262a30);color:inherit}button{cursor:pointer}button:hover{border-color:#237ac1}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid #489cde;outline-offset:2px}button{margin:.2rem}label{display:block;margin:.6rem 0}label input,label select,label textarea{display:block;width:100%}textarea{min-height:4rem}fieldset{margin:1rem 0;border:1px solid #888}legend{font-weight:600}.turn{padding:.7rem;border-bottom:1px solid #888}.turn-text{white-space:pre-wrap;user-select:text;width:100%;border:0;background:transparent;resize:vertical;min-height:4rem}.meta{font-size:.85rem;opacity:.8}.turn select{font-size:.85rem;max-width:15rem}.toolbar{position:sticky;top:0;background:light-dark(#fafafa,#17191c);z-index:1;padding:.5rem 0}.facts{padding-left:1.5rem}#error{white-space:pre-wrap;color:light-dark(#9e1822,#ffadad)}#status{font-size:.9rem}.span{padding:.3rem;background:light-dark(#e7f0fa,#263648);white-space:pre-wrap}.hidden{display:none}summary{cursor:pointer}@media(max-width:800px){main{grid-template-columns:1fr}}@media print{button,.toolbar,form{display:none}main{display:block}}
+</style>
+<header><h1>Auris · Independent human annotation</h1><div>Research annotation only · No AI assistance · Keep your work private</div><div id="identity"></div></header>
+<main><section aria-label="Transcript"><div class="toolbar"><label>Encounter <select id="encounter"></select></label><button id="add">Add fact from selection</button><button id="append">Add selected evidence to open fact</button><button id="important">Out-of-scope important fact</button><button id="roles">Confirm all source roles as correct</button><div id="status" role="status"></div></div><div id="transcript"></div></section>
+<aside><div id="error" role="alert"></div><div><button id="save">Save now (Ctrl/⌘ S)</button><button id="done">Encounter done</button></div><p>Save confirms completed facts. Incomplete forms show errors and remain open. Finish or cancel the open fact before changing encounters.</p>
+<form id="editor" class="hidden"><h2 id="editor-title">Fact</h2><label>Kind <select id="kind"></select></label><div id="fields"></div><fieldset id="coding"><legend>Concept and acceptable wordings</legend><label>Local code system <select id="system"><option value="http://www.nlm.nih.gov/research/umls/rxnorm">RxNorm</option><option value="http://hl7.org/fhir/sid/icd-10-cm">ICD-10-CM</option></select></label><label>Local lookup <input id="query" maxlength="200"></label><button type="button" id="lookup">Find local codes</button><div id="candidates"></div><button type="button" id="clear-code">Use an auris: concept instead</button><label>Gold concept ID <input id="concept-id" placeholder="auris:short-meaningful-slug"></label><label>Acceptable surface wordings (one per line) <textarea id="acceptable"></textarea></label><label>Canonical numeric values (optional; one per line, BP systolic first)<textarea id="canonical"></textarea></label><label>Canonical UCUM unit (optional, no unit conversion)<input id="ucum"></label></fieldset>
+<fieldset id="critical"><legend>Critical-error attributes</legend><label>Allergy denial scope <select id="denial"><option>none</option><option>specific</option><option>all</option></select></label><label>Condition assertion <select id="condition"><option>none</option><option>present</option><option>absent</option><option>uncertain</option></select></label><label>Order authorization <select id="authorization"><option>none</option><option>explicit</option><option>not_ordered</option></select></label></fieldset>
+<div id="scope-fields" class="hidden"><label>Category <input id="category"></label><label>Reason outside the nine kinds <input id="reason"></label></div>
+<fieldset><legend>Exact supporting words</legend><div id="evidence"></div></fieldset><label>Fact notes <textarea id="fact-notes"></textarea></label><button type="submit">Apply fact and save</button><button type="button" id="cancel">Cancel edits</button></form>
+<h2>Recorded facts</h2><ol id="facts" class="facts"></ol><h2>Out-of-scope important facts</h2><ol id="outside" class="facts"></ol><label>Encounter notes / breaks / uncertainties <textarea id="notes"></textarea></label><p>Active time counts only while focused and visible, ending 60 seconds after your last interaction. Wall time counts the open encounter until marked done; editing reopens timing. Timing autosaves every 10 seconds; record off-tool work in notes.</p></aside></main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const token=new URLSearchParams(location.hash.slice(1)).get('token')||'';
+const enums={
+  polarity:['affirmed','negated'],experiencer:['patient','family_member','other'],temporality:['current','past','resolved','future','unclear'],source_speaker_role:['clinician','patient','companion','other','unknown'],medication_intent:['new_order','continuing','historical','discussed','unclear']
+};
+let session,doc,turns=[],selected=null,edit=null,codes=[],spans=[],lastActivity=performance.now(),saving=Promise.resolve(),dirty=false,editorDirty=false,revision=0,timer,editorTimer;
+const error=e=>{
+  $('error').textContent=typeof e==='string'?e: e.message;
+};
+async function api(path,body){
+  const response=await fetch(path,{
+    method:body===undefined?'GET':'POST',headers:{
+      'X-Auris-Token':token,'Content-Type':'application/json'
+    },...(body===undefined?{
+    }:{
+      body:JSON.stringify(body)
+    })
+  });
+  const data=await response.json();
+  if(!response.ok)throw Error(data.error+(data.details?'\n'+data.details.map(d=>d.loc.join('.')+': '+d.msg).join('\n'):''));
+  return data;
+}
+function button(text,fn,parent){
+  const b=document.createElement('button');
+  b.type='button';
+  b.textContent=text;
+  b.onclick=()=>run(fn);
+  parent.append(b);
+  return b;
+}
+function run(fn){
+  Promise.resolve().then(fn).catch(error);
+}
+function lines(id){
+  return $(id).value.split('\n').map(x=>x.trim()).filter(Boolean);
+}
+function populateSelect(el,options,blank=true){
+  el.replaceChildren();
+  if(blank)el.add(new Option('Unsaid / choose',''));
+  for(const x of options)el.add(new Option(x.replaceAll('_',' '),x));
+}
+function setStatus(){
+  if(doc)$('status').textContent=`${doc.status} · active ${Math.round(doc.timing.active_seconds)}s · wall ${Math.round(doc.timing.wall_seconds)}s`+(dirty?' · unsaved changes':' · saved');
+}
+function queued(fn){
+  saving=saving.catch(()=>{
+  }).then(fn);
+  return saving;
+}
+async function save(status){
+  if(!doc)return;
+  const generation=revision;
+  const data=await api('/api/save',{
+    encounter_id:doc.encounter_id,status:status||doc.status,assertions:doc.assertions,out_of_scope:doc.out_of_scope,segment_roles:doc.segment_roles,notes:$('notes').value
+  });
+  if(generation===revision){
+    doc=data.document;
+    dirty=false;
+  }else{
+    doc.timing=data.document.timing;
+  }setStatus();
+}
+function autosave(){
+  revision++;
+  doc.status='in_progress';
+  dirty=true;
+  setStatus();
+  clearTimeout(timer);
+  timer=setTimeout(()=>run(()=>queued(()=>save())),800);
+}
+async function timing(){
+  if(!doc)return;
+  const data=await api('/api/timing',{
+    encounter_id:doc.encounter_id,focused:document.hasFocus()&&!document.hidden,idle_seconds:(performance.now()-lastActivity)/1000
+  });
+  doc.timing=data.document.timing;
+  setStatus();
+}
+async function openEncounter(id){
+  if(edit)throw Error('Apply or cancel the open fact first.');
+  clearTimeout(timer);
+  if(doc)await save();
+  const data=await api('/api/encounter?id='+encodeURIComponent(id));
+  doc=data.document;
+  turns=data.turns;
+  selected=null;
+  $('encounter').value=id;
+  $('notes').value=doc.notes;
+  renderTurns();
+  renderFacts();
+  setStatus();
+  await timing();
+}
+function renderTurns(){
+  $('transcript').replaceChildren();
+  for(const t of turns){
+    const box=document.createElement('article');
+    box.className='turn';
+    const meta=document.createElement('div');
+    meta.className='meta';
+    meta.textContent=t.start_seconds===null?`Turn ${t.turn_number} · source: ${t.role}`:`${t.start_seconds.toFixed(1)}–${t.end_seconds.toFixed(1)}s · source: ${t.role}`;
+    box.append(meta);
+    const role=document.createElement('select');
+    role.setAttribute('aria-label',`Confirmed role for turn ${t.turn_number}`);
+    populateSelect(role,enums.source_speaker_role);
+    role.options[0].textContent='Confirm / correct source role';
+    role.value=doc.segment_roles[t.id]||'';
+    role.onchange=()=>{
+      if(role.value)doc.segment_roles[t.id]=role.value;
+      else delete doc.segment_roles[t.id];
+      autosave();
+    };
+    box.append(role);
+    const text=document.createElement('textarea');
+    text.className='turn-text';
+    text.readOnly=true;
+    text.setAttribute('aria-label',`Transcript turn ${t.turn_number}`);
+    text.dataset.segment=t.id;
+    text.value=t.text;
+    text.onselect=()=>captureSelection(text);
+    text.onkeyup=()=>captureSelection(text);
+    text.onmouseup=()=>captureSelection(text);
+    box.append(text);
+    $('transcript').append(box);
+    requestAnimationFrame(()=>{
+      text.style.height=text.scrollHeight+'px';
+    });
+  }
+}
+function renderFacts(){
+  for(const [target,facts,type] of [['facts',doc.assertions,'fact'],['outside',doc.out_of_scope,'outside']]){
+    $(target).replaceChildren();
+    for(const f of facts){
+      const li=document.createElement('li');
+      const label=document.createElement('span');
+      label.textContent=(f.concept_text||f.category||f.gold_concept_id)+' · '+(f.kind||f.reason);
+      li.append(label);
+      button('Edit',()=>begin(type,f),li);
+      button('Delete',async()=>{
+        doc[type==='fact'?'assertions':'out_of_scope']=facts.filter(x=>x.id!==f.id);
+        if(edit&&edit.id===f.id)cancel();
+        renderFacts();
+        await save();
+      },li);
+      $(target).append(li);
+    }
+  }
+}
+function captureSelection(el){
+  if(el.selectionStart===el.selectionEnd)return;
+  const text=el.value.slice(el.selectionStart,el.selectionEnd);
+  const start=Array.from(el.value.slice(0,el.selectionStart)).length;
+  selected={
+    segment_id:el.dataset.segment,char_start:start,char_end:start+Array.from(text).length,text
+  };
+}
+async function selectedSpan(){
+  if(!selected)throw Error('Select exact words inside one transcript turn first.');
+  const chosen={
+    ...selected
+  };
+  const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(chosen.text));
+  chosen.sha256=Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,'0')).join('');
+  return api('/api/span',{
+    encounter_id:doc.encounter_id,selection:chosen
+  });
+}
+function renderSpans(){
+  $('evidence').replaceChildren();
+  for(const [i,s] of spans.entries()){
+    const box=document.createElement('div');
+    box.className='span';
+    const t=turns.find(t=>t.id===s.segment_id);
+    box.textContent=`${s.segment_id} [${s.char_start}, ${s.char_end}): `+Array.from(t.text).slice(s.char_start,s.char_end).join('');
+    button('Remove',()=>{
+      spans.splice(i,1);
+      renderSpans();
+      scheduleEditorSave();
+    },box);
+    $('evidence').append(box);
+  }
+}
+function fields(f={
+}){
+  $('fields').replaceChildren();
+  $('canonical').closest('label').classList.toggle('hidden',$('kind').value!=='vital_sign');
+  $('ucum').closest('label').classList.toggle('hidden',$('kind').value!=='vital_sign');
+  if(edit.type==='outside')return;
+  for(const key of session.fields[$('kind').value]){
+    if(['kind','evidence'].includes(key))continue;
+    const label=document.createElement('label');
+    label.textContent=key.replaceAll('_',' ');
+    const input=document.createElement(enums[key]?'select':'input');
+    input.id='field-'+key;
+    if(enums[key])populateSelect(input,enums[key]);
+    input.value=f[key]??'';
+    label.append(input);
+    $('fields').append(label);
+  }
+}
+async function begin(type,f){
+  if(edit)throw Error('Apply or cancel the open fact first.');
+  if(doc.status==='done'){
+    await queued(()=>save('in_progress'));
+    await queued(timing);
+  }const evidence=f?structuredClone(f.evidence):[await selectedSpan()];
+  edit={
+    type,id:f?.id||'f_'+crypto.randomUUID().replaceAll('-','')
+  };
+  spans=evidence;
+  codes=f?.codes?structuredClone(f.codes):[];
+  $('editor').classList.remove('hidden');
+  $('editor-title').textContent=type==='fact'?'Clinical fact':'Important fact outside the schema';
+  $('kind').closest('label').classList.toggle('hidden',type==='outside');
+  for(const id of ['coding','critical'])$(id).classList.toggle('hidden',type==='outside');
+  $('scope-fields').classList.toggle('hidden',type!=='outside');
+  $('kind').value=f?.kind||Object.keys(session.fields)[0];
+  fields(f);
+  $('concept-id').value=f?.gold_concept_id||'';
+  $('acceptable').value=(f?.acceptable_texts||[]).join('\n');
+  $('canonical').value=(f?.canonical_value||[]).join('\n');
+  $('ucum').value=f?.ucum_unit||'';
+  $('denial').value=f?.critical?.allergy_denial||'none';
+  $('condition').value=f?.critical?.condition_assertion||'none';
+  $('authorization').value=f?.critical?.order_authorization||'none';
+  $('category').value=f?.category||'';
+  $('reason').value=f?.reason||'';
+  $('fact-notes').value=f?.notes||'';
+  $('candidates').replaceChildren();
+  renderSpans();
+  editorDirty=!f;
+  $(type==='fact'?'kind':'category').focus();
+}
+function cancel(){
+  clearTimeout(editorTimer);
+  edit=null;
+  editorDirty=false;
+  $('editor').classList.add('hidden');
+  $('error').textContent='';
+}
+async function applyFact(keepOpen=false){
+  if(!edit)return;
+  const f={
+    id:edit.id,evidence:spans,notes:$('fact-notes').value
+  };
+  if(edit.type==='fact'){
+    for(const key of session.fields[$('kind').value]){
+      if(['kind','evidence'].includes(key))continue;
+      f[key]=$('field-'+key).value||null;
+    }Object.assign(f,{
+      kind:$('kind').value,gold_concept_id:$('concept-id').value,acceptable_texts:lines('acceptable'),codes,critical:{
+        allergy_denial:$('denial').value,condition_assertion:$('condition').value,order_authorization:$('authorization').value
+      },canonical_value:$('kind').value==='vital_sign'&&lines('canonical').length?lines('canonical'):null,ucum_unit:$('kind').value==='vital_sign'?$('ucum').value||null:null
+    });
+  }else{
+    f.category=$('category').value;
+    f.reason=$('reason').value;
+  }const key=edit.type==='fact'?'assertions':'out_of_scope';
+  const old=doc[key];
+  doc[key]=[...old.filter(x=>x.id!==edit.id),f];
+  try{
+    await save('in_progress');
+    if(keepOpen)editorDirty=false;
+    else cancel();
+    renderFacts();
+  }catch(e){
+    doc[key]=old;
+    throw e;
+  }
+}
+$('kind').onchange=()=>{
+  fields();
+  for(const id of ['denial','condition','authorization'])$(id).value='none';
+  codes=[];
+  $('concept-id').value='';
+  editorDirty=true;
+};
+$('editor').onsubmit=e=>{
+  e.preventDefault();
+  run(()=>queued(applyFact));
+};
+function scheduleEditorSave(){
+  editorDirty=true;
+  clearTimeout(editorTimer);
+  editorTimer=setTimeout(()=>run(()=>queued(async()=>{
+    if(editorDirty)await applyFact(true);
+  })),1500);
+}
+$('editor').addEventListener('input',scheduleEditorSave);
+$('cancel').onclick=()=>{
+  cancel();
+};
+$('add').onclick=()=>run(()=>begin('fact'));
+$('important').onclick=()=>run(()=>begin('outside'));
+$('append').onclick=()=>run(async()=>{
+  if(!edit)throw Error('Open a fact first.');
+  spans.push(await selectedSpan());
+  scheduleEditorSave();
+  renderSpans();
+});
+$('lookup').onclick=()=>run(async()=>{
+  const data=await api('/api/lookup?q='+encodeURIComponent($('query').value)+'&system='+encodeURIComponent($('system').value));
+  $('candidates').replaceChildren();
+  for(const c of data.candidates)button(`${c.code} · ${c.display} (${c.term_type})`,()=>{
+    codes=[{
+      system:c.system,code:c.code
+    }];
+    $('concept-id').value=c.system+':'+c.code;
+    scheduleEditorSave();
+  },$('candidates'));
+  if(!data.candidates.length)$('candidates').textContent='No local candidates. Use an auris: slug if no code clearly fits.';
+});
+$('clear-code').onclick=()=>{
+  codes=[];
+  $('concept-id').value='';
+  $('concept-id').focus();
+  scheduleEditorSave();
+};
+$('save').onclick=()=>run(()=>queued(async()=>{
+  clearTimeout(timer);
+  clearTimeout(editorTimer);
+  if(edit)await applyFact();
+  else await save();
+}));
+$('done').onclick=()=>run(()=>queued(async()=>{
+  clearTimeout(timer);
+  clearTimeout(editorTimer);
+  if(edit)await applyFact();
+  await save('done');
+}));
+$('roles').onclick=()=>{
+  for(const t of turns)doc.segment_roles[t.id]=t.role;
+  renderTurns();
+  autosave();
+};
+$('notes').oninput=autosave;
+$('encounter').onchange=e=>{
+  const id=e.target.value;
+  if(edit){
+    e.target.value=doc.encounter_id;
+    error('Apply or cancel the open fact first.');
+    return;
+  }run(()=>queued(()=>openEncounter(id)));
+};
+for(const name of ['pointerdown','keydown','input','wheel'])document.addEventListener(name,()=>{
+  lastActivity=performance.now();
+},{
+  passive:true
+});
+for(const name of ['focus','blur'])window.addEventListener(name,()=>run(()=>queued(timing)));
+document.addEventListener('visibilitychange',()=>run(()=>queued(timing)));
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){
+    e.preventDefault();
+    $('save').click();
+  }
+});
+window.addEventListener('beforeunload',e=>{
+  if(dirty||edit){
+    e.preventDefault();
+    e.returnValue='';
+  }
+});
+run(async()=>{
+  session=await api('/api/session');
+  $('identity').textContent=`Annotator ${session.annotator_id} · guideline ${session.guidelines_sha256.slice(0,12)}`;
+  populateSelect($('kind'),Object.keys(session.fields),false);
+  populateSelect($('encounter'),session.encounters,false);
+  await queued(()=>openEncounter(session.encounters[0]));
+  setInterval(()=>run(()=>queued(timing)),10000);
+});
+</script></html>
