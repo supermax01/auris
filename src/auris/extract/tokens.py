@@ -13,6 +13,30 @@ HEADROOM_TOKENS = 256
 MEASURED_INPUT = "server_apply_template_tokenize"
 ESTIMATED_INPUT = "conservative_utf8_chars"
 
+# Provisional, deterministic sizing from the five PriMock development runs.
+# Successful broad windows used up to ~51 output tokens/segment and ~1.1
+# output tokens/transcript token. Reserve 56/segment or 1.25/transcript token,
+# whichever is larger, plus JSON overhead. Short dense/repetitive completions
+# can exceed this estimate: truncation splitting remains mandatory.
+OUTPUT_TOKENS_PER_SEGMENT = 56
+OUTPUT_RATIO_NUMERATOR = 5
+OUTPUT_RATIO_DENOMINATOR = 4
+OUTPUT_FIXED_TOKENS = 128
+OUTPUT_ESTIMATE = {
+    "version": "primock_dev_v1",
+    "tokens_per_segment": OUTPUT_TOKENS_PER_SEGMENT,
+    "tokens_per_transcript_token": OUTPUT_RATIO_NUMERATOR / OUTPUT_RATIO_DENOMINATOR,
+    "fixed_tokens": OUTPUT_FIXED_TOKENS,
+}
+
+
+def estimate_output_tokens(transcript_tokens: int, segment_count: int) -> int:
+    """Size output from transcript content, excluding fixed prompt/schema cost."""
+    by_tokens = (
+        OUTPUT_RATIO_NUMERATOR * transcript_tokens + OUTPUT_RATIO_DENOMINATOR - 1
+    ) // OUTPUT_RATIO_DENOMINATOR
+    return OUTPUT_FIXED_TOKENS + max(OUTPUT_TOKENS_PER_SEGMENT * segment_count, by_tokens)
+
 
 def estimate_tokens(text: str) -> int:
     # Three ASCII chars/token; non-ASCII bytes each reserve a token. This is

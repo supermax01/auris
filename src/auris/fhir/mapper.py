@@ -13,7 +13,7 @@ from auris.assertions import (
     VitalSignAssertion,
 )
 from auris.consistency import check_consistency
-from auris.evidence import AssertionEvidenceResult, align_assertion_evidence
+from auris.evidence import AssertionEvidenceResult, EvidenceFailure, align_assertion_evidence
 from auris.fhir.allergies import build_allergy
 from auris.fhir.common import build_anchors, resource_id
 from auris.fhir.conditions import (
@@ -56,10 +56,14 @@ class Mapper:
         assertion: AssertionBase,
         position: int,
         evidence: AssertionEvidenceResult | None = None,
+        *,
+        allowed_segment_ids: frozenset[str] | None = None,
     ) -> MappingOutcome:
         if position < 0:
             raise ValueError("assertion position must be non-negative")
-        aligned = align_assertion_evidence(assertion, self.transcript)
+        aligned = align_assertion_evidence(
+            assertion, self.transcript, allowed_segment_ids=allowed_segment_ids
+        )
         if evidence is not None and evidence != aligned:
             raise ValueError("evidence result does not belong to this assertion and transcript")
         identifier = resource_id(self.transcript.content_hash, position, assertion.kind)
@@ -79,6 +83,8 @@ class Mapper:
             reasons.append("temporality_unclear")
         if aligned.lane.value != "PASS":
             reasons.append("evidence_failed")
+        if EvidenceFailure.CITATION_OUTSIDE_WINDOW in aligned.failures:
+            reasons.append(EvidenceFailure.CITATION_OUTSIDE_WINDOW.value)
         cited_roles = {
             segment.role
             for item in assertion.evidence

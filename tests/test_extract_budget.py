@@ -18,6 +18,7 @@ from auris.extract.tokens import (
     HEADROOM_TOKENS,
     MEASURED_INPUT,
     InputTokenCounter,
+    estimate_output_tokens,
     output_budget,
 )
 from auris.transcript import Transcript
@@ -273,3 +274,58 @@ def test_truncation_with_tokenizer_mismatch_still_discards_body():
     assert run.failure and not run.splits and not run.assertions
     assert run.calls[0]["output_discarded"] and "raw_response" not in run.calls[0]
     assert run.calls[0]["input_token_comparison"]["status"] == "mismatch"
+
+
+def test_output_planning_skips_wasteful_full_visit_call_and_records_estimate():
+    config = load_frozen_config().extractor
+    transcript = fictional_transcript(100)
+
+    def segment_count(text):
+        return len(re.findall(r"^\[s\d+ \|", text, re.MULTILINE))
+
+    backend = FakeBackend(
+        [measured_completion(3450), measured_completion(3450)],
+        input_tokenizer=lambda chat, _: 900 + 50 * segment_count(chat[1]["content"]),
+        tokenizer=lambda text: 50 * segment_count(text),
+    )
+    run = extract(backend, transcript, config, config.candidate())
+    assert run.failure is None
+    # Full input fits 8192 but leaves only 2036 output tokens. Plan two
+    # overlapping 51-segment calls before generating anything.
+    assert len(run.calls) == 2 and not run.splits
+    assert run.calls[0]["segment_ids"][-2:] == run.calls[1]["segment_ids"][:2]
+    for call in run.calls:
+        assert call["planned_output_tokens"] == 3316
+        assert call["transcript_tokens"] == 2550
+        assert call["actual_output_tokens"] == 222
+        assert call["planned_output_tokens"] <= call["max_tokens"] == 4096
+    assert run.document()["metadata"]["decoding"]["output_estimate"]["version"] == "primock_dev_v1"
+
+
+def test_output_planning_respects_custom_ceiling_and_is_deterministic():
+    config = load_frozen_config().extractor.model_copy(update={"max_output_tokens": 2048})
+    plans = []
+    for _ in range(2):
+        backend = FakeBackend([measured_completion(111)] * 8, input_tokenizer=lambda *_: 111)
+        run = extract(backend, fictional_transcript(80), config, config.candidate())
+        assert run.failure is None
+        assert len(run.calls) == 4
+        assert all(c["planned_output_tokens"] <= c["max_tokens"] == 2048 for c in run.calls)
+        plans.append([c["segment_ids"] for c in run.calls])
+    assert plans[0] == plans[1]
+
+
+def test_output_estimate_uses_larger_of_segment_density_and_transcript_tokens():
+    assert estimate_output_tokens(100, 50) == 2928
+    assert estimate_output_tokens(4001, 1) == 5130
+
+
+def test_indivisible_over_estimate_segment_gets_one_capped_attempt():
+    config = load_frozen_config().extractor
+    backend = FakeBackend(
+        [measured_completion(111)], input_tokenizer=lambda *_: 111, tokenizer=lambda _: 4000
+    )
+    run = extract(backend, fictional_transcript(1), config, config.candidate())
+    assert run.failure is None and len(run.calls) == 1
+    assert run.calls[0]["output_estimate_exceeds_budget"] is True
+    assert run.calls[0]["max_tokens"] == 4096

@@ -69,6 +69,16 @@ def test_unsupported_thinking_or_saturation_fails():
         parse_completion(completion([assertion] * 64))
 
 
+def test_truncated_reasoning_is_a_hard_refusal_without_split_retry():
+    response = completion(finish_reason="length")
+    response["choices"][0]["message"]["reasoning_content"] = "fictional thought"
+    transcript, _ = case_input("vital_sign")
+    config = load_frozen_config().extractor
+    run = extract(FakeBackend([response]), transcript, config, config.candidate())
+    assert "reasoning" in run.failure
+    assert len(run.calls) == 1 and not run.splits and not run.assertions
+
+
 def fake_validator():
     return SimpleNamespace(
         validate=lambda resources: ValidationRun(
@@ -263,19 +273,94 @@ def test_cli_does_not_print_input_validation_values(tmp_path, capsys):
     assert "fictional-private-transcript-marker" not in output.err
 
 
-def test_foreign_segment_reference_fails_entire_run():
+def test_foreign_segment_reference_fails_only_its_assertion(terminology, units, intake, tmp_path):
     transcript, assertion = case_input("vital_sign")
     data = assertion.model_dump(mode="json")
     data["evidence"][0]["segment_id"] = "s999"
     config = load_frozen_config().extractor
     run = extract(
-        FakeBackend([completion(content=json.dumps({"assertions": [data]}))]),
+        FakeBackend(
+            [completion(content=json.dumps({"assertions": [data, assertion.model_dump()]}))]
+        ),
         transcript,
         config,
         config.candidate(),
     )
-    assert "outside its input window" in run.failure
-    assert not run.assertions
+    assert run.failure is None and len(run.assertions) == 2
+    assert run.reduced_schema_state == LaneState.PASS
+    assert run.citation_failures == {0: frozenset({"s999"})}
+    outcomes, _ = finish_pipeline(
+        run, Mapper(intake, transcript, terminology, units), fake_validator(), tmp_path / "run"
+    )
+    failed, valid = outcomes
+    assert failed.lanes.evidence == LaneState.FAIL
+    assert failed.evidence.failures == ("citation_outside_window",)
+    assert "citation_outside_window" in failed.review_reasons
+    assert failed.export_state == "validation_failed"
+    assert valid.export_state == "final_exportable"
+
+
+@pytest.mark.parametrize("bad_id", ["s0", "nonexistent"])
+def test_seventh_call_bad_citation_survives_splits_and_cannot_merge_or_export(
+    bad_id, terminology, units, intake, tmp_path
+):
+    from auris.fhir.models import resource_digest
+    from auris.transcript import Transcript
+
+    source, assertion = case_input("vital_sign")
+    transcript = Transcript(
+        segments=tuple(source.segments[0].model_copy(update={"id": f"s{i}"}) for i in range(16))
+    )
+
+    def cited(*ids):
+        return assertion.model_copy(
+            update={
+                "evidence": tuple(
+                    assertion.evidence[0].model_copy(update={"segment_id": id_}) for id_ in ids
+                )
+            }
+        )
+
+    # Fictional reproduction of consultation06: four truncations, then an
+    # out-of-window citation in call seven; later windows must still run.
+    bad = cited("s8", bad_id)
+    responses = [
+        completion(finish_reason="length"),
+        completion([cited("s0")]),
+        completion(finish_reason="length"),
+        completion(finish_reason="length"),
+        completion([cited("s7")]),
+        completion(finish_reason="length"),
+        completion([bad, cited("s9")]),
+        completion([cited("s9")]),
+        completion([cited("s12")]),
+    ]
+    config = load_frozen_config().extractor
+    run = extract(FakeBackend(responses), transcript, config, config.candidate())
+    assert run.failure is None and len(run.calls) == 9
+    assert run.calls[6]["citation_failure_positions"] == [0]
+    assert run.citation_failures == {2: frozenset({bad_id})}
+    assert len(run.assertions) == 5  # Valid overlap merged; failed assertion retained.
+    outcomes, _ = finish_pipeline(
+        run, Mapper(intake, transcript, terminology, units), fake_validator(), tmp_path / "run"
+    )
+    failed = outcomes[2]
+    assert failed.lanes.reduced_schema == LaneState.PASS
+    assert failed.lanes.evidence == LaneState.FAIL and failed.evidence.label is None
+    assert failed.evidence.items[0].aligned is not None
+    assert failed.evidence.items[1].failure == "citation_outside_window"
+    assert failed.evidence.items[1].aligned is None
+    assert "citation_outside_window" in failed.review_reasons
+    assert all(o.export_state == "final_exportable" for i, o in enumerate(outcomes) if i != 2)
+    assert failed.resource is not None
+    approved = failed.model_copy(
+        update={"reviewed_resource_digest": resource_digest(failed.resource)}
+    )
+    assert approved.export_state == "validation_failed"
+    saved = json.loads((tmp_path / "run/extraction.json").read_text())
+    assert saved["citation_failures"] == [
+        {"assertion_position": 2, "reason": "citation_outside_window", "segment_ids": [bad_id]}
+    ]
 
 
 def test_cli_runs_the_pipeline_and_selects_model(

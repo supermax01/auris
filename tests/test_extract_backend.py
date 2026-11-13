@@ -177,11 +177,14 @@ def test_managed_process_terminated_on_success_and_body_crash(managed, crash):
     assert manager.runtime.peak_rss_bytes == 123456
 
 
-def test_managed_gemma_passes_zero_reasoning_budget(managed):
+@pytest.mark.parametrize(
+    "model_id", ["gemma-4-e4b-it-q4_0", "bonsai-2-9b-q2_0", "bonsai-2-27b-q2_0"]
+)
+def test_managed_comparators_pass_zero_reasoning_budget(managed, model_id):
     manager, _ = managed
-    gemma = load_frozen_config().extractor.candidate("gemma-4-e4b-it-q4_0")
+    candidate = load_frozen_config().extractor.candidate(model_id)
     # Only bytes/hash are fictional; use the actual per-model frozen flags.
-    manager.candidate = gemma.model_copy(
+    manager.candidate = candidate.model_copy(
         update={"sha256": manager.candidate.sha256, "bytes": manager.model_path.stat().st_size}
     )
     with manager:

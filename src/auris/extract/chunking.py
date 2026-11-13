@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from auris.assertions import MAX_EVIDENCE_ITEMS, AssertionBase, parse_assertion
 from auris.evidence import align_assertion_evidence, normalised_tokens
 from auris.extract.backend import Backend, ExtractionError
 from auris.extract.prompt import messages, render_transcript
-from auris.extract.tokens import HEADROOM_TOKENS, InputTokenCounter, TokenCounter
+from auris.extract.tokens import (
+    HEADROOM_TOKENS,
+    InputTokenCounter,
+    TokenCounter,
+    estimate_output_tokens,
+    output_budget,
+)
 from auris.transcript import Transcript, TranscriptSegment
 
 WINDOW_TOKENS = 4096
@@ -22,16 +28,30 @@ class Chunk:
     segments: tuple[TranscriptSegment, ...]
     input_tokens: int
     token_count_method: str
+    transcript_tokens: int = 0
+    transcript_token_count_method: str = "unavailable"
+    planned_output_tokens: int = 0
 
 
-def measure_chunk(segments: tuple[TranscriptSegment, ...], counter: InputTokenCounter) -> Chunk:
-    count = counter.count(messages(segments))
-    return Chunk(segments, count.tokens, count.method)
-
-
-def split_segments(
+def measure_chunk(
     segments: tuple[TranscriptSegment, ...],
-) -> tuple[tuple[TranscriptSegment, ...], tuple[TranscriptSegment, ...]]:
+    counter: InputTokenCounter,
+    transcript_counter: TokenCounter | None = None,
+) -> Chunk:
+    count = counter.count(messages(segments))
+    transcript_counter = transcript_counter or TokenCounter(counter.backend)
+    transcript_tokens = transcript_counter.count(render_transcript(segments))
+    return Chunk(
+        segments,
+        count.tokens,
+        count.method,
+        transcript_tokens,
+        transcript_counter.method,
+        estimate_output_tokens(transcript_tokens, len(segments)),
+    )
+
+
+def split_segments[T](segments: tuple[T, ...]) -> tuple[tuple[T, ...], tuple[T, ...]]:
     """Balanced halves with two overlapping segments, limited by strict progress.
 
     Three segments can only overlap by one; two must become singletons.
@@ -51,15 +71,29 @@ def plan_chunks(
     *,
     n_ctx: int,
     min_output_tokens: int,
+    max_output_tokens: int = 4096,
     input_counter: InputTokenCounter | None = None,
 ) -> tuple[Chunk, ...]:
     counter = TokenCounter(backend)
     input_counter = input_counter or InputTokenCounter(backend, schema)
     capacity = n_ctx - min_output_tokens - HEADROOM_TOKENS
-    whole = measure_chunk(transcript.segments, input_counter)
+
+    def fit_output(chunk: Chunk) -> tuple[Chunk, ...]:
+        budget = output_budget(chunk.input_tokens, n_ctx=n_ctx, max_output_tokens=max_output_tokens)
+        if chunk.planned_output_tokens <= budget or len(chunk.segments) == 1:
+            # An indivisible segment still gets one capped attempt. An estimate
+            # alone cannot establish truncation; actual truncation fails closed.
+            return (chunk,)
+        return tuple(
+            child
+            for half in split_segments(chunk.segments)
+            for child in fit_output(measure_chunk(half, input_counter, counter))
+        )
+
+    whole = measure_chunk(transcript.segments, input_counter, counter)
     if whole.input_tokens <= capacity:
-        return (whole,)
-    if measure_chunk((), input_counter).input_tokens >= capacity:
+        return fit_output(whole)
+    if measure_chunk((), input_counter, counter).input_tokens >= capacity:
         raise ExtractionError("prompt + output floor + headroom leave no context for transcript")
     chunks: list[Chunk] = []
     start = 0
@@ -67,7 +101,7 @@ def plan_chunks(
         stop = start
         while stop < len(transcript.segments):
             proposed = transcript.segments[start : stop + 1]
-            if measure_chunk(proposed, input_counter).input_tokens > capacity:
+            if measure_chunk(proposed, input_counter, counter).input_tokens > capacity:
                 break
             # A single segment may exceed the target window, but must fit n_ctx.
             if stop > start and counter.count(render_transcript(proposed)) > WINDOW_TOKENS:
@@ -76,7 +110,7 @@ def plan_chunks(
         if stop == start:
             raise ExtractionError("one transcript segment exceeds the available context budget")
         selected = transcript.segments[start:stop]
-        chunks.append(measure_chunk(selected, input_counter))
+        chunks.extend(fit_output(measure_chunk(selected, input_counter, counter)))
         if stop == len(transcript.segments):
             break
         if stop - start <= OVERLAP_SEGMENTS:
@@ -89,10 +123,14 @@ def plan_chunks(
 class MergeResult:
     assertions: tuple[AssertionBase, ...]
     conflict_positions: frozenset[int]
+    citation_failures: dict[int, frozenset[str]] = field(default_factory=dict)
 
 
 def merge_assertions(
-    groups: Sequence[Sequence[AssertionBase]], transcript: Transcript
+    groups: Sequence[Sequence[AssertionBase]],
+    transcript: Transcript,
+    *,
+    allowed_segment_ids: Sequence[frozenset[str]] | None = None,
 ) -> MergeResult:
     """Coalesce only identical facts with overlapping aligned evidence.
 
@@ -102,6 +140,9 @@ def merge_assertions(
     """
     merged: list[AssertionBase] = []
     conflicts: set[int] = set()
+    citation_failures: dict[int, frozenset[str]] = {}
+    if allowed_segment_ids is not None and len(allowed_segment_ids) != len(groups):
+        raise ValueError("each assertion group needs its originating window")
 
     def spans(assertion: AssertionBase) -> set[tuple[str, int, int]]:
         aligned = align_assertion_evidence(assertion, transcript)
@@ -118,11 +159,23 @@ def merge_assertions(
             for b_id, b_start, b_end in spans(second)
         )
 
-    for group in groups:
+    for group_index, group in enumerate(groups):
         for assertion in group:
+            allowed = (
+                allowed_segment_ids[group_index]
+                if allowed_segment_ids is not None
+                else {s.id for s in transcript.segments}
+            )
+            invalid_ids = frozenset(
+                item.segment_id for item in assertion.evidence if item.segment_id not in allowed
+            )
             duplicates: int | None = None
             conflicting: list[int] = []
             for position, previous in enumerate(merged):
+                # Never launder a bad citation through a valid overlapping copy
+                # (or contaminate that valid copy). Keep the failed assertion.
+                if invalid_ids or position in citation_failures:
+                    continue
                 # Unknown concept cannot safely identify the same fact.
                 if not assertion.concept_text or not previous.concept_text:
                     continue
@@ -154,5 +207,7 @@ def merge_assertions(
                 conflicting.append(duplicates)  # Preserve all evidence beyond the schema bound.
             if conflicting:
                 conflicts.update([len(merged), *conflicting])
+            if invalid_ids:
+                citation_failures[len(merged)] = invalid_ids
             merged.append(assertion)
-    return MergeResult(tuple(merged), frozenset(conflicts))
+    return MergeResult(tuple(merged), frozenset(conflicts), citation_failures)

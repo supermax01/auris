@@ -144,6 +144,33 @@ def test_extractor_candidates_are_pinned_and_selected_explicitly():
 
 
 @pytest.mark.parametrize(
+    "size,revision,sha256,byte_count",
+    [
+        (
+            "9",
+            "82265ccc78ddaac4700286a35e9badcc32376dd9",
+            "1f884aa56aacd2bbbb2e4b7abaead2b1102b74a9c75a23fc33dab916813a384d",
+            2556640128,
+        ),
+        (
+            "27",
+            "839bd57023c1558945afea70a74fa83c054f35f9",
+            "4f99aed01b8a877e153f9aa6569a4440fe17c59701cc0953e36d7f460549e70e",
+            7626008928,
+        ),
+    ],
+)
+def test_bonsai_stock_runtime_pins(size, revision, sha256, byte_count):
+    candidate = load_frozen_config().extractor.candidate(f"bonsai-2-{size}b-q2_0")
+    assert candidate.role == "comparator" and candidate.license == "Apache-2.0"
+    assert candidate.repo == f"prism-ml/Ternary-Bonsai-2-{size}B-gguf"
+    assert candidate.gguf_filename == f"Ternary-Bonsai-2-{size}B-Q2_0.gguf"
+    assert (candidate.revision, candidate.sha256, candidate.bytes) == (revision, sha256, byte_count)
+    assert candidate.quantization == "Q2_0 (ternary)"
+    assert candidate.runtime_flags == ("--reasoning", "off", "--reasoning-budget", "0")
+
+
+@pytest.mark.parametrize(
     "changes",
     [
         {"min_output_tokens": 0},

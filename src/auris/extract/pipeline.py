@@ -23,6 +23,7 @@ from auris.extract.chunking import (
 from auris.extract.prompt import PROMPT_VERSION, messages, prompt_sha256, prompt_text
 from auris.extract.tokens import (
     HEADROOM_TOKENS,
+    OUTPUT_ESTIMATE,
     InputTokenCounter,
     InputTokens,
     TokenCounter,
@@ -64,14 +65,14 @@ def parse_completion(response: dict[str, Any]) -> ExtractionResult:
         if not isinstance(choices, list) or len(choices) != 1:
             raise ExtractionError("extractor must return exactly one completion")
         choice = choices[0]
+        if choice["message"].get("reasoning_content"):
+            raise ExtractionError("extractor returned reasoning despite thinking-off configuration")
         if choice["finish_reason"] == "length":
             raise TruncatedCompletionError(
                 "extraction truncated (finish_reason=length); no partial results"
             )
         if choice["finish_reason"] != "stop":
             raise ExtractionError("extractor did not finish normally; no partial results")
-        if choice["message"].get("reasoning_content"):
-            raise ExtractionError("extractor returned reasoning despite thinking-off configuration")
         content = choice["message"]["content"]
         if not isinstance(content, str):
             raise ExtractionError("extractor message content is not JSON text")
@@ -105,6 +106,7 @@ class ExtractionRun:
     prompt_token_count_method: str | None = None
     assertions: tuple[AssertionBase, ...] = ()
     conflict_positions: frozenset[int] = frozenset()
+    citation_failures: dict[int, frozenset[str]] = field(default_factory=dict)
     calls: list[dict[str, Any]] = field(default_factory=list)
     splits: list[dict[str, Any]] = field(default_factory=list)
     window_reuses: list[dict[str, str]] = field(default_factory=list)
@@ -119,6 +121,14 @@ class ExtractionRun:
             "reduced_schema_state": self.reduced_schema_state.value,
             "assertions": [a.model_dump(mode="json") for a in self.assertions],
             "merge_conflict_positions": sorted(self.conflict_positions),
+            "citation_failures": [
+                {
+                    "assertion_position": position,
+                    "reason": "citation_outside_window",
+                    "segment_ids": sorted(ids),
+                }
+                for position, ids in sorted(self.citation_failures.items())
+            ],
             "calls": self.calls,
             "metadata": {
                 "model_id": self.model.id,
@@ -163,6 +173,7 @@ def extract(
             "headroom_tokens": HEADROOM_TOKENS,
             "n_ctx": config.n_ctx,
             "thinking": config.thinking,
+            "output_estimate": dict(OUTPUT_ESTIMATE),
         },
         transcript_sha256=transcript.content_hash,
         runtime=backend.runtime,
@@ -179,9 +190,11 @@ def extract(
             backend,
             n_ctx=config.n_ctx,
             min_output_tokens=config.min_output_tokens,
+            max_output_tokens=config.max_output_tokens,
             input_counter=input_counter,
         )
         groups: list[tuple[AssertionBase, ...]] = []
+        group_windows: list[frozenset[str]] = []
         resolved: dict[tuple[str, ...], str] = {}
 
         def split_window(chunk: Chunk, window_id: str, reason: str) -> None:
@@ -230,6 +243,10 @@ def extract(
                 "reserved_input_tokens": chunk.input_tokens,
                 "token_count_method": chunk.token_count_method,
                 "max_tokens": max_tokens,
+                "transcript_tokens": chunk.transcript_tokens,
+                "transcript_token_count_method": chunk.transcript_token_count_method,
+                "planned_output_tokens": chunk.planned_output_tokens,
+                "output_estimate_exceeds_budget": chunk.planned_output_tokens > max_tokens,
             }
             run.calls.append(call)
             call_started = time.monotonic()
@@ -243,18 +260,25 @@ def extract(
                 )
                 call["raw_response"] = response
                 call["usage"] = response.get("usage")
+                usage = call["usage"]
+                actual = usage.get("completion_tokens") if isinstance(usage, dict) else None
+                call["actual_output_tokens"] = (
+                    actual if type(actual) is int and actual >= 0 else None
+                )
                 comparison = compare_input_usage(
                     InputTokens(chunk.input_tokens, chunk.token_count_method), call["usage"]
                 )
                 call["input_token_comparison"] = comparison
                 result = parse_completion(response)
-                allowed = {s.id for s in chunk.segments}
-                if any(
-                    item.segment_id not in allowed for a in result.assertions for item in a.evidence
-                ):
-                    raise ExtractionError("extraction cites a segment outside its input window")
+                allowed = frozenset(s.id for s in chunk.segments)
+                call["citation_failure_positions"] = [
+                    i
+                    for i, assertion in enumerate(result.assertions)
+                    if any(item.segment_id not in allowed for item in assertion.evidence)
+                ]
                 call["parsed_assertions"] = result.model_dump(mode="json")["assertions"]
                 groups.append(result.assertions)
+                group_windows.append(allowed)
             except TruncatedCompletionError:
                 # Discard the entire generated body, including syntactically
                 # complete JSON. Only usage, timing and split metadata survive.
@@ -275,9 +299,10 @@ def extract(
 
         for index, chunk in enumerate(chunks):
             run_window(chunk, str(index))
-        merged = merge_assertions(groups, transcript)
+        merged = merge_assertions(groups, transcript, allowed_segment_ids=group_windows)
         run.assertions = merged.assertions
         run.conflict_positions = merged.conflict_positions
+        run.citation_failures = merged.citation_failures
         run.reduced_schema_state = LaneState.PASS
     except (ExtractionError, OSError) as exc:
         if isinstance(exc, SchemaResponseError):
@@ -363,7 +388,13 @@ def finish_pipeline(
         return (), None
     outcomes = []
     for position, assertion in enumerate(run.assertions):
-        outcome = mapper.map_assertion(assertion, position)
+        invalid_ids = run.citation_failures.get(position)
+        allowed = (
+            frozenset(s.id for s in mapper.transcript.segments) - invalid_ids
+            if invalid_ids
+            else None
+        )
+        outcome = mapper.map_assertion(assertion, position, allowed_segment_ids=allowed)
         if position in run.conflict_positions:
             outcome = outcome.model_copy(
                 update={

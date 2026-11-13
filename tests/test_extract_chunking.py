@@ -36,13 +36,13 @@ def test_windows_have_two_segment_overlap_and_cover_every_segment():
         source.segments[0].model_copy(update={"id": f"s{i}", "text": "x" * 300}) for i in range(13)
     )
     transcript = Transcript(segments=segments)
-    chunks = plan_chunks(transcript, {}, measured_backend(), n_ctx=6600, min_output_tokens=1024)
+    chunks = plan_chunks(transcript, {}, measured_backend(), n_ctx=7600, min_output_tokens=1024)
     assert len(chunks) > 1
     for first, second in zip(chunks, chunks[1:], strict=False):
         assert first.segments[-2:] == second.segments[:2]
         assert first.segments[0] != second.segments[0]
     assert {s.id for c in chunks for s in c.segments} == {s.id for s in segments}
-    assert all(c.input_tokens + 1024 + HEADROOM_TOKENS <= 6600 for c in chunks)
+    assert all(c.input_tokens + 1024 + HEADROOM_TOKENS <= 7600 for c in chunks)
     assert all(c.token_count_method == "server_apply_template_tokenize" for c in chunks)
 
 
@@ -151,3 +151,14 @@ def test_evidence_union_over_bound_keeps_both_records():
     result = merge_assertions([(first,), (second,)], transcript)
     assert len(result.assertions) == 2 and result.conflict_positions == {0, 1}
     assert sum(len(a.evidence) for a in result.assertions) == 9
+
+
+@pytest.mark.parametrize("bad_first", [True, False])
+def test_identical_assertion_from_wrong_window_cannot_be_laundered_by_merge(bad_first):
+    transcript, assertion = case_input("vital_sign")
+    scopes = [frozenset({"foreign"}), frozenset({"s1"})]
+    if not bad_first:
+        scopes.reverse()
+    result = merge_assertions([(assertion,), (assertion,)], transcript, allowed_segment_ids=scopes)
+    assert len(result.assertions) == 2
+    assert result.citation_failures == {0 if bad_first else 1: frozenset({"s1"})}

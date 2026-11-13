@@ -83,6 +83,7 @@ class EvidenceLane(StrEnum):
 
 
 class EvidenceFailure(StrEnum):
+    CITATION_OUTSIDE_WINDOW = "citation_outside_window"
     SEGMENT_NOT_FOUND = "segment_not_found"
     QUOTE_HAS_NO_TOKENS = "quote_has_no_tokens"
     QUOTE_NOT_FOUND = "quote_not_found"
@@ -317,9 +318,21 @@ def _segment_tokens(segment: TranscriptSegment) -> list[_Token]:
     ]
 
 
-def align_evidence_item(item: EvidenceItem, transcript: Transcript) -> EvidenceItemResult:
+def align_evidence_item(
+    item: EvidenceItem,
+    transcript: Transcript,
+    *,
+    allowed_segment_ids: frozenset[str] | None = None,
+) -> EvidenceItemResult:
     """Align one evidence quote to its segment. Misalignment is
     returned as data (a FAIL reason), never raised."""
+    if allowed_segment_ids is not None and item.segment_id not in allowed_segment_ids:
+        return EvidenceItemResult(
+            segment_id=item.segment_id,
+            quote=item.quote,
+            aligned=None,
+            failure=EvidenceFailure.CITATION_OUTSIDE_WINDOW,
+        )
     segment = transcript.segment_by_id(item.segment_id)
     if segment is None:
         return EvidenceItemResult(
@@ -394,11 +407,17 @@ def align_evidence_item(item: EvidenceItem, transcript: Transcript) -> EvidenceI
 
 
 def align_assertion_evidence(
-    assertion: AssertionBase, transcript: Transcript
+    assertion: AssertionBase,
+    transcript: Transcript,
+    *,
+    allowed_segment_ids: frozenset[str] | None = None,
 ) -> AssertionEvidenceResult:
     """The evidence lane for one assertion: PASS only when every
     quote aligns; PASS carries the "transcript-supported" label."""
-    items = tuple(align_evidence_item(item, transcript) for item in assertion.evidence)
+    items = tuple(
+        align_evidence_item(item, transcript, allowed_segment_ids=allowed_segment_ids)
+        for item in assertion.evidence
+    )
     if all(item.ok for item in items):
         return AssertionEvidenceResult(
             lane=EvidenceLane.PASS, label=TRANSCRIPT_SUPPORTED, items=items

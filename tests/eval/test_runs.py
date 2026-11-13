@@ -85,9 +85,9 @@ def run_factory(tmp_path, terminology, units):
 
 def test_fake_run_replay_compare_byte_identical(run_factory, tmp_path, monkeypatch, capsys):
     output, run, events = run_factory()
-    assert [e[0] for e in events] == ["start", "stop", "start", "stop"]
+    assert [e[0] for e in events] == ["start", "stop"] * len(run["models"])
     assert run["leakage"]["leakage_check"] == "pass"
-    assert len(run["models"]) == 2
+    assert len(run["models"]) == len(load_frozen_config().extractor.candidates)
     assert all(not m["failed_encounters"] for m in run["model_metadata"].values())
     # Replay cannot touch a model or terminology index, even if caches are absent.
     monkeypatch.setattr(

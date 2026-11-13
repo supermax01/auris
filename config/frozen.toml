@@ -186,8 +186,9 @@ temperature = 0.0
 temperature_status = "candidate, confirm in Slice 1"
 
 # Each call reserves measured input + 256 headroom, up to the output ceiling.
-# Windows shrink below the output floor. Truncated output is discarded before
-# deterministic splitting; a truncated single segment fails the entire run.
+# Windows also shrink to fit the conservative output estimate (Step 6e).
+# Truncated output is discarded before deterministic splitting; a truncated
+# single segment fails the entire run.
 [[extractor.candidates]]
 id = "qwen3-8b-q4_k_m"
 repo = "Qwen/Qwen3-8B-GGUF"
@@ -217,6 +218,45 @@ quantization = "Q4_0"
 # Qwen retains its own tested flags; chat-template behavior is model-specific.
 runtime_flags = ["--reasoning", "off", "--reasoning-budget", "0"]
 role = "comparator"
+
+# Prism Ternary Bonsai 2, released 2026-11-04: only eight days old at this
+# 2026-11-12 pin. Provisional comparators; no Auris accuracy evaluation yet.
+# Claude verified HF API cardData.license=apache-2.0, not gated, and both
+# downloaded SHA-256 digests. Upstream training provenance is not audited.
+# Vendor benchmark tables (claims only, NOT Auris results):
+# https://huggingface.co/prism-ml/Ternary-Bonsai-2-9B-gguf
+# https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf
+# Vendor describes ternary weights (~1.6 bits/weight). Only Q2_0 is used:
+# cards specify stock llama.cpp >= b11556; Claude tested 0.9.0 build 12110.
+# PQ2_0/PTQ1_0 require Prism's fork and are deliberately excluded.
+# Text-only path, no mmproj. Thinking defaults to xhigh upstream; hc-01
+# smoke tests had zero reasoning with --reasoning off. Keep budget 0 too;
+# any returned reasoning still causes a hard refusal.
+[[extractor.candidates]]
+id = "bonsai-2-9b-q2_0"
+repo = "prism-ml/Ternary-Bonsai-2-9B-gguf"
+revision = "82265ccc78ddaac4700286a35e9badcc32376dd9"
+gguf_filename = "Ternary-Bonsai-2-9B-Q2_0.gguf"
+sha256 = "1f884aa56aacd2bbbb2e4b7abaead2b1102b74a9c75a23fc33dab916813a384d"
+bytes = 2556640128
+license = "Apache-2.0"
+quantization = "Q2_0 (ternary)"
+runtime_flags = ["--reasoning", "off", "--reasoning-budget", "0"]
+role = "comparator"
+# Base: Qwen/Qwen3.5-9B. Claude's hc-01 smoke: ~68 tok/s generation.
+
+[[extractor.candidates]]
+id = "bonsai-2-27b-q2_0"
+repo = "prism-ml/Ternary-Bonsai-2-27B-gguf"
+revision = "839bd57023c1558945afea70a74fa83c054f35f9"
+gguf_filename = "Ternary-Bonsai-2-27B-Q2_0.gguf"
+sha256 = "4f99aed01b8a877e153f9aa6569a4440fe17c59701cc0953e36d7f460549e70e"
+bytes = 7626008928
+license = "Apache-2.0"
+quantization = "Q2_0 (ternary)"
+runtime_flags = ["--reasoning", "off", "--reasoning-budget", "0"]
+role = "comparator"
+# Base: Qwen/Qwen3.8-27B. Claude's hc-01 smoke: ~25 tok/s generation.
 
 # ---------------------------------------------------------------------------
 # JVM for the official HL7 FHIR validator (PLAN A6).
