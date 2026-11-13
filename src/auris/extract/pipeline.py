@@ -26,7 +26,7 @@ from auris.extract.chunking import (
     plan_chunks,
     split_segments,
 )
-from auris.extract.grammar import compact_grammar
+from auris.extract.grammar import json_grammar
 from auris.extract.identity import profile_identity
 from auris.extract.measurements import (
     extraction_measurements,
@@ -195,8 +195,8 @@ def extract(
             "thinking": config.thinking,
             "output_estimate": dict(OUTPUT_ESTIMATE),
             "json_whitespace": (
-                "grammar_compact_json"
-                if contract.grammar_compact
+                f"grammar_{contract.grammar_whitespace}_json"
+                if contract.grammar_whitespace is not None
                 else "prompt_compact_json"
                 if contract.compact_json
                 else "server_default"
@@ -213,7 +213,11 @@ def extract(
         schema = extraction_json_schema(
             contract.schema_version, property_order=contract.property_order
         )
-        grammar = compact_grammar(schema) if contract.grammar_compact else None
+        grammar = (
+            json_grammar(schema, whitespace=contract.grammar_whitespace)
+            if contract.grammar_whitespace is not None
+            else None
+        )
         input_counter = InputTokenCounter(backend, schema, profile=profile, grammar=grammar)
         chunks = plan_chunks(
             transcript,

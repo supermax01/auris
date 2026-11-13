@@ -179,6 +179,27 @@ def test_ablation_run_flags_select_requested_models_and_profiles():
     assert parsed.extraction_profile == list(PROFILES)
 
 
+def test_newline_run_flags_select_the_pre_registered_grid():
+    from auris.cli import _build_parser
+
+    models = [
+        "bonsai-2-27b-q2_0",
+        "gemma-4-e4b-it-q4_0",
+        "qwen3-8b-q4_k_m",
+        "bonsai-2-9b-q2_0",
+    ]
+    profiles = ["grammar-newline", "grammar-newline-quotes"]
+    args = ["eval", "run", "--dataset", str(MANIFEST)]
+    for model in models:
+        args.extend(["--model", model])
+    for profile in profiles:
+        args.extend(["--extraction-profile", profile])
+    args.extend(["--out", "cache/eval-runs/step-8d-newline"])
+    parsed = _build_parser().parse_args(args)
+    assert parsed.model == models
+    assert parsed.extraction_profile == profiles
+
+
 def test_fake_run_replay_compare_byte_identical(run_factory, tmp_path, monkeypatch, capsys):
     output, run, events = run_factory()
     assert [e[0] for e in events] == ["start", "stop"] * len(run["models"])

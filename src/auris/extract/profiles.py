@@ -12,9 +12,12 @@ ExtractionProfile = Literal[
     "abl-order",
     "grammar-compact",
     "grammar-compact-quotes",
+    "grammar-newline",
+    "grammar-newline-quotes",
 ]
 SchemaVersion = Literal["1", "2"]
 PropertyOrder = Literal["canonical", "evidence-last"]
+GrammarWhitespace = Literal["compact", "newline"]
 PROFILES: tuple[ExtractionProfile, ...] = (
     "full-v0",
     "lean-v1",
@@ -24,6 +27,8 @@ PROFILES: tuple[ExtractionProfile, ...] = (
     "abl-order",
     "grammar-compact",
     "grammar-compact-quotes",
+    "grammar-newline",
+    "grammar-newline-quotes",
 )
 
 
@@ -33,7 +38,7 @@ class Profile:
     prompt_version: str
     property_order: PropertyOrder = "canonical"
     compact_json: bool = False
-    grammar_compact: bool = False
+    grammar_whitespace: GrammarWhitespace | None = None
 
 
 _CONTRACTS: dict[ExtractionProfile, Profile] = {
@@ -43,8 +48,14 @@ _CONTRACTS: dict[ExtractionProfile, Profile] = {
     "abl-quotes": Profile("1", "extraction_abl_quotes_v1"),
     "abl-compact": Profile("1", "extraction_abl_compact_v1", compact_json=True),
     "abl-order": Profile("2", "extraction_v4", "evidence-last", compact_json=True),
-    "grammar-compact": Profile("1", "extraction_v3", grammar_compact=True),
-    "grammar-compact-quotes": Profile("1", "extraction_abl_quotes_v1", grammar_compact=True),
+    "grammar-compact": Profile("1", "extraction_v3", grammar_whitespace="compact"),
+    "grammar-compact-quotes": Profile(
+        "1", "extraction_abl_quotes_v1", grammar_whitespace="compact"
+    ),
+    "grammar-newline": Profile("1", "extraction_v3", grammar_whitespace="newline"),
+    "grammar-newline-quotes": Profile(
+        "1", "extraction_abl_quotes_v1", grammar_whitespace="newline"
+    ),
 }
 PROMPT_VERSIONS = ("extraction_v1", "extraction_v2") + tuple(
     dict.fromkeys(contract.prompt_version for contract in _CONTRACTS.values())

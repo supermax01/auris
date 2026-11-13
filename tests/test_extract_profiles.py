@@ -215,8 +215,8 @@ def test_profile_threads_through_planning_generation_metadata(profile):
     assert metadata["prompt_sha256"] == prompt_sha256(profile)
     assert all(metadata[key] == value for key, value in profile_identity(profile).items())
     assert metadata["decoding"]["json_whitespace"] == (
-        "grammar_compact_json"
-        if contract.grammar_compact
+        f"grammar_{contract.grammar_whitespace}_json"
+        if contract.grammar_whitespace is not None
         else "prompt_compact_json"
         if contract.compact_json
         else "server_default"

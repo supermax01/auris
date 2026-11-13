@@ -4,7 +4,9 @@ Step 8 outcome: **lean-v1 was not adopted** after the owner's real-model
 harness-check run. `full-v0` remains the default. Step 8b's fixed ablation
 contracts and run instructions are recorded below.
 Step 8c adds opt-in compact decoding grammars; its pre-registered contracts,
-local verification limits and four-model run command are at the end.
+local verification limits and four-model run command are recorded below.
+Step 8d adds opt-in newline grammars and fixes literal key/enum spellings;
+its pre-registered contracts and eight-entry run command are at the end.
 
 Implemented on `slice-1`, 2026-11-12. Read PLAN, its binding A2–A6/A8
 contracts, the FHIR reference and the Step 2b–6e engineering notes. There is
@@ -579,3 +581,164 @@ tests require live models. An initial lint check found one import-order issue,
 which was fixed. All test runs passed. Local help/version, compiled-parameter
 inspection and four native grammar parses passed as described above. The new
 CLI profile choices are visible in `auris eval run --help`.
+
+## Step 8d — newlines without indentation; literal property names
+
+Implemented on `slice-1`, 2026-11-13, before fresh newline-profile inference.
+Re-read PLAN, including Appendix A, and the FHIR reference; no disagreement
+with either. The owner reports both Step 8c compact profiles rejected:
+Bonsai 27B stopped early with recall 0.60 versus 0.90 for pretty JSON, while
+Gemma E4B had recall 0 and mostly empty assertion lists. These are supplied
+harness-check results, not measurements performed in this step. `full-v0`
+remains the default. No schema, prompt bytes, parser, mapper, evidence guard,
+scorer, model pin, review rule or dependency changes.
+
+### Pre-registered contracts
+
+| Profile | Schema / order | Prompt bytes/version | Decoding |
+|---|---|---|---|
+| `grammar-newline` | `1` / canonical | Unchanged V3 / `extraction_v3` | `newline-gbnf-v1` |
+| `grammar-newline-quotes` | `1` / canonical | Unchanged short-quote-only ablation / `extraction_abl_quotes_v1` | `newline-gbnf-v1` |
+
+The quotes profile changes only V3's evidence bullet to V4's shortest exact
+span instruction, as already frozen in Step 8b. Prompt SHA-256 values remain
+`0db6b464e45c02bfe5f16ee9f392f4b8456ecb3ceabcef71611fbdabd31ab581`
+and `fcb8438d00ae90cc7841beada9ae67314772d7ed572e44d32461250a8cb40521`.
+Neither adds a formatting or optional-field instruction. These are the same
+prompt bytes covered by the earlier full-corpus leakage audits; existing
+fixture/demo/harness/annotation leakage tests now cover both new identities,
+and evaluation retains its per-profile pre-inference leakage gate.
+
+### Grammar and identity
+
+`json_grammar(schema, whitespace="compact"|"newline")` shares the deterministic
+converter; `compact_grammar(schema)` and `newline_grammar(schema)` expose each
+mode. Newline mode uses `ws ::= "\n"?`: **zero or one LF at every JSON token
+gap**, including before/after the root, around colons, before/after commas,
+and immediately inside object/array delimiters. Spaces, tabs, CR/CRLF, repeated
+LF and indentation are rejected outside strings. Newlines are optional;
+compact output is still allowed. For example, `},\n{` is allowed between
+assertions, and `\n    "kind"` is rejected. Empty containers and omitted
+optional properties each retain a single whitespace slot rather than two
+adjacent optional slots. Existing string-value whitespace and JSON escaping
+remain intact, including escaped controls, Unicode and paired surrogates.
+
+Both modes now emit property names and enum values as exact literal strings.
+For example, `{"\u0061ssertions":[]}`, fully Unicode-escaped spellings of that
+key, `"k\u0069nd"` and `"sympto\u006d"` are rejected by the grammar. The
+unchanged JSON parser can still decode equivalent escaped spellings in saved
+responses; the grammar deliberately constrains new generation. Generic fixed
+names/enums that cannot be represented without JSON escapes fail conversion
+instead of admitting an escaped spelling. All extraction-schema keys/enums
+are directly representable.
+
+Canonical schema-v1 grammar identities (UTF-8 bytes):
+
+| Mode | Grammar version | Bytes | SHA-256 |
+|---|---|---:|---|
+| Compact, corrected literals | `compact-gbnf-v2` | 4,370 | `9bc29ac88cef31951b407362dd0ed3860894dcc8b81d3d8eed970545a894e1e8` |
+| Newline | `newline-gbnf-v1` | 4,373 | `25436cfa1b5e97577694bbdc1a483c98bdee362a81cfed2247f74e68a4ae82db` |
+
+The new profiles record `grammar_version`, `grammar_sha256` and the existing
+profile/schema/prompt/property-order identity in extraction and evaluation
+metadata. `decoding.json_whitespace` is `grammar_newline_json`. Measurement
+and generation both receive the same top-level `grammar` without
+`response_format`, through the existing transport. No server flags change.
+
+The six schema-based profiles' request bytes and metadata remain unchanged;
+their committed request-byte hash regressions still pass. The requested
+literal fix also applies to the two rejected compact profiles, so **their
+grammar request bytes necessarily change** and their grammar version advances
+from `compact-gbnf-v1` to `compact-gbnf-v2`. Old v1 runs retain their recorded
+hash/version and replay from frozen responses; they are not relabelled or
+regenerated. Historical Step 8c descriptions and hash above describe v1.
+
+### Offline coverage and limits
+
+The independent emitted-GBNF interpreter now exercises both whitespace modes,
+both schema versions and both property orders: 3,168 seeded valid documents
+plus invalid mutations, optional-member combinations, string escapes and array
+bounds. Explicit tests reject escaped spellings of every extraction property
+and every enum value, accept value escapes, and reject spaces/tabs/CR/CRLF,
+indentation and repeated LF at every JSON gap. Separate empty-container tests
+cover zero-length arrays and all-optional objects. Transport/pipeline tests
+cover measured input, generated output, usage agreement, observed whitespace,
+grammar version/hash and prompt identity. The existing all-profile FakeBackend
+evaluation, freeze/replay and leakage tests include the new profiles, and CLI
+tests cover the exact grid below.
+
+Grammar/parser equivalence is restricted to schema property order and literal
+key/enum spellings, modulo the selected whitespace rule. The earlier two
+post-schema qualifications still hold: the grammar preserves the schema's
+64-assertion bound, while the unchanged parser refuses saturation; nonempty
+all-whitespace evidence remains schema-valid but fails the nonblank validator.
+All those refusals remain enforced in the complete extraction path.
+
+No live HTTP/native-token decoding or model evaluation was performed here;
+quality, early stopping and runtime are unmeasured for the new profiles.
+Step 8c's Linux/XGrammar verification remains deferred. No default or adoption
+decision changes.
+
+### Claude's run
+
+Run this four-model × two-profile grid sequentially into a fresh directory
+(eight entries). `full-v0` control numbers already exist from Step 8b:
+
+```sh
+.venv/bin/auris eval run \
+  --dataset eval/harness-check/manifest.json \
+  --model bonsai-2-27b-q2_0 \
+  --model gemma-4-e4b-it-q4_0 \
+  --model qwen3-8b-q4_k_m \
+  --model bonsai-2-9b-q2_0 \
+  --extraction-profile grammar-newline \
+  --extraction-profile grammar-newline-quotes \
+  --out cache/eval-runs/step-8d-newline
+.venv/bin/auris eval early-stop --run cache/eval-runs/step-8d-newline
+.venv/bin/auris eval score --run cache/eval-runs/step-8d-newline
+.venv/bin/auris eval compare --run cache/eval-runs/step-8d-newline
+```
+
+Inspect per-model recall/F1, pre-review critical errors, evidence failures,
+assertion counts/early-stop share, tokens per assertion, completion time and
+actual outside-string whitespace against the existing `full-v0` controls.
+The generic early-stop/per-profile results remain available; the aggregate
+full/lean-only comparison is unchanged. All harness examples are fictional;
+these results are not clinical accuracy evidence.
+
+Dependencies added: **none**. No manifest/lockfile edits, install, mise/uv
+invocation, network operation, real-model inference, history change, commit or
+push. Follow-ups: Claude's live grid, review and commit; existing deferred
+Linux verification. No deviations from the approved clinical contract.
+
+Final verification:
+
+```text
+.venv/bin/ruff check
+All checks passed!
+
+.venv/bin/ruff format --check
+147 files already formatted
+
+.venv/bin/pytest tests/test_extract_grammar.py tests/test_extract_profiles.py tests/test_extract_backend.py tests/eval/test_runs.py -q --disable-socket --tb=short
+344 passed in 24.78s
+
+.venv/bin/pytest -m 'not llm' -q --disable-socket --tb=short -rs
+1736 passed, 2 deselected, 1 warning in 50.72s
+
+git diff --check
+(no output; exit 0)
+```
+
+The warning is the existing intentional blocked-socket test; the excluded
+tests require live models. The first targeted run found four failures in the
+new test serializer, which did not tokenize the numeric invalid-mutation
+fixtures; adding JSON numeric tokens fixed the test helper. Ruff formatting
+fixed two style findings. The passing summaries above include those fixes;
+the final formatting-only edit does not change test behavior.
+
+A read-only `load_run` check of `cache/eval-runs/step-8c-grammar-quick` also
+loaded both 20-visit model entries with their original `compact-gbnf-v1`
+version and SHA-256. Hashes of every file before/after the check were identical.
+No saved run was rescored or modified. A standard-library Python inspection
+also confirmed the two generated grammar byte counts/hashes recorded above.

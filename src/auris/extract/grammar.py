@@ -1,7 +1,9 @@
-"""Deterministic compact GBNF for the exported extraction-schema subset.
+"""Deterministic JSON GBNF for the exported extraction-schema subset.
 
-Only JSON string values may contain whitespace. Object members follow schema
-order; optional members may be absent, including before/between required ones.
+Inter-token whitespace is empty or at most one newline, per profile. Fixed keys
+and enums use literal spellings; free string values retain JSON escapes.
+Object members follow schema order; optional members may be absent, including
+before/between required ones.
 This constrains structure, not the parser's additional completeness/evidence
 checks. Unsupported schema constraints fail rather than silently disappearing.
 """
@@ -9,12 +11,15 @@ checks. Unsupported schema constraints fail rather than silently disappearing.
 from __future__ import annotations
 
 import json
-import re
 from typing import Any
 
 from auris.assertions import check_schema_subset
+from auris.extract.profiles import GrammarWhitespace
 
-GRAMMAR_VERSION = "compact-gbnf-v1"
+GRAMMAR_VERSIONS: dict[GrammarWhitespace, str] = {
+    "compact": "compact-gbnf-v2",
+    "newline": "newline-gbnf-v1",
+}
 
 
 def _literal(text: str) -> str:
@@ -30,8 +35,11 @@ def _repeat(rule: str, minimum: int, maximum: int | None) -> str:
 
 
 class _Converter:
-    def __init__(self) -> None:
-        self.rules: dict[str, str] = {"root": "", "ws": '""'}
+    def __init__(self, whitespace: GrammarWhitespace) -> None:
+        self.rules: dict[str, str] = {
+            "root": "",
+            "ws": r'"\n"?' if whitespace == "newline" else '""',
+        }
         # One char means one decoded Unicode scalar, including surrogate pairs.
         # Raw controls, raw surrogates and unpaired escaped surrogates are invalid.
         self.rules["hex"] = "[0-9a-fA-F]"
@@ -52,26 +60,10 @@ class _Converter:
         return self.cache[expression]
 
     def fixed_string(self, text: str) -> str:
-        """Accept equivalent JSON escapes in fixed keys and enum values too."""
-        characters: list[str] = []
-        for char in text:
-            encoded = json.dumps(char, ensure_ascii=True)[1:-1]
-            if not encoded.startswith("\\u"):
-                encoded = f"\\u{ord(char):04x}"
-            # JSON's 'u' is lowercase, but hex digits are case insensitive.
-            escaped = " ".join(
-                _literal("\\u")
-                if part == "\\u"
-                else f"[{part}{part.upper()}]"
-                if part in "abcdef"
-                else _literal(part)
-                for part in re.findall(r"\\u|.", encoded)
-            )
-            choices = [_literal(json.dumps(char, ensure_ascii=False)[1:-1]), escaped]
-            if char == "/":
-                choices.append(_literal("\\/"))
-            characters.append(self.rule(" | ".join(choices)))
-        return self.rule(" ".join([_literal('"'), *characters, _literal('"')]))
+        """Emit exact JSON string bytes, with no escaped alternative spellings."""
+        if any(char in '"\\' or ord(char) < 0x20 or 0xD800 <= ord(char) <= 0xDFFF for char in text):
+            raise ValueError("fixed JSON strings must be representable without escapes")
+        return self.rule(_literal('"' + text + '"'))
 
     def convert(self, node: dict[str, Any]) -> str:
         annotations = {"title", "description", "default"}
@@ -135,7 +127,9 @@ class _Converter:
                     if (index, seen) not in tails:
                         key, field = fields[index]
                         prefix = '"," ws ' if seen else ""
-                        present = f"{prefix}{field} {tail(index + 1, True)}"
+                        # Each present member owns its trailing whitespace;
+                        # omitted members add none, including in empty objects.
+                        present = f"{prefix}{field} ws {tail(index + 1, True)}"
                         expression = (
                             present if key in required else f"{present} | {tail(index + 1, seen)}"
                         )
@@ -150,11 +144,11 @@ class _Converter:
                 if maximum == 0:
                     contents = '""'
                 else:
-                    rest = _repeat(f'(ws "," ws {item})', max(0, minimum - 1), maximum - 1)
-                    contents = f"{item} {rest}"
+                    rest = _repeat(f'("," ws {item} ws)', max(0, minimum - 1), maximum - 1)
+                    contents = f"{item} ws {rest}"
                     if minimum == 0:
                         contents = f"({contents})?"
-                return self.rule(f'"[" ws {contents} ws "]"')
+                return self.rule(f'"[" ws {contents} "]"')
             case "string":
                 minimum, maximum = node.get("minLength", 0), node.get("maxLength")
                 self.check_bounds(minimum, maximum)
@@ -176,10 +170,22 @@ class _Converter:
             raise ValueError("invalid compact-grammar bounds")
 
 
-def compact_grammar(schema: dict[str, Any]) -> str:
-    """Export GBNF v1; no whitespace outside strings, including at EOF."""
+def json_grammar(schema: dict[str, Any], *, whitespace: GrammarWhitespace) -> str:
+    """Export versioned GBNF with a single whitespace slot at every JSON gap."""
+    if whitespace not in GRAMMAR_VERSIONS:
+        raise ValueError("unsupported grammar whitespace mode")
     if check_schema_subset(schema):
         raise ValueError("schema is outside the constrained-decoding subset")
-    converter = _Converter()
-    converter.rules["root"] = converter.convert(schema)
+    converter = _Converter(whitespace)
+    converter.rules["root"] = f"ws {converter.convert(schema)} ws"
     return "".join(f"{name} ::= {expression}\n" for name, expression in converter.rules.items())
+
+
+def compact_grammar(schema: dict[str, Any]) -> str:
+    """Export corrected compact GBNF; no whitespace outside strings."""
+    return json_grammar(schema, whitespace="compact")
+
+
+def newline_grammar(schema: dict[str, Any]) -> str:
+    """Export GBNF allowing zero or one newline at each inter-token gap."""
+    return json_grammar(schema, whitespace="newline")
