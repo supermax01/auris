@@ -1,0 +1,685 @@
+{
+  "fictional": true,
+  "description": "Fictional contrastive cases for reduced assertions, evidence alignment and material classification (PLAN A3/A4/A5). Every person, visit and fact is invented for testing; no real patient data.",
+  "cases": [
+    {
+      "name": "affirmed_allergy",
+      "contrast": "negated vs affirmed allergy",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 10.0,
+            "end_seconds": 14.0,
+            "text": "I come out in a rash with penicillin."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "allergy_statement",
+          "concept_text": "penicillin",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "come out in a rash with penicillin"
+            }
+          ],
+          "allergen_text": "penicillin",
+          "reaction_manifestation_text": "rash",
+          "stated_resolution_text": null
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "allergy"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "allergy"
+        ]
+      ]
+    },
+    {
+      "name": "negated_allergy_specific",
+      "contrast": "negated vs affirmed allergy",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 10.0,
+            "end_seconds": 13.0,
+            "text": "I have no penicillin allergy."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "allergy_denial",
+          "concept_text": "penicillin allergy",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "no penicillin allergy"
+            }
+          ],
+          "allergen_text": "penicillin"
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "allergy",
+          "negated"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "allergy",
+          "negated"
+        ]
+      ]
+    },
+    {
+      "name": "no_known_allergies",
+      "contrast": "negated vs affirmed allergy",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 10.0,
+            "end_seconds": 12.0,
+            "text": "No, I have no known allergies."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "allergy_denial",
+          "concept_text": "allergies",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "no known allergies"
+            }
+          ],
+          "allergen_text": null
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "allergy",
+          "negated"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "allergy",
+          "negated"
+        ]
+      ]
+    },
+    {
+      "name": "family_member_condition",
+      "contrast": "family-member vs patient condition",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 20.0,
+            "end_seconds": 23.0,
+            "text": "My mother has diabetes."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "patient_reported_condition",
+          "concept_text": "diabetes",
+          "polarity": "affirmed",
+          "experiencer": "family_member",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "My mother has diabetes"
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "non_patient_experiencer"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "non_patient_experiencer"
+        ]
+      ]
+    },
+    {
+      "name": "patient_condition",
+      "contrast": "family-member vs patient condition",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 20.0,
+            "end_seconds": 22.0,
+            "text": "I have diabetes."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "patient_reported_condition",
+          "concept_text": "diabetes",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have diabetes"
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        false
+      ],
+      "expected_material_reasons": [
+        []
+      ],
+      "expected_review_reasons": [
+        []
+      ]
+    },
+    {
+      "name": "ruled_out_problem",
+      "contrast": "ruled-out vs assessed problem",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-b",
+            "role": "clinician",
+            "start_seconds": 60.0,
+            "end_seconds": 64.0,
+            "text": "Your chest sounds clear, so this is not pneumonia."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "clinician_ruled_out_problem",
+          "concept_text": "pneumonia",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "clinician",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "this is not pneumonia"
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "negated",
+          "refuted"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "negated",
+          "refuted"
+        ]
+      ]
+    },
+    {
+      "name": "assessed_problem",
+      "contrast": "ruled-out vs assessed problem",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-b",
+            "role": "clinician",
+            "start_seconds": 60.0,
+            "end_seconds": 64.0,
+            "text": "I think this is acute bronchitis."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "clinician_assessed_problem",
+          "concept_text": "acute bronchitis",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "clinician",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I think this is acute bronchitis."
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        false
+      ],
+      "expected_material_reasons": [
+        []
+      ],
+      "expected_review_reasons": [
+        []
+      ]
+    },
+    {
+      "name": "discussed_medication",
+      "contrast": "discussed vs ordered medicine",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-b",
+            "role": "clinician",
+            "start_seconds": 90.0,
+            "end_seconds": 95.0,
+            "text": "We could consider amoxicillin if the cough gets worse."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "reported_medication",
+          "concept_text": "amoxicillin",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "future",
+          "source_speaker_role": "clinician",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "We could consider amoxicillin if the cough gets worse."
+            }
+          ],
+          "medication_intent": "discussed",
+          "dose_text": null,
+          "route_text": null,
+          "frequency_text": null
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "medication"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "medication"
+        ]
+      ]
+    },
+    {
+      "name": "ordered_medication",
+      "contrast": "discussed vs ordered medicine",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-b",
+            "role": "clinician",
+            "start_seconds": 90.0,
+            "end_seconds": 97.0,
+            "text": "I will prescribe amoxicillin 500 milligrams three times a day."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "explicit_new_order",
+          "concept_text": "amoxicillin",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "future",
+          "source_speaker_role": "clinician",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I will prescribe amoxicillin 500 milligrams three times a day."
+            }
+          ],
+          "medication_intent": "new_order",
+          "dose_text": "500 milligrams",
+          "route_text": null,
+          "frequency_text": "three times a day"
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "medication"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "medication"
+        ]
+      ]
+    },
+    {
+      "name": "historical_condition",
+      "contrast": "historical vs current condition",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 30.0,
+            "end_seconds": 33.0,
+            "text": "I had asthma as a child."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "patient_reported_condition",
+          "concept_text": "asthma",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "past",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "had asthma as a child"
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        false
+      ],
+      "expected_material_reasons": [
+        []
+      ],
+      "expected_review_reasons": [
+        [
+          "historical_condition"
+        ]
+      ]
+    },
+    {
+      "name": "current_condition",
+      "contrast": "historical vs current condition",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 30.0,
+            "end_seconds": 34.0,
+            "text": "My asthma has been worse this week."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "patient_reported_condition",
+          "concept_text": "asthma",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "asthma has been worse this week"
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        false
+      ],
+      "expected_material_reasons": [
+        []
+      ],
+      "expected_review_reasons": [
+        []
+      ]
+    },
+    {
+      "name": "vital_sign",
+      "contrast": "vital-sign evidence",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your heart rate is 72."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "vital_sign",
+          "concept_text": "heart rate",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "value_text": "72",
+          "unit_text": null,
+          "stated_time_text": null,
+          "source_speaker_role": "clinician",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "Your heart rate is 72."
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        false
+      ],
+      "expected_material_reasons": [
+        []
+      ],
+      "expected_review_reasons": [
+        []
+      ]
+    },
+    {
+      "name": "symptom",
+      "contrast": "negated vs affirmed symptom",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have a cough."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "symptom",
+          "concept_text": "cough",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have a cough."
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        false
+      ],
+      "expected_material_reasons": [
+        []
+      ],
+      "expected_review_reasons": [
+        []
+      ]
+    },
+    {
+      "name": "negated_symptom",
+      "contrast": "negated vs affirmed symptom",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have no cough."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "symptom",
+          "concept_text": "cough",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no cough."
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "negated"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "negated"
+        ]
+      ]
+    },
+    {
+      "name": "continuing_medication",
+      "contrast": "continuing vs ordered medicine",
+      "transcript": {
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "spk-a",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I still take the same medicine once a day."
+          }
+        ]
+      },
+      "assertions": [
+        {
+          "kind": "reported_medication",
+          "concept_text": "the same medicine",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "medication_intent": "continuing",
+          "dose_text": null,
+          "route_text": null,
+          "frequency_text": "once a day",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I still take the same medicine once a day."
+            }
+          ]
+        }
+      ],
+      "expected_material": [
+        true
+      ],
+      "expected_material_reasons": [
+        [
+          "medication"
+        ]
+      ],
+      "expected_review_reasons": [
+        [
+          "medication"
+        ]
+      ]
+    }
+  ]
+}

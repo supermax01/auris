@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 7.0,
+      "text": "We are beginning fictional practice encounter 3, labeled first order.",
+      "words": null
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 8.0,
+      "end_seconds": 15.0,
+      "text": "My ankle pain began after the fictional obstacle course.",
+      "words": null
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 16.0,
+      "end_seconds": 23.0,
+      "text": "The notes for practice encounter 3 can be checked after this conversation.",
+      "words": null
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 24.0,
+      "end_seconds": 31.0,
+      "text": "For this fictional visit I am prescribing acetaminophen, 325 mg by mouth once daily.",
+      "words": null
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 32.0,
+      "end_seconds": 39.0,
+      "text": "The cuff display for you reads blood pressure 126 over 78.",
+      "words": null
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 40.0,
+      "end_seconds": 47.0,
+      "text": "That concludes the invented first order encounter numbered 3.",
+      "words": null
+    }
+  ]
+}

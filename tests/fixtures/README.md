@@ -1,0 +1,27 @@
+# Fictional fixtures
+
+`transcript_example.json` is an entirely fictional two-speaker visit with
+invented text and approximate word timings. `contrastive_cases.json`
+contains fictional mini-transcripts and expected reduced assertions,
+material flags, and review reasons. Neither file describes a real person,
+visit, measurement, prescription, or allergy.
+
+The contrastive cases are a development **smoke test**, not an accuracy
+benchmark or the locked PLAN A9 evaluation. The active extraction prompt must
+pass the leakage guard against all fixture transcript texts before inference.
+Keep new clinical names out of prompt examples and extend the guard's clinical
+watchlist when adding new fixture content. V1's contaminated examples are
+retained only for reproducibility; v2 is the active prompt.
+
+The other fixture, `fake_structure_definition.json`, is a small synthetic
+definition for checklist tests, not an authoritative FHIR definition.
+
+`demo/expected.json` contains a hand-written extraction and independently
+specified expected per-assertion outcomes for `examples/transcript.json`.
+Expected coding states use the small public terminology extracts in this
+directory and a fake passing structural validator. They do not imply that
+the official validator ran or that the full terminology cache will have the
+same coverage. `demo/note.md` is the inspected exact renderer golden with a
+fixed fictional run timestamp. The CLI regression also tests an actual
+FakeBackend replay through chunking, parsing, evidence, consistency, mapping
+and the export gate. No clinical codes were added for the demo.

@@ -1,0 +1,2544 @@
+{
+  "notice": "Fictional visits; public terminology codes, not real patient data. Expected FHIR specified independently of the mapper.",
+  "cases": [
+    {
+      "name": "heart-rate",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your heart rate is 72.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "heart rate",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your heart rate is 72."
+          }
+        ],
+        "value_text": "72",
+        "unit_text": null,
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "1be10202-b8ba-5ae1-a871-fb0c0f430525",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "1be10202-b8ba-5ae1-a871-fb0c0f430525",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "8867-4"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "valueQuantity": {
+            "value": 72,
+            "unit": "/min",
+            "system": "http://unitsofmeasure.org",
+            "code": "/min"
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your heart rate is 72.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your heart rate is 72.",
+                "aligned_text": "Your heart rate is 72",
+                "char_start": 0,
+                "char_end": 21,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "respiratory-rate",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your respiratory rate is 16.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "respiratory rate",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your respiratory rate is 16."
+          }
+        ],
+        "value_text": "16",
+        "unit_text": null,
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "22afda48-23b1-5ec3-94e1-c0f8a15d4909",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-respiratory-rate",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "22afda48-23b1-5ec3-94e1-c0f8a15d4909",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-respiratory-rate"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "9279-1"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "valueQuantity": {
+            "value": 16,
+            "unit": "/min",
+            "system": "http://unitsofmeasure.org",
+            "code": "/min"
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your respiratory rate is 16.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your respiratory rate is 16.",
+                "aligned_text": "Your respiratory rate is 16",
+                "char_start": 0,
+                "char_end": 27,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "body-temperature",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your temperature is 37 Cel.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "temperature",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your temperature is 37 Cel."
+          }
+        ],
+        "value_text": "37",
+        "unit_text": "Cel",
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "61d758f4-ff76-549d-b376-b481701e8484",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-temperature",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "61d758f4-ff76-549d-b376-b481701e8484",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-temperature"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "8310-5"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "valueQuantity": {
+            "value": 37,
+            "unit": "°C",
+            "system": "http://unitsofmeasure.org",
+            "code": "Cel"
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your temperature is 37 Cel.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your temperature is 37 Cel.",
+                "aligned_text": "Your temperature is 37 Cel",
+                "char_start": 0,
+                "char_end": 26,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "body-weight",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your weight is 70 kg.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "weight",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your weight is 70 kg."
+          }
+        ],
+        "value_text": "70",
+        "unit_text": "kg",
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "37914815-8045-56f8-908c-f752d1f09e8e",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-weight",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "37914815-8045-56f8-908c-f752d1f09e8e",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-weight"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "29463-7"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "valueQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your weight is 70 kg.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your weight is 70 kg.",
+                "aligned_text": "Your weight is 70 kg",
+                "char_start": 0,
+                "char_end": 20,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "body-height",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your height is 172 cm.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "height",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your height is 172 cm."
+          }
+        ],
+        "value_text": "172",
+        "unit_text": "cm",
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "46f85f0e-bfed-5575-b7cd-97caa8e83c90",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-height",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "46f85f0e-bfed-5575-b7cd-97caa8e83c90",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-body-height"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "8302-2"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "valueQuantity": {
+            "value": 172,
+            "unit": "cm",
+            "system": "http://unitsofmeasure.org",
+            "code": "cm"
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your height is 172 cm.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your height is 172 cm.",
+                "aligned_text": "Your height is 172 cm",
+                "char_start": 0,
+                "char_end": 21,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "pulse-oximetry",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your SpO2 is 98.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "SpO2",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your SpO2 is 98."
+          }
+        ],
+        "value_text": "98",
+        "unit_text": null,
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "5f26c4e8-86f4-5927-973c-6c5e45c89bb6",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "5f26c4e8-86f4-5927-973c-6c5e45c89bb6",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "59408-5"
+              },
+              {
+                "system": "http://loinc.org",
+                "code": "2708-6"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "valueQuantity": {
+            "value": 98,
+            "unit": "%",
+            "system": "http://unitsofmeasure.org",
+            "code": "%"
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your SpO2 is 98.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your SpO2 is 98.",
+                "aligned_text": "Your SpO2 is 98",
+                "char_start": 0,
+                "char_end": 15,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "blood-pressure",
+      "a3_row": "vital_sign",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "Your blood pressure is 128 over 82.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "vital_sign",
+        "concept_text": "blood pressure",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "Your blood pressure is 128 over 82."
+          }
+        ],
+        "value_text": "128 over 82",
+        "unit_text": null,
+        "stated_time_text": null
+      },
+      "expected": {
+        "id": "ee259337-1fc0-52ef-9460-6818fb309490",
+        "assertion_position": 0,
+        "kind": "vital_sign",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure",
+        "resource": {
+          "resourceType": "Observation",
+          "id": "ee259337-1fc0-52ef-9460-6818fb309490",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure"
+            ]
+          },
+          "status": "preliminary",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "85354-9"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "effectiveDateTime": "2026-11-12T09:00:00-05:00",
+          "component": [
+            {
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "8480-6"
+                  }
+                ]
+              },
+              "valueQuantity": {
+                "value": 128,
+                "unit": "mmHg",
+                "system": "http://unitsofmeasure.org",
+                "code": "mm[Hg]"
+              }
+            },
+            {
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "8462-4"
+                  }
+                ]
+              },
+              "valueQuantity": {
+                "value": 82,
+                "unit": "mmHg",
+                "system": "http://unitsofmeasure.org",
+                "code": "mm[Hg]"
+              }
+            }
+          ]
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "Your blood pressure is 128 over 82.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "Your blood pressure is 128 over 82.",
+                "aligned_text": "Your blood pressure is 128 over 82",
+                "char_start": 0,
+                "char_end": 34,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
+        ],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "symptom-affirmed",
+      "a3_row": "symptom",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have a cough.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "symptom",
+        "concept_text": "cough",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I have a cough."
+          }
+        ]
+      },
+      "expected": {
+        "id": "d039dfac-61be-5afc-b8eb-2ec93a195054",
+        "assertion_position": 0,
+        "kind": "symptom",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "symptom",
+          "concept_text": "cough",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have a cough."
+            }
+          ]
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I have a cough.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I have a cough.",
+                "aligned_text": "I have a cough",
+                "char_start": 0,
+                "char_end": 14,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": false,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "symptom-negated",
+      "a3_row": "symptom",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have no cough.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "symptom",
+        "concept_text": "cough",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I have no cough."
+          }
+        ]
+      },
+      "expected": {
+        "id": "f0a23ff0-000d-54a5-94d3-6509402967d7",
+        "assertion_position": 0,
+        "kind": "symptom",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "symptom",
+          "concept_text": "cough",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no cough."
+            }
+          ]
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no cough.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I have no cough.",
+                "aligned_text": "I have no cough",
+                "char_start": 0,
+                "char_end": 15,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "negated"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "clinician_assessed_problem",
+      "a3_row": "clinician_assessed_problem",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have Acute bronchitis, unspecified.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "clinician_assessed_problem",
+        "concept_text": "Acute bronchitis, unspecified",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I have Acute bronchitis, unspecified."
+          }
+        ]
+      },
+      "expected": {
+        "id": "d240439a-4db9-55f7-9e6c-ece54624f328",
+        "assertion_position": 0,
+        "kind": "clinician_assessed_problem",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis",
+        "resource": {
+          "resourceType": "Condition",
+          "id": "d240439a-4db9-55f7-9e6c-ece54624f328",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis"
+            ]
+          },
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                  "code": "encounter-diagnosis"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "text": "Acute bronchitis, unspecified",
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                "code": "J20.9",
+                "display": "Acute bronchitis, unspecified"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "verificationStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "provisional"
+              }
+            ]
+          },
+          "clinicalStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "active"
+              }
+            ]
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I have Acute bronchitis, unspecified.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I have Acute bronchitis, unspecified.",
+                "aligned_text": "I have Acute bronchitis, unspecified",
+                "char_start": 0,
+                "char_end": 36,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "clinician_ruled_out_problem",
+      "a3_row": "clinician_ruled_out_problem",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I ruled out Acute bronchitis, unspecified.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "clinician_ruled_out_problem",
+        "concept_text": "Acute bronchitis, unspecified",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I ruled out Acute bronchitis, unspecified."
+          }
+        ]
+      },
+      "expected": {
+        "id": "f4403f6f-92df-5779-bdbf-3597bdc24d8e",
+        "assertion_position": 0,
+        "kind": "clinician_ruled_out_problem",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis",
+        "resource": {
+          "resourceType": "Condition",
+          "id": "f4403f6f-92df-5779-bdbf-3597bdc24d8e",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis"
+            ]
+          },
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                  "code": "encounter-diagnosis"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "text": "Acute bronchitis, unspecified",
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                "code": "J20.9",
+                "display": "Acute bronchitis, unspecified"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "verificationStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "refuted"
+              }
+            ]
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I ruled out Acute bronchitis, unspecified.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I ruled out Acute bronchitis, unspecified.",
+                "aligned_text": "I ruled out Acute bronchitis, unspecified",
+                "char_start": 0,
+                "char_end": 41,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "negated",
+          "refuted"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "needs_review",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "patient_reported_condition",
+      "a3_row": "patient_reported_condition",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have Acute bronchitis, unspecified.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "patient_reported_condition",
+        "concept_text": "Acute bronchitis, unspecified",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I have Acute bronchitis, unspecified."
+          }
+        ]
+      },
+      "expected": {
+        "id": "58f53d5b-569e-5499-af59-f8bb48055fd4",
+        "assertion_position": 0,
+        "kind": "patient_reported_condition",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns",
+        "resource": {
+          "resourceType": "Condition",
+          "id": "58f53d5b-569e-5499-af59-f8bb48055fd4",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns"
+            ]
+          },
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                  "code": "problem-list-item"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "text": "Acute bronchitis, unspecified",
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                "code": "J20.9",
+                "display": "Acute bronchitis, unspecified"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "verificationStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "unconfirmed"
+              }
+            ]
+          },
+          "clinicalStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "active"
+              }
+            ]
+          }
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I have Acute bronchitis, unspecified.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I have Acute bronchitis, unspecified.",
+                "aligned_text": "I have Acute bronchitis, unspecified",
+                "char_start": 0,
+                "char_end": 36,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": false,
+        "export_state": "pending_validation",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "negated-history",
+      "a3_row": "patient_reported_condition",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have no asthma.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "patient_reported_condition",
+        "concept_text": "asthma",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I have no asthma."
+          }
+        ]
+      },
+      "expected": {
+        "id": "3c66c486-0297-51cd-8bbd-e9846816c921",
+        "assertion_position": 0,
+        "kind": "patient_reported_condition",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "patient_reported_condition",
+          "concept_text": "asthma",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no asthma."
+            }
+          ]
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no asthma.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I have no asthma.",
+                "aligned_text": "I have no asthma",
+                "char_start": 0,
+                "char_end": 16,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "negated"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "new-order",
+      "a3_row": "explicit_new_order",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I will prescribe amoxicillin 500 milligrams by mouth three times a day.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "explicit_new_order",
+        "concept_text": "amoxicillin",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "future",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I will prescribe amoxicillin 500 milligrams by mouth three times a day."
+          }
+        ],
+        "medication_intent": "new_order",
+        "dose_text": "500 milligrams",
+        "route_text": "by mouth",
+        "frequency_text": "three times a day"
+      },
+      "expected": {
+        "id": "bc45a606-1f08-565a-b7fa-01f16328471d",
+        "assertion_position": 0,
+        "kind": "explicit_new_order",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest",
+        "resource": {
+          "resourceType": "MedicationRequest",
+          "id": "bc45a606-1f08-565a-b7fa-01f16328471d",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest"
+            ]
+          },
+          "status": "draft",
+          "intent": "proposal",
+          "reportedBoolean": false,
+          "medicationCodeableConcept": {
+            "text": "amoxicillin",
+            "coding": [
+              {
+                "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                "code": "723",
+                "display": "amoxicillin"
+              }
+            ]
+          },
+          "subject": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "requester": {
+            "reference": "Practitioner/example-practitioner-1"
+          },
+          "authoredOn": "2026-11-12T09:00:00-05:00",
+          "dosageInstruction": [
+            {
+              "text": "500 milligrams by mouth three times a day"
+            }
+          ]
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I will prescribe amoxicillin 500 milligrams by mouth three times a day.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I will prescribe amoxicillin 500 milligrams by mouth three times a day.",
+                "aligned_text": "I will prescribe amoxicillin 500 milligrams by mouth three times a day",
+                "char_start": 0,
+                "char_end": 70,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "medication"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [
+          "authoredOn inherited from Encounter.period.start (in-visit order)"
+        ],
+        "is_material": true,
+        "export_state": "needs_review",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "negated-order",
+      "a3_row": "explicit_new_order",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "clinician",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I will not prescribe amoxicillin.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "explicit_new_order",
+        "concept_text": "amoxicillin",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "future",
+        "source_speaker_role": "clinician",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I will not prescribe amoxicillin."
+          }
+        ],
+        "medication_intent": "new_order",
+        "dose_text": null,
+        "route_text": null,
+        "frequency_text": null
+      },
+      "expected": {
+        "id": "3d55677c-021d-522f-8a20-3371a3b1de22",
+        "assertion_position": 0,
+        "kind": "explicit_new_order",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest",
+        "resource": null,
+        "ledger": {
+          "kind": "explicit_new_order",
+          "concept_text": "amoxicillin",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "future",
+          "source_speaker_role": "clinician",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I will not prescribe amoxicillin."
+            }
+          ],
+          "medication_intent": "new_order",
+          "dose_text": null,
+          "route_text": null,
+          "frequency_text": null
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I will not prescribe amoxicillin.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I will not prescribe amoxicillin.",
+                "aligned_text": "I will not prescribe amoxicillin",
+                "char_start": 0,
+                "char_end": 32,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "medication",
+          "negated",
+          "polarity_kind_mismatch"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "needs_review",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "reported-medication-affirmed",
+      "a3_row": "reported_medication",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I take amoxicillin.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "reported_medication",
+        "concept_text": "amoxicillin",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I take amoxicillin."
+          }
+        ],
+        "medication_intent": "continuing",
+        "dose_text": null,
+        "route_text": null,
+        "frequency_text": null
+      },
+      "expected": {
+        "id": "372582d1-39f5-565c-9f1e-880867ddf029",
+        "assertion_position": 0,
+        "kind": "reported_medication",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "reported_medication",
+          "concept_text": "amoxicillin",
+          "polarity": "affirmed",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I take amoxicillin."
+            }
+          ],
+          "medication_intent": "continuing",
+          "dose_text": null,
+          "route_text": null,
+          "frequency_text": null
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I take amoxicillin.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I take amoxicillin.",
+                "aligned_text": "I take amoxicillin",
+                "char_start": 0,
+                "char_end": 18,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "medication"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "reported-medication-negated",
+      "a3_row": "reported_medication",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I do not take amoxicillin.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "reported_medication",
+        "concept_text": "amoxicillin",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I do not take amoxicillin."
+          }
+        ],
+        "medication_intent": "continuing",
+        "dose_text": null,
+        "route_text": null,
+        "frequency_text": null
+      },
+      "expected": {
+        "id": "8a33df1d-f3a0-566b-ba90-f529d55ae7bc",
+        "assertion_position": 0,
+        "kind": "reported_medication",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "reported_medication",
+          "concept_text": "amoxicillin",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I do not take amoxicillin."
+            }
+          ],
+          "medication_intent": "continuing",
+          "dose_text": null,
+          "route_text": null,
+          "frequency_text": null
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I do not take amoxicillin.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I do not take amoxicillin.",
+                "aligned_text": "I do not take amoxicillin",
+                "char_start": 0,
+                "char_end": 25,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "medication",
+          "negated"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "allergy-ingredient",
+      "a3_row": "allergy_statement",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I get a rash with amoxicillin.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "allergy_statement",
+        "concept_text": "amoxicillin",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I get a rash with amoxicillin."
+          }
+        ],
+        "allergen_text": "amoxicillin",
+        "reaction_manifestation_text": "rash",
+        "stated_resolution_text": null
+      },
+      "expected": {
+        "id": "27819999-0cdd-5e5d-9854-dd1035d4cf86",
+        "assertion_position": 0,
+        "kind": "allergy_statement",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance",
+        "resource": {
+          "resourceType": "AllergyIntolerance",
+          "id": "27819999-0cdd-5e5d-9854-dd1035d4cf86",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance"
+            ]
+          },
+          "code": {
+            "text": "amoxicillin",
+            "coding": [
+              {
+                "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                "code": "723",
+                "display": "amoxicillin"
+              }
+            ]
+          },
+          "patient": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "clinicalStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+                "code": "active"
+              }
+            ]
+          },
+          "verificationStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+                "code": "unconfirmed"
+              }
+            ]
+          },
+          "reaction": [
+            {
+              "manifestation": [
+                {
+                  "text": "rash"
+                }
+              ]
+            }
+          ]
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I get a rash with amoxicillin.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I get a rash with amoxicillin.",
+                "aligned_text": "I get a rash with amoxicillin",
+                "char_start": 0,
+                "char_end": 29,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "allergy"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "needs_review",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "allergy-family",
+      "a3_row": "allergy_statement",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I get a rash with penicillin.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "allergy_statement",
+        "concept_text": "penicillin",
+        "polarity": "affirmed",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I get a rash with penicillin."
+          }
+        ],
+        "allergen_text": "penicillin",
+        "reaction_manifestation_text": "rash",
+        "stated_resolution_text": null
+      },
+      "expected": {
+        "id": "228f333f-85c4-5a46-9742-30a021c57fd1",
+        "assertion_position": 0,
+        "kind": "allergy_statement",
+        "claimed_profile": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance",
+        "resource": {
+          "resourceType": "AllergyIntolerance",
+          "id": "228f333f-85c4-5a46-9742-30a021c57fd1",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance"
+            ]
+          },
+          "code": {
+            "text": "penicillin"
+          },
+          "patient": {
+            "reference": "Patient/example-patient-1"
+          },
+          "encounter": {
+            "reference": "Encounter/example-encounter-1"
+          },
+          "clinicalStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+                "code": "active"
+              }
+            ]
+          },
+          "verificationStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+                "code": "unconfirmed"
+              }
+            ]
+          },
+          "reaction": [
+            {
+              "manifestation": [
+                {
+                  "text": "rash"
+                }
+              ]
+            }
+          ]
+        },
+        "ledger": null,
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I get a rash with penicillin.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I get a rash with penicillin.",
+                "aligned_text": "I get a rash with penicillin",
+                "char_start": 0,
+                "char_end": 28,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "allergy",
+          "needs_coding_review",
+          "uncoded_text_only"
+        ],
+        "mapper_flags": [
+          "uncoded_text_only"
+        ],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "needs_review",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": false,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "nka",
+      "a3_row": "allergy_denial",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I have no known allergies.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "allergy_denial",
+        "concept_text": "no known allergies",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I have no known allergies."
+          }
+        ],
+        "allergen_text": null
+      },
+      "expected": {
+        "id": "9b0919c1-4692-5cae-b91f-8f2fdc5196cd",
+        "assertion_position": 0,
+        "kind": "allergy_denial",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "allergy_denial",
+          "concept_text": "no known allergies",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no known allergies."
+            }
+          ],
+          "allergen_text": null
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I have no known allergies.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I have no known allergies.",
+                "aligned_text": "I have no known allergies",
+                "char_start": 0,
+                "char_end": 25,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "allergy",
+          "negated",
+          "snomed_not_supplied",
+          "clinician_confirmation_required"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    },
+    {
+      "name": "allergy-denial",
+      "a3_row": "allergy_denial",
+      "transcript": {
+        "schema_version": "1",
+        "segments": [
+          {
+            "id": "s1",
+            "speaker_cluster_id": "fictional-speaker",
+            "role": "patient",
+            "start_seconds": 0.0,
+            "end_seconds": 5.0,
+            "text": "I am not allergic to penicillin.",
+            "words": null
+          }
+        ]
+      },
+      "assertion": {
+        "kind": "allergy_denial",
+        "concept_text": "penicillin",
+        "polarity": "negated",
+        "experiencer": "patient",
+        "temporality": "current",
+        "source_speaker_role": "patient",
+        "evidence": [
+          {
+            "segment_id": "s1",
+            "quote": "I am not allergic to penicillin."
+          }
+        ],
+        "allergen_text": "penicillin"
+      },
+      "expected": {
+        "id": "45f89db0-32be-5af6-8636-3c7d6036ca70",
+        "assertion_position": 0,
+        "kind": "allergy_denial",
+        "claimed_profile": null,
+        "resource": null,
+        "ledger": {
+          "kind": "allergy_denial",
+          "concept_text": "penicillin",
+          "polarity": "negated",
+          "experiencer": "patient",
+          "temporality": "current",
+          "source_speaker_role": "patient",
+          "evidence": [
+            {
+              "segment_id": "s1",
+              "quote": "I am not allergic to penicillin."
+            }
+          ],
+          "allergen_text": "penicillin"
+        },
+        "evidence": {
+          "lane": "PASS",
+          "label": "transcript-supported",
+          "items": [
+            {
+              "segment_id": "s1",
+              "quote": "I am not allergic to penicillin.",
+              "aligned": {
+                "segment_id": "s1",
+                "quote": "I am not allergic to penicillin.",
+                "aligned_text": "I am not allergic to penicillin",
+                "char_start": 0,
+                "char_end": 31,
+                "audio_start_seconds": 0.0,
+                "audio_end_seconds": 5.0,
+                "audio_approximate": true,
+                "audio_source": "segment_bounds",
+                "alignment_method": "exact-v1"
+              },
+              "failure": null
+            }
+          ],
+          "checker_version": "evidence-v2"
+        },
+        "review_reasons": [
+          "allergy",
+          "negated",
+          "snomed_not_supplied",
+          "clinician_confirmation_required"
+        ],
+        "mapper_flags": [],
+        "provenance_notes": [],
+        "is_material": true,
+        "export_state": "ledger_only",
+        "lanes": {
+          "reduced_schema": "PASS",
+          "evidence": "PASS",
+          "base_r4": "NOT_CHECKED",
+          "us_core_profile": "NOT_CHECKED",
+          "terminology": "NOT_CHECKED"
+        },
+        "ledger_only": true,
+        "validation_digest": null,
+        "reviewed_resource_digest": null,
+        "consistency": {
+          "failures": [],
+          "review_reasons": []
+        }
+      }
+    }
+  ]
+}

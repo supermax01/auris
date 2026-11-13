@@ -1,0 +1,197 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 0,
+      "end_seconds": 12,
+      "text": "[Fictional demonstration visit; all participants are fictional.] Good morning. What brings you in today?"
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 13,
+      "end_seconds": 29,
+      "text": "I have had a cough for four days. It keeps waking me up, and I am supposed to be back at work tomorrow. I thought I had better get it checked. I brought my medicine list too."
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 30,
+      "end_seconds": 39,
+      "text": "Thanks, let me take a look at that. Have you had any fever since the cough started?"
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 40,
+      "end_seconds": 49,
+      "text": "No fever. I checked a couple of times at home because I wondered about that too."
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 50,
+      "end_seconds": 60,
+      "text": "And how has your health been otherwise? Any ongoing conditions I should know about?"
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 61,
+      "end_seconds": 70,
+      "text": "I have asthma. I used to go to the clinic across town, but this office is much easier to get to from work."
+    },
+    {
+      "id": "s7",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 71,
+      "end_seconds": 83,
+      "text": "My father has diabetes. He has been telling me I should find a regular doctor instead of just coming in when I am sick."
+    },
+    {
+      "id": "s8",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 84,
+      "end_seconds": 94,
+      "text": "It is helpful to know about your family too. What medicines are you taking at the moment?"
+    },
+    {
+      "id": "s9",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 95,
+      "end_seconds": 105,
+      "text": "I still use albuterol. I brought the inhaler with me because I can never remember everything on the label. Here it is."
+    },
+    {
+      "id": "s10",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 106,
+      "end_seconds": 116,
+      "text": "Thank you, that helps. Before we talk about treatment, have you ever had a reaction to a medicine?"
+    },
+    {
+      "id": "s11",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 117,
+      "end_seconds": 130,
+      "text": "I am allergic to sulfa; it gave me a rash years ago. I cannot remember the name on the bottle, but I remember the rash. It was miserable."
+    },
+    {
+      "id": "s12",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 131,
+      "end_seconds": 137,
+      "text": "Do you have an allergy to penicillin as well?"
+    },
+    {
+      "id": "s13",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 138,
+      "end_seconds": 146,
+      "text": "I am not allergic to penicillin. I have taken that before without any trouble."
+    },
+    {
+      "id": "s14",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 147,
+      "end_seconds": 155,
+      "text": "All right. Rest your arm here while I check your blood pressure. Then I will listen to your chest."
+    },
+    {
+      "id": "s15",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 156,
+      "end_seconds": 163,
+      "text": "Your blood pressure is 126 over 78. You can relax your arm now."
+    },
+    {
+      "id": "s16",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 164,
+      "end_seconds": 170,
+      "text": "Your heart rate is 84 beats per minute. Take a few slow breaths for me."
+    },
+    {
+      "id": "s17",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 171,
+      "end_seconds": 177,
+      "text": "Okay. The coughing is mostly what is bothering me. I just want to get some sleep."
+    },
+    {
+      "id": "s18",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 178,
+      "end_seconds": 190,
+      "text": "I think this is acute bronchitis. That would explain the cough. It can take a while to settle down, even when you are starting to feel better."
+    },
+    {
+      "id": "s19",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 191,
+      "end_seconds": 200,
+      "text": "I do not think this is pneumonia. If things get worse, please call us so we can check you again."
+    },
+    {
+      "id": "s20",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 201,
+      "end_seconds": 207,
+      "text": "Would an antibiotic help? I was hoping there might be something I could take."
+    },
+    {
+      "id": "s21",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 208,
+      "end_seconds": 218,
+      "text": "We could try amoxicillin, but I don't think you need an antibiotic. I would leave that for now."
+    },
+    {
+      "id": "s22",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 219,
+      "end_seconds": 231,
+      "text": "Start acetaminophen 500 milligrams by mouth every eight hours as needed. Let me write that down so you have the instructions at home."
+    },
+    {
+      "id": "s23",
+      "speaker_cluster_id": "fictional-patient",
+      "role": "patient",
+      "start_seconds": 232,
+      "end_seconds": 239,
+      "text": "Thanks. I was worried I would forget what we talked about as soon as I walked out."
+    },
+    {
+      "id": "s24",
+      "speaker_cluster_id": "fictional-clinician",
+      "role": "clinician",
+      "start_seconds": 240,
+      "end_seconds": 250,
+      "text": "You are welcome. Check with the front desk about a follow-up before you leave, and call if you have questions. [End of fictional demonstration.]"
+    }
+  ]
+}

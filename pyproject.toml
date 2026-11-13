@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "auris"
+version = "0.0.1"
+description = "Auris — recorded clinical visits to standards-checked structured records (research software)"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = [
+    "pydantic>=2",
+]
+
+[project.scripts]
+auris = "auris.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-socket",
+    "ruff",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/auris"]
+
+[tool.pytest.ini_options]
+addopts = "--disable-socket"
+testpaths = ["tests"]
+markers = [
+    "llm: runs the local extractor (requires pinned model and llama-server; loopback only)",
+    "validator: runs the pinned official HL7 validator offline (requires seeded cache and Java)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+include = ["src/**/*.py", "src/**/*.pyi", "tests/**/*.py", "tests/**/*.pyi"]
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "B", # flake8-bugbear
+    "UP", # pyupgrade
+]

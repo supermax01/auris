@@ -1,0 +1,17 @@
+{
+  "leakage_check": "pass",
+  "leakage_check_details": {
+    "clinical_content_count": 0,
+    "clinical_policy": "warn",
+    "clinical_terms_sha256": "84feb4a62ee8bc9ef2e26e43cadb5c27eaf66dd900793222152178c7ab74a786",
+    "clinical_warning_counts": {},
+    "corpus_sha256": "acd1027103c238128a69980ffac2355aff1100e067a94ddaf6a387271112b15f",
+    "corpus_text_count": 195,
+    "exact_sentence_count": 0,
+    "jaccard_threshold": 0.6,
+    "min_sentence_tokens": 4,
+    "near_duplicate_count": 0,
+    "prompt_sha256": "0db6b464e45c02bfe5f16ee9f392f4b8456ecb3ceabcef71611fbdabd31ab581",
+    "version": "sentence_overlap_v1"
+  }
+}

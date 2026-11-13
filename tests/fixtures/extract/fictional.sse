@@ -1,0 +1,14 @@
+data: {"choices": [{"index": 0, "delta": {"role": "assistant", "content": null}, "finish_reason": null}]}
+
+data: {"choices": [{"index": 0, "delta": {"content": "{\"assertions\""}, "finish_reason": null}]}
+
+data: {"choices": [{"index": 0, "delta": {"content": ":"}, "finish_reason": null}]}
+
+data: {"choices": [{"index": 0, "delta": {"content": "[]}"}, "finish_reason": null}]}
+
+data: {"choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]}
+
+data: {"choices": [], "usage": {"prompt_tokens": 10, "completion_tokens": 3, "total_tokens": 13}, "timings": {"predicted_n": 3, "predicted_ms": 2.0}}
+
+data: [DONE]
+

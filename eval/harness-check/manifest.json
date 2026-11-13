@@ -1,0 +1,2978 @@
+{
+  "clinical_watchlist": [
+    "naproxen",
+    "acetaminophen",
+    "ibuprofen",
+    "glaucoma",
+    "arthritis",
+    "gout",
+    "amoxicillin",
+    "cetirizine",
+    "shellfish",
+    "hives",
+    "pneumonia",
+    "diabetes",
+    "palpitations",
+    "kidney stone",
+    "metformin",
+    "latex",
+    "egg",
+    "loratadine",
+    "sulfa",
+    "aspirin",
+    "anemia",
+    "psoriasis",
+    "sinusitis",
+    "contact dermatitis",
+    "hypertension",
+    "cerumen impaction",
+    "viral infection",
+    "muscle strain",
+    "ingrown toenail",
+    "wrist sprain",
+    "itching",
+    "cough"
+  ],
+  "declared_kinds": [
+    "vital_sign",
+    "symptom",
+    "clinician_assessed_problem",
+    "clinician_ruled_out_problem",
+    "patient_reported_condition",
+    "explicit_new_order",
+    "reported_medication",
+    "allergy_statement",
+    "allergy_denial"
+  ],
+  "encounters": [
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "naproxen"
+          ],
+          "allergen_text": "naproxen",
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "naproxen",
+          "critical": {
+            "allergy_denial": "specific",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 54,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "c7617c4bf958af5839b45a1040575db0372d98ed2a150bd9365180383d4ce093"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:naproxen",
+          "id": "f1",
+          "kind": "allergy_denial",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "ache"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "ache",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 40,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "9d147beb4d0c029213cde069656953e936052b04bd707d00942a6adfad62dfa4"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:ache",
+          "id": "f2",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "heart rate"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "68"
+          ],
+          "codes": [],
+          "concept_text": "heart rate",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "d0496c2f4a59f7fcb075b02f8c2e817b194563c0f786047deb78800c3ef3cd5d"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:heart-rate",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "/min",
+          "unit_text": "beats per minute",
+          "value_text": "68"
+        }
+      ],
+      "critical_error_targets": [
+        "allergy_denial_flipped"
+      ],
+      "fictional": true,
+      "id": "hc-01",
+      "intake_path": "hc-01/intake.json",
+      "intake_sha256": "ffa8857f51a25ae58fb79dedd4f16e4dd1b45af21f8ddc5d46c8cf2eeaa7cdb3",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-01/transcript.json",
+      "transcript_sha256": "36f3dcb36b9800678250e8bdc5b47d1916536ac0473a5700731c863062478f43"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "no substances I am allergic to"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "no substances I am allergic to",
+          "critical": {
+            "allergy_denial": "all",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 59,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "d792f03bf60c3608796e13549613bdf634bd08cb5439b82efc47d5cd2e31e246"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:no-substances-i-am-allergic-to",
+          "id": "f1",
+          "kind": "allergy_denial",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "pressure"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "pressure",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 53,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "014886ecb935f5242bdc059e6bb61ccd8d3049133f0522699a30837bb2ab8afe"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:pressure",
+          "id": "f2",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "cerumen impaction"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "cerumen impaction",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 52,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "8ef9632fdaa56c90cb8972ed8b9e7afc4d3760527498fb8444e8895026598c63"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:cerumen-impaction",
+          "id": "f3",
+          "kind": "clinician_assessed_problem",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "allergy_denial_flipped"
+      ],
+      "fictional": true,
+      "id": "hc-02",
+      "intake_path": "hc-02/intake.json",
+      "intake_sha256": "809ac117e02960e73196b7cac40f2af1cc11bcb30e0fd49a9d13935ce7fa6b22",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-02/transcript.json",
+      "transcript_sha256": "2496ca4babdff7afc2887751181983338202b97e4fd11062dfc72a9f16042019"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "ankle pain"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "ankle pain",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "b225ee51486c95f20c06a785d3915c8eb580378ddcfde342085106455a2967a0"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:ankle-pain",
+          "id": "f1",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "acetaminophen"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "acetaminophen",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "explicit"
+          },
+          "dose_text": "325 mg",
+          "evidence": [
+            {
+              "char_end": 84,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "5aef22b3f2ceadaaa7e6b6b70e92908f6d2e1e6967dc15dcac2a1111e7615c14"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": "once daily",
+          "gold_concept_id": "auris:acetaminophen",
+          "id": "f2",
+          "kind": "explicit_new_order",
+          "medication_intent": "new_order",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": "by mouth",
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "blood pressure"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "126",
+            "78"
+          ],
+          "codes": [],
+          "concept_text": "blood pressure",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 58,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "ced8430f294d11349a0f43328faac00670058df20c55ab7158d5658b3f61ca3c"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:blood-pressure",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "mm[Hg]",
+          "unit_text": null,
+          "value_text": "126 over 78"
+        }
+      ],
+      "critical_error_targets": [
+        "wrong_drug_or_dose"
+      ],
+      "fictional": true,
+      "id": "hc-03",
+      "intake_path": "hc-03/intake.json",
+      "intake_sha256": "4fe214c6c985c7041e787a798b16eda56c2df5669d26f7fdb1f9556bb93f46d3",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-03/transcript.json",
+      "transcript_sha256": "d547d210940c85b0781b4bb9f0a27a3fbfa2fd1e8f9247e0ad220b6c2524e880"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "muscle strain"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "muscle strain",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 39,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "bd03e1f0ee91c27fb0590ea05eefcaa546c01293e145809ad42ca9f5b20d3c8e"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:muscle-strain",
+          "id": "f1",
+          "kind": "clinician_assessed_problem",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "ibuprofen"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "ibuprofen",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "explicit"
+          },
+          "dose_text": "200 mg",
+          "evidence": [
+            {
+              "char_end": 75,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "7f0c2024d0b53b3c93b65b71a0ece5870c8dbac967fd44c8cdeb1f82fcc8641c"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": "twice daily",
+          "gold_concept_id": "auris:ibuprofen",
+          "id": "f2",
+          "kind": "explicit_new_order",
+          "medication_intent": "new_order",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": "orally",
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "body temperature"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "36.8"
+          ],
+          "codes": [],
+          "concept_text": "body temperature",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 61,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "7e309c0feec82b611de74fee42e01ff72a16405deeb00f1384668fcab1f3b13e"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:body-temperature",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "Cel",
+          "unit_text": "degrees Celsius",
+          "value_text": "36.8"
+        }
+      ],
+      "critical_error_targets": [
+        "wrong_drug_or_dose"
+      ],
+      "fictional": true,
+      "id": "hc-04",
+      "intake_path": "hc-04/intake.json",
+      "intake_sha256": "bb839df32e1d57e3487a9fa8c70b964f4838e68a72c3980677b563438f9bb727",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-04/transcript.json",
+      "transcript_sha256": "8b89b10abf378e30e29a7fb47b22b1ea57ad991da9997d0ef9c7f3e46f21b291"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "glaucoma"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "glaucoma",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 55,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "9fc0c81163a8adb77c8defffc066c2ada94e1f433ef245244fd5792051e254a8"
+            }
+          ],
+          "experiencer": "family_member",
+          "frequency_text": null,
+          "gold_concept_id": "auris:glaucoma",
+          "id": "f1",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "blurred"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "blurred",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 41,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "8bdd87b672715ee0cf21e3fb2c228cabcb37626e888f8879ab592e791dd14250"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:blurred",
+          "id": "f2",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "blood pressure"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "118",
+            "72"
+          ],
+          "codes": [],
+          "concept_text": "blood pressure",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 54,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "6d0a47272866fdbe3cb7f1600cfece10e9d88a8e800b517e3f7a1e5b7b2b8e03"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:blood-pressure",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "mm[Hg]",
+          "unit_text": null,
+          "value_text": "118/72"
+        }
+      ],
+      "critical_error_targets": [
+        "wrong_person"
+      ],
+      "fictional": true,
+      "id": "hc-05",
+      "intake_path": "hc-05/intake.json",
+      "intake_sha256": "28bc5b7def57646eb14301ebb28427190a6142cc80e5d27ca2bba68bc3f5d0d0",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-05/transcript.json",
+      "transcript_sha256": "11ea3af885ddc3b674ac7e1d79445560bf76dbe39f0aa0deccf99cecd218d75d"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "arthritis"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "arthritis",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "ff510ee52cb5da96572496eccab269fe9a91461cff8f5b32b8e4fe221fc08e3c"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:arthritis",
+          "id": "f1",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "companion",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "gout"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "gout",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 62,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "a40250c0198824b8a46df2e784861ff05b2cb0a53ee17d6b5a3432c9c5884cc3"
+            }
+          ],
+          "experiencer": "other",
+          "frequency_text": null,
+          "gold_concept_id": "auris:gout",
+          "id": "f2",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "companion",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "swollen"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "swollen",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 37,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "b47795c13b02416925becb360572e05647618d5cf988ff0027f098f49b735751"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:swollen",
+          "id": "f3",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "wrong_person"
+      ],
+      "fictional": true,
+      "id": "hc-06",
+      "intake_path": "hc-06/intake.json",
+      "intake_sha256": "b305d45dfbfe711e297306be1a9a86461ec54cba905acba5324237165b580431",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-06/transcript.json",
+      "transcript_sha256": "01defca1727ad4aba6c31a13bb4a561599e08eeab57a2ea5d79c7a0370fbe8f6"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "Amoxicillin"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "Amoxicillin",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 77,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "f045ccf00a5def04d2c252aad9018b12674e789d69ae3536c0affc7de21491b3"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:amoxicillin",
+          "id": "f1",
+          "kind": "reported_medication",
+          "medication_intent": "discussed",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "viral infection"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "viral infection",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 43,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "04f2d7df8549dc1de8549502bbb948ddf66723dd58a0a811c7a635daacbaefa2"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:viral-infection",
+          "id": "f2",
+          "kind": "clinician_assessed_problem",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "sore throat"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "sore throat",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 62,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "ec1e981cac351a799b78f83ea8c2c576621648c3c1f4795bd24c595dc6d687c2"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:sore-throat",
+          "id": "f3",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "order_never_given"
+      ],
+      "fictional": true,
+      "id": "hc-07",
+      "intake_path": "hc-07/intake.json",
+      "intake_sha256": "c83f81b3730b53e81281b435ee10f6a1bfa06fb789d72f78886152e2ed41997b",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-07/transcript.json",
+      "transcript_sha256": "0c892954aa2186cff92b6155bb7830d87cf21a12d05fbb0407208bb2a1830e87"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "cetirizine"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "cetirizine",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 81,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "0b7bfa3a457cfadc18c75c7634d882d0f65b58438d50918135d36f40fe8c5191"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:cetirizine",
+          "id": "f1",
+          "kind": "reported_medication",
+          "medication_intent": "discussed",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "Shellfish"
+          ],
+          "allergen_text": "Shellfish",
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "Shellfish",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 54,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "5a7c3a924833a88bbcde5d52ec5e2787e7f9868323270398a66205f2ebc50a4f"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:shellfish",
+          "id": "f2",
+          "kind": "allergy_statement",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": "hives",
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "watery"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "watery",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 40,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "3f92d552a0ea3738e31fcfee001b8ddbedefc74c04efe6b25fb1b6dcaa487e3b"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:watery",
+          "id": "f3",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "order_never_given"
+      ],
+      "fictional": true,
+      "id": "hc-08",
+      "intake_path": "hc-08/intake.json",
+      "intake_sha256": "3d4932acbc85bddf7f1b95f2960b4cd26aece56beedb0f4f03895ee03aec0eed",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-08/transcript.json",
+      "transcript_sha256": "e19935c21b8fb2135a3903b7c8cdb74e068c6c7afedeba24f910f7bf9047c22a"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "pneumonia"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "pneumonia",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "absent",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 66,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "5a6f22ae48076030d13e56b3d1697041ed30c734aad2d46f5d2cfe8895b76460"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:pneumonia",
+          "id": "f1",
+          "kind": "clinician_ruled_out_problem",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "cough"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "cough",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 39,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "84c4814ca1e409b72abfe264201d5f649e87ddf67a5dbb333628e34eee7ff5cc"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:cough",
+          "id": "f2",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "oxygen saturation"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "97"
+          ],
+          "codes": [],
+          "concept_text": "oxygen saturation",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 55,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "2272761fe34cf71cdb397f090646483701b96717bd1289d1fbf1ea6d83e5ecb3"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:oxygen-saturation",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "%",
+          "unit_text": "percent",
+          "value_text": "97"
+        }
+      ],
+      "critical_error_targets": [
+        "denied_condition_present"
+      ],
+      "fictional": true,
+      "id": "hc-09",
+      "intake_path": "hc-09/intake.json",
+      "intake_sha256": "282b8771e00401109d0e2d791bbfa2e3d56610a2928edceb88cd2eac6ab12be6",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-09/transcript.json",
+      "transcript_sha256": "4fb5c0b7887539d06d6fc42a9235ed936454c2222bc40cc7ebe558edd19bd05f"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "diabetes"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "diabetes",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "absent",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 66,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "1f5032f923ca724f32796d766fcc56730de5ebdd7adde3edf569d00f81389005"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:diabetes",
+          "id": "f1",
+          "kind": "clinician_ruled_out_problem",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "hypertension"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "hypertension",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 49,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "a4e48e682040d6a6f4130abc3db09df4b5cf891de4573cb2cce2a24226f7b495"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:hypertension",
+          "id": "f2",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "chest pain"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "chest pain",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 39,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "20ef5ad3b096eccc49f5b239708dc812170ab32b6f698f3b37640ba72eaa4640"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:chest-pain",
+          "id": "f3",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "denied_condition_present"
+      ],
+      "fictional": true,
+      "id": "hc-10",
+      "intake_path": "hc-10/intake.json",
+      "intake_sha256": "51fb2158461ce171d24ab701ddb6a9faf859687388af85bc8451c8f806c113cd",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-10/transcript.json",
+      "transcript_sha256": "91f042564690dd3a8083876e0350f239a912360d2ae74b965824056a69401386"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "palpitations"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "palpitations",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 54,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "51031e95eb0bee765f0f17a8d2891cfb23750424fa79e66e9d8f31f4ebf132ad"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:palpitations",
+          "id": "f1",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "resolved",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "wrist sprain"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "wrist sprain",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 54,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "1f98e64f333207ce4918020ebc636ddfb88fa884bf969113bf408ea800f76d58"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:wrist-sprain",
+          "id": "f2",
+          "kind": "clinician_assessed_problem",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "resolved",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "heart rate"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "64"
+          ],
+          "codes": [],
+          "concept_text": "heart rate",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 47,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "c325bce1528a8d10190c8d28537931c1610bdf74487475beca4139357ec1658c"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:heart-rate",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "/min",
+          "unit_text": "per minute",
+          "value_text": "64"
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-11",
+      "intake_path": "hc-11/intake.json",
+      "intake_sha256": "06ca46f5c9e7a5355c79a076f3c627fb643be71060c4319216fdf72f630485a3",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-11/transcript.json",
+      "transcript_sha256": "88c18ec4a33100b3b7c2a3b02671802254fc0be115daccc98ae130807815505b"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "pain"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "pain",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 43,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "cb32e1761eb5bef2dfbe46468df4dcf811408ee78e1c64b8bdf06435214288fe"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:pain",
+          "id": "f1",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "Body temperature"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "98.4"
+          ],
+          "codes": [],
+          "concept_text": "Body temperature",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "3fd29355cfadefdd43b1d493676699d8c91e891df2ec964fb50b275ec2c676d7"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:body-temperature",
+          "id": "f2",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "[degF]",
+          "unit_text": "degrees Fahrenheit",
+          "value_text": "98.4"
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-12",
+      "intake_path": "hc-12/intake.json",
+      "intake_sha256": "dafb79bb2e3180b55039d9fd4e909a61dfe6eec11e15860263dd30fa4aa2d98d",
+      "license": "Apache-2.0",
+      "out_of_scope": [
+        {
+          "category": "diagnostic_plan",
+          "evidence": [
+            {
+              "char_end": 90,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "0507e6deec6e177be1288836f1f182880049646b4b6386838441ff7864b38e58"
+            }
+          ],
+          "id": "o1",
+          "reason": "Outside the nine-kind reduced schema; not a confirmed or refuted diagnosis."
+        }
+      ],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-12/transcript.json",
+      "transcript_sha256": "5824b8c1c3f32355ae6ba71d8b74ded96a6ccb4bb993b0eb53e063274b1a93c5"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "metformin"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "metformin",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": "500 mg",
+          "evidence": [
+            {
+              "char_end": 69,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "4e2299a16d29f21362abb1911f9b814e0916687576eebf2142c1c442f239dfa6"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": "each morning",
+          "gold_concept_id": "auris:metformin",
+          "id": "f1",
+          "kind": "reported_medication",
+          "medication_intent": "continuing",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "type 2 diabetes"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "type 2 diabetes",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 57,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "08a6ac3d5dd3a0277f0039fe7f17ac795affc6eb089939eb73a3304b85840b93"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:type-2-diabetes",
+          "id": "f2",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "body weight"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "81"
+          ],
+          "codes": [],
+          "concept_text": "body weight",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "078ea5a80e22ca9c5be86b24d0fdb8cee89709340225fec6a09fd759256b9ff9"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:body-weight",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "kg",
+          "unit_text": "kilograms",
+          "value_text": "81"
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-13",
+      "intake_path": "hc-13/intake.json",
+      "intake_sha256": "67f3fdf255b36f926a0d23d557de019e94ab59c846fdd39a1806c138bafbf6b6",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-13/transcript.json",
+      "transcript_sha256": "492d9adbb3edaf9e34b8b2f270bfda298488ab2b8ea4cb1d3161fe00b411fa40"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "latex"
+          ],
+          "allergen_text": "latex",
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "latex",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 62,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "cb6052b5b76a5a7881a2106b1d83b6e912a35cf1147b7ff5db812f114a51295c"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:latex",
+          "id": "f1",
+          "kind": "allergy_statement",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": "itching",
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "itching"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "itching",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 55,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "c17cf3572370a4bb0a4d9b436676d76ac9f0ea5df032d7fb3569f1a3a4ba4e65"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:itching",
+          "id": "f2",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "contact dermatitis"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "contact dermatitis",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 47,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "d67009211d1f514fe7a76c264a132edd65055ce97c145f828fbb8d95dc1acdd8"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:contact-dermatitis",
+          "id": "f3",
+          "kind": "clinician_assessed_problem",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-14",
+      "intake_path": "hc-14/intake.json",
+      "intake_sha256": "5e749f56044c2e0c1ea2b793c103b37ba46fe21e46cfc8302161f347f1d30372",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-14/transcript.json",
+      "transcript_sha256": "65f3e199955a22004597b7f6a2267c35b1fb4ab1b40c9106a9323222c3bb7b91"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "egg"
+          ],
+          "allergen_text": "egg",
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "egg",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 66,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "5dd04ed7c5bf0bb387a931a861367a451596980d45d92248b157f5afd5b13503"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:egg",
+          "id": "f1",
+          "kind": "allergy_statement",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": "outgrown last year",
+          "stated_time_text": null,
+          "temporality": "resolved",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "loratadine"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "loratadine",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 53,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "9ab21bc805f67e513023dbe1d99967ea9069bc2c9dda60cb60e4de2992a002c9"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:loratadine",
+          "id": "f2",
+          "kind": "reported_medication",
+          "medication_intent": "historical",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "past",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "height"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "169"
+          ],
+          "codes": [],
+          "concept_text": "height",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 48,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "5ff25f8dadb5e2a0b9a03ecebdf7664c91b0597aa474a302b775bf68e64df8dd"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:height",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "cm",
+          "unit_text": "centimeters",
+          "value_text": "169"
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-15",
+      "intake_path": "hc-15/intake.json",
+      "intake_sha256": "ac3ab7dd74997032ee52ab2d9ba9fdccdd10802e2725b93b21cc2fc08af57257",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-15/transcript.json",
+      "transcript_sha256": "751b4a07fd6c5d37bb74db62822e0e0a42ef9dec09604c4a78d4a868b3e62813"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "blood pressure"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "126",
+            "78"
+          ],
+          "codes": [],
+          "concept_text": "blood pressure",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 71,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "4ab74ae63fa13b866d30faa86e51c985cac9acc99437223c97f34cff6bd4714b"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:blood-pressure",
+          "id": "f1",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "mm[Hg]",
+          "unit_text": null,
+          "value_text": "126/78"
+        },
+        {
+          "acceptable_texts": [
+            "heart rate"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "82"
+          ],
+          "codes": [],
+          "concept_text": "heart rate",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 71,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "4ab74ae63fa13b866d30faa86e51c985cac9acc99437223c97f34cff6bd4714b"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:heart-rate",
+          "id": "f2",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "/min",
+          "unit_text": "per minute",
+          "value_text": "82"
+        },
+        {
+          "acceptable_texts": [
+            "body weight"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "154"
+          ],
+          "codes": [],
+          "concept_text": "body weight",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 41,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "b6d82e80debb745bd80850ea0d258fa0cc39e6d2181442731b7a5a53a2894f9e"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:body-weight",
+          "id": "f3",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "[lb_av]",
+          "unit_text": "pounds",
+          "value_text": "154"
+        },
+        {
+          "acceptable_texts": [
+            "back stiffness"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "back stiffness",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 49,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "387f0b4f6f9eaee99ef42031e5e35afbcd414334a93b71b4db648e3c4800ceda"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:back-stiffness",
+          "id": "f4",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-16",
+      "intake_path": "hc-16/intake.json",
+      "intake_sha256": "56eba1f028219da1cbd802f6ea215a8e66f9284bee3256d5ccb146ca7baa648a",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-16/transcript.json",
+      "transcript_sha256": "f111224c88b3fb26e65f3f90a2951e7e3b8eb9105a2886cc3842534fe3dde771"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "Pulse oximetry"
+          ],
+          "allergen_text": null,
+          "canonical_value": [
+            "95"
+          ],
+          "codes": [],
+          "concept_text": "Pulse oximetry",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 38,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "dde7ec011f242fbd9ee071c75122da7b942149b7a8babafbb04dcbcb5d6c06a1"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:pulse-oximetry",
+          "id": "f1",
+          "kind": "vital_sign",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": "%",
+          "unit_text": "percent",
+          "value_text": "95"
+        },
+        {
+          "acceptable_texts": [
+            "breathlessness"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "breathlessness",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "fc6c8a3d3a2dfdea24cf6bac647a12def992e78be1612bca848842543235b634"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:breathlessness",
+          "id": "f2",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [],
+      "fictional": true,
+      "id": "hc-17",
+      "intake_path": "hc-17/intake.json",
+      "intake_sha256": "31852f016e89495c81199adfc8eb48fd93bb137ceff46e3f015ebd2d346ac19c",
+      "license": "Apache-2.0",
+      "out_of_scope": [
+        {
+          "category": "oxygen_flow",
+          "evidence": [
+            {
+              "char_end": 56,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "2981fa12831c6090261fcf980e81f1b9579a898a187f830302d4c188424954b2"
+            }
+          ],
+          "id": "o1",
+          "reason": "Oxygen flow is outside the v1 SpO2 resource scope."
+        }
+      ],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-17/transcript.json",
+      "transcript_sha256": "fd65f024576eace299878e704089ca7817e2b09160714435d344f96332f1e8cb"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "anemia"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "anemia",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 49,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "10807e0a750f2ffac84a003fb12903b9f0391bec47473f28a699f0d20ff0b476"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:anemia",
+          "id": "f1",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "past",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "psoriasis"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "psoriasis",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 49,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "3a05b975719a6c40f10f37b663c3538d74c19c199f5be586ef392cb041a32c84"
+            }
+          ],
+          "experiencer": "family_member",
+          "frequency_text": null,
+          "gold_concept_id": "auris:psoriasis",
+          "id": "f2",
+          "kind": "patient_reported_condition",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "ingrown toenail"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "ingrown toenail",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "present",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 49,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "de628f1c443a4434d96edecc9f2606c1ebd91be0c8c9dab37b816c75cbc731c6"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:ingrown-toenail",
+          "id": "f3",
+          "kind": "clinician_assessed_problem",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "wrong_person"
+      ],
+      "fictional": true,
+      "id": "hc-18",
+      "intake_path": "hc-18/intake.json",
+      "intake_sha256": "8f78d77859107b6549c2f4e0f79cadf6c22822424239d0244f64f396fa6900e3",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-18/transcript.json",
+      "transcript_sha256": "eb84a69ea79d9a47817438b9ca81611e6a064b586b778c7009f52d633f5a8b6c"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "sulfa"
+          ],
+          "allergen_text": "sulfa",
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "sulfa",
+          "critical": {
+            "allergy_denial": "specific",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 71,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "65e3548f11efca04ebe02e2fefe660e20ef5451a0f5302b81b2ec9b1c52f1ec0"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:sulfa",
+          "id": "f1",
+          "kind": "allergy_denial",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "cetirizine"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "cetirizine",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 71,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "65e3548f11efca04ebe02e2fefe660e20ef5451a0f5302b81b2ec9b1c52f1ec0"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": "once daily",
+          "gold_concept_id": "auris:cetirizine",
+          "id": "f2",
+          "kind": "reported_medication",
+          "medication_intent": "continuing",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "nasal stuffiness"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "nasal stuffiness",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 53,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "4551a90612361277a9ca93c6b5ad199153c12b5eef21a195eecbb43ef2755709"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:nasal-stuffiness",
+          "id": "f3",
+          "kind": "symptom",
+          "medication_intent": null,
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "Sinusitis"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "Sinusitis",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "absent",
+            "order_authorization": "none"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 55,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "6ddd1d1305a114f34f6a6f4852d159420b28483b2397b26f43c0dd431b68081c"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:sinusitis",
+          "id": "f4",
+          "kind": "clinician_ruled_out_problem",
+          "medication_intent": null,
+          "polarity": "negated",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "allergy_denial_flipped",
+        "denied_condition_present"
+      ],
+      "fictional": true,
+      "id": "hc-19",
+      "intake_path": "hc-19/intake.json",
+      "intake_sha256": "8c3ac297378698e41eabb6dcd1c202704498068344e8c22b41e2c373d78482a7",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-19/transcript.json",
+      "transcript_sha256": "6bd6be7465c8ccfff16abebd48e0959ce3b1593a9cebcdc5acd7de422d700708"
+    },
+    {
+      "annotation": {
+        "adjudicator_id": "harness-author",
+        "agreement_by_kind": null,
+        "annotator_ids": [
+          "harness-author"
+        ],
+        "guidelines_version": "harness-v1",
+        "independent": false,
+        "status": "harness-authored"
+      },
+      "assertions": [
+        {
+          "acceptable_texts": [
+            "naproxen"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "naproxen",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": "250 mg",
+          "evidence": [
+            {
+              "char_end": 60,
+              "char_start": 0,
+              "segment_id": "s2",
+              "sha256": "d505b5ab8d1af9956c173dcc5d17f6224751c68347b751923169c51c69cb65fc"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": "every evening",
+          "gold_concept_id": "auris:naproxen",
+          "id": "f1",
+          "kind": "reported_medication",
+          "medication_intent": "continuing",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": "by mouth",
+          "source_speaker_role": "patient",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "acetaminophen"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "acetaminophen",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "explicit"
+          },
+          "dose_text": "650 mg",
+          "evidence": [
+            {
+              "char_end": 81,
+              "char_start": 0,
+              "segment_id": "s4",
+              "sha256": "36eb9161831354c9637f284c7106851785261a6f03a55f22d2754cbf4ea0b334"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": "every twelve hours",
+          "gold_concept_id": "auris:acetaminophen",
+          "id": "f2",
+          "kind": "explicit_new_order",
+          "medication_intent": "new_order",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": "by mouth",
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        },
+        {
+          "acceptable_texts": [
+            "aspirin"
+          ],
+          "allergen_text": null,
+          "canonical_value": null,
+          "codes": [],
+          "concept_text": "aspirin",
+          "critical": {
+            "allergy_denial": "none",
+            "condition_assertion": "none",
+            "order_authorization": "not_ordered"
+          },
+          "dose_text": null,
+          "evidence": [
+            {
+              "char_end": 67,
+              "char_start": 0,
+              "segment_id": "s5",
+              "sha256": "a986c9670e6c2cbd55a2cfcdfcf7294c26fab6d5e20e25677da127367e2470ed"
+            }
+          ],
+          "experiencer": "patient",
+          "frequency_text": null,
+          "gold_concept_id": "auris:aspirin",
+          "id": "f3",
+          "kind": "reported_medication",
+          "medication_intent": "discussed",
+          "polarity": "affirmed",
+          "reaction_manifestation_text": null,
+          "route_text": null,
+          "source_speaker_role": "clinician",
+          "stated_resolution_text": null,
+          "stated_time_text": null,
+          "temporality": "current",
+          "ucum_unit": null,
+          "unit_text": null,
+          "value_text": null
+        }
+      ],
+      "critical_error_targets": [
+        "wrong_drug_or_dose",
+        "order_never_given"
+      ],
+      "fictional": true,
+      "id": "hc-20",
+      "intake_path": "hc-20/intake.json",
+      "intake_sha256": "17272e89ba524d9d1df22988b15aafa774b22cdf36628da103dba5d1d3f4b889",
+      "license": "Apache-2.0",
+      "out_of_scope": [],
+      "source": "Auris fictional harness-check",
+      "split": "harness-check",
+      "transcript_path": "hc-20/transcript.json",
+      "transcript_sha256": "2da011367fe6e0e0c7a22f370912787d806d599583e0eb187e89780446f5835c"
+    }
+  ],
+  "id": "auris-harness-check-v1",
+  "schema_version": "1",
+  "split": "harness-check",
+  "split_id": "harness-check-v1"
+}

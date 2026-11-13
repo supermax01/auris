@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 7.0,
+      "text": "We are beginning fictional practice encounter 14, labeled latex reaction.",
+      "words": null
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 8.0,
+      "end_seconds": 15.0,
+      "text": "My latex allergy brings on itching where gloves touch my skin.",
+      "words": null
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 16.0,
+      "end_seconds": 23.0,
+      "text": "The notes for practice encounter 14 can be checked after this conversation.",
+      "words": null
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 24.0,
+      "end_seconds": 31.0,
+      "text": "The itching is also happening on my forearms right now.",
+      "words": null
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 32.0,
+      "end_seconds": 39.0,
+      "text": "I find contact dermatitis on examination today.",
+      "words": null
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 40.0,
+      "end_seconds": 47.0,
+      "text": "That concludes the invented latex reaction encounter numbered 14.",
+      "words": null
+    }
+  ]
+}

@@ -278,7 +278,8 @@ finish line:**
 |---|---|
 | Slice 1 | Every record type and every expected refusal is covered by a test case; every check lane appears in the output; the offline test passes |
 | Slice 2 | Speaker roles ≥ 90% correct while covering ≥ 85% of turns; using real speaker detection loses ≤ 5 points of accuracy versus perfect speaker labels; every edit re-checks correctly; no unreviewed critical error |
-| Slice 3 | On a clean machine our saved predictions reproduce the published numbers exactly, and a full rerun lands within 1 point |
+| Slice 3 | All install paths (Mac, Linux, Docker, air-gapped) work on a clean machine; records load into a local FHIR test server without duplicates on rerun; the evaluation kit runs end to end on the development set |
+| Slice 4 | The locked test sets are run once; on a clean machine our saved predictions reproduce the published numbers exactly and a full rerun lands within 1 point; every stress test, failure test and clinician walkthrough in section 11 is done and published; the release gate below is met, or the result is published as a "no" |
 
 **Release (research preview) requires** (a) zero critical errors in any
 export that no human reviewed, and (b) a published pre-review
@@ -340,6 +341,8 @@ visits.
   per dataset.
 - Until a clinic partner with consent is found, all results are labelled
   "mock consultation" results.
+- The test sets are run once, in Slice 4. All tuning and fixing uses
+  development data, so the published numbers are not tuned to the test.
 
 **Annotation budget.** Working formula: 65 h + 2.4 h per test visit + 1.5 h
 per development visit. That gives ≈ 365 annotator-hours for the full design
@@ -361,16 +364,35 @@ rounds, we simplify what we annotate rather than lower the bar.
    one.
 2. **Slice 2 — real speakers and review.** Freeze the dataset splits. Add
    speaker detection, roles, overlap handling and the review page.
-3. **Slice 3 — research and deployment.** Publish the locked evaluation
-   with speed, memory and hardware figures. Add Linux, Mac and Docker
+3. **Slice 3 — deployment and evaluation kit.** Add Linux, Mac and Docker
    install paths, the air-gapped install and data-retention rules, and a
    test that the records load correctly into a local FHIR test server.
+   Finish the evaluation kit and dry-run it on the development set.
+4. **Slice 4 — test and evaluate (protected time).** Starts when Slice 3
+   is done and is never shortened to absorb build overruns. It contains:
+   - **The locked evaluation**, run once on the untouched test sets, with
+     speed, memory and hardware figures published.
+   - **Stress tests:** noisy rooms, long visits, a companion or interpreter
+     in the room, accents, sound-alike drug names, and a hand-written set
+     of tricky negation and attribution cases ("no penicillin allergy",
+     "my mother has diabetes").
+   - **Failure tests:** missing intake details, corrupted or silent audio,
+     validator and model crashes, and reruns that must not duplicate
+     records.
+   - **Clinician walkthrough:** clinicians use the review page on realistic
+     visits; we measure correction time and record where it misleads.
+   - **Error analysis with a fix-and-retest loop on development data
+     only**, so the test sets stay untouched; every fix reruns the full
+     regression suite.
+   - **Independent reproduction:** someone outside the build reruns the
+     published evaluation on a clean machine.
 
 ## 12. Time, cost and people
 
-**Timeline (rough estimate, not yet validated).** About 4–6 weeks per
-slice for one full-time engineer, so roughly 3–4½ months to the research
-preview. Annotation runs in parallel with Slices 1 and 2. Each slice ends
+**Timeline (rough estimate, not yet validated).** About 4–6 weeks for
+each build slice (1–3) for one full-time engineer, plus a protected 6–8
+weeks for Slice 4 (test and evaluate), so roughly 4½–6 months to the
+research preview. Annotation runs in parallel with Slices 1 and 2. Each slice ends
 at its finish line in section 9, not on a date; the estimate is replaced
 with a measured one after Slice 1.
 
@@ -413,6 +435,11 @@ facts, or better audio capture.
    actors with signed voice releases and an explicit licence, and its cost.
 6. Name the **people** (annotators, adjudicator, FHIR reviewer) and the
    hourly rate.
+7. Confirm the **Slice 4 time box** (6–8 weeks proposed) for testing and
+   evaluation.
+
+**Decided at "go" (2026-11-12):** item 1, Apache-2.0; item 4, US code
+defaults (ICD-10-CM, RxNorm, LOINC).
 
 ---
 
@@ -424,7 +451,9 @@ Intake context must supply these, never extracted or invented: Patient
 (identifier system+value, name, gender), Practitioner (identifier
 system+value, name.family), Encounter (status, class, type, subject,
 `period.start`). These are the US Core 6.1.0 minimums. A run without them
-refuses to export. The demo ships a fictional `intake.json`.
+refuses to export. The demo ships a fictional `intake.json`. Auris never
+modifies the intake anchors; for example, it does not add
+`Encounter.diagnosis` references to extracted Conditions in v1.
 
 ## A2. Profiles, fixed elements and validation lanes
 
@@ -447,6 +476,10 @@ refuses to export. The demo ships a fictional `intake.json`.
   only tier 1 can report terminology PASS.
 - **Mapper flags are not lanes.** Flags such as `uncoded_text_only` are
   review reasons.
+- **Concept normalisation (Step 9).** `concept_text_not_in_quote` requires
+  clinician review; it is not an evidence-lane FAIL. Unsupported vital/dose
+  numbers and unsupported allergen text remain hard FAILs. Quote alignment,
+  qualifier checks and the shown-window citation boundary remain mandatory.
 - **Repair.** Validator feedback may trigger one evidence-grounded
   structural repair, never invented facts.
 
@@ -454,7 +487,7 @@ refuses to export. The demo ships a fictional `intake.json`.
 
 | Assertion | Polarity | Resource / profile | Fixed semantics & mapper rules | Export rule |
 |---|---|---|---|---|
-| Vital sign (value+unit) | Affirmed | Observation, specific US Core vital profile | `status=preliminary`; category VSCat `vital-signs`; fixed LOINC + UCUM per profile (e.g. HR 8867-4 `/min`). BP = 85354-9 with systolic 8480-6 / diastolic 8462-4 components in `mm[Hg]`, root `value[x]` omitted. An in-visit measurement with no spoken time inherits `Encounter.period.start` with a provenance note; reported or historical readings need a spoken date at day precision (vs-1) | Export if lanes pass. Missing BP component, a unit-mismatched value, a missing spoken unit where the claimed profile does not fix exactly one unit (blood pressure and heart rate fix one, so the mapper supplies it), or a historical reading without a date → review. Never silently converted or padded with dataAbsentReason |
+| Vital sign (value+unit) | Affirmed | Observation, specific US Core vital profile | `status=preliminary`; category VSCat `vital-signs`; fixed LOINC + UCUM per profile (e.g. HR 8867-4 `/min`). BP = 85354-9 with systolic 8480-6 / diastolic 8462-4 components in `mm[Hg]`, root `value[x]` omitted. Body temperature, weight and height accept only their profile's required UCUM unit set. Pulse oximetry carries the SpO2 value only; a spoken oxygen flow rate or concentration goes to the ledger in v1. An in-visit measurement with no spoken time inherits `Encounter.period.start` with a provenance note; reported or historical readings need a spoken date at day precision (vs-1) | Export if lanes pass. Missing BP component, a unit-mismatched value, a missing spoken unit where the claimed profile does not fix exactly one unit (blood pressure and heart rate fix one, so the mapper supplies it), or a historical reading without a date → review. Never silently converted or padded with dataAbsentReason |
 | Symptom | Affirmed/negated | No resource in v1 | Ledger entry with polarity; rendered under S as transcript-supported text | Review-visible; not claimed as FHIR |
 | Clinician-assessed problem | Affirmed | Condition (us-core-condition-encounter-diagnosis) | `category=encounter-diagnosis`; `verificationStatus=provisional`; `clinicalStatus` from explicit temporality (current → `active`, explicitly resolved → `resolved`); onset/abatement only from explicit evidence | Only if a clinician stated or confirmed it; historical or unclear status → review |
 | Clinician-ruled-out problem | Negated | Condition (encounter-diagnosis) | `verificationStatus=refuted`, `clinicalStatus` omitted | Review queue by default; export only after clinician confirmation |
@@ -491,10 +524,31 @@ refuses to export. The demo ships a fictional `intake.json`.
   Backend contract tests prove AST-level schema conformance and identical
   rejection of invalid structures on llama.cpp and vLLM+XGrammar; token
   streams need not be bit-identical.
-- **Evidence.** Spans are segment id + quote, aligned by case- and
-  punctuation-normalised token spans to exact character/audio offsets.
-  Unaligned quotes fail the evidence lane; aligned quotes are labelled
-  "transcript-supported", never "verified".
+  *Card check (Step 10):* all four pinned cards recommend sampling, not
+  greedy, for non-thinking use. A pre-registered comparison on three
+  development visits (`full-v0-card`, settings copied from the cards) did
+  not remove Qwen3-8B's repetition loops and added evidence-lane failures
+  for both Bonsai models, so temperature 0 stays the baseline until
+  development gold says otherwise. Every call streams; a call that repeats
+  one assertion a 4th time is stopped and its window split like a
+  truncation (loop-guard-v1). Greedy output is reproducible only within one
+  server configuration (build, hardware, single slot).
+- **Malformed items (Step 10).** In an otherwise valid response, an item
+  that fails the schema is quarantined, never a fact: a visit-level
+  material, failing review item that blocks final export until dismissed.
+  Broken JSON, wrong top-level shape, truncation and loops still fail the
+  whole response.
+- **Evidence.** Spans are segment id + quote. Case- and punctuation-
+  normalised exact token alignment is tried first. Only if it fails, a
+  versioned closed list of fillers (um, uh, er, …) is removed and
+  immediate 1–3-token repeats are collapsed on both sides, then the quote
+  must still occur exactly (Step 11). Assent, denial, negation, content
+  words and numbers always count. The stored span is the original
+  transcript text with exact character/audio offsets; negation-context
+  checks run on it, and reviewers see when fillers were ignored. Segments
+  with no words (e.g. inaudible markers) are not shown to the model and
+  cannot be cited. Unaligned quotes fail the evidence lane; aligned quotes
+  are labelled "transcript-supported", never "verified".
 - **Chunking.** Whole encounters go in one pass when they fit with
   headroom. Otherwise use ~4,096-token segment-boundary windows with
   2-segment overlap, merged on (class, normalised concept, polarity,

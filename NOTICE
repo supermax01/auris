@@ -1,0 +1,64 @@
+Auris, Copyright 2026 the Auris contributors
+
+This product includes software developed by the Auris contributors.
+
+---
+
+LOINC
+
+This material contains content from LOINC (http://loinc.org). LOINC is copyright © Regenstrief Institute, Inc. and the Logical Observation Identifiers Names and Codes (LOINC) Committee and is available at no cost under the license at http://loinc.org/license. LOINC® is a registered United States trademark of Regenstrief Institute, Inc.
+
+---
+
+UCUM
+
+Auris uses individual UCUM codes from the Unified Code for Units of Measure, copyright © Regenstrief Institute, Inc. and The UCUM Organization, under the UCUM Copyright Notice and License, including its disclaimer of warranties: https://ucum.org/license
+
+---
+
+RxNorm
+
+RxNorm Current Prescribable Content is downloaded at setup from the U.S. National Library of Medicine (no licence required) and is not redistributed with Auris. This product uses publicly available data from the U.S. National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.
+
+---
+
+ICD-10-CM
+
+ICD-10-CM code files are downloaded at setup from the U.S. Centers for Medicare & Medicaid Services (public domain) and are not redistributed with Auris.
+
+---
+
+PriMock57 (public mock consultations)
+
+PriMock57, Babylon Health and the PriMock57 contributors.
+Source: https://github.com/babylonhealth/primock57
+Pinned revision: cd2ac707ad03cb4d2531f4ec6b90c659bf4357c5
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+The full dataset is kept in a local, gitignored cache and is not redistributed
+with Auris. A small attributed TextGrid extract is included in
+tests/fixtures/datasets/primock-extract.TextGrid. Its interval count was reduced
+and line endings normalized; transcript words and interval bounds are unchanged.
+The adapter merges speaker tiers and removes markup only from extraction text;
+raw transcription is retained separately. These changes do not imply endorsement.
+
+---
+
+ACI-Bench (public mock consultations)
+
+Wen-wai Yim, Yujuan Fu, Asma Ben Abacha, Neal Snider, Thomas Lin and Meliha
+Yetisgen. "ACI-BENCH: a Novel Ambient Clinical Intelligence Dataset for
+Benchmarking Automatic Visit Note Generation." Scientific Data (2023).
+https://doi.org/10.1038/s41597-023-02487-3
+Source: https://github.com/wyim/aci-bench
+Pinned revision: b909b2bb9cf1d19de08df15cddde7bd0179665e4
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+The full dataset is kept in a local, gitignored cache and is not redistributed
+with Auris. One attributed transcript turn is included in
+tests/fixtures/datasets/aci-extract.txt, with a trailing newline. The adapter
+selects canonical source variants, parses speaker tags and retains turn order;
+it adds no audio times and does not adjudicate roles. These changes do not imply
+endorsement. Detailed extract attribution is in tests/fixtures/datasets/README.md.

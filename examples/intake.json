@@ -1,0 +1,56 @@
+{
+  "fictional": true,
+  "patient": {
+    "id": "example-patient-1",
+    "identifier": [
+      {
+        "system": "https://example.org/fhir/medical-record-number",
+        "value": "FICTIONAL-EXAMPLE-PAT-001"
+      }
+    ],
+    "name": [
+      {
+        "family": "Examplepatient",
+        "given": ["Fictional"]
+      }
+    ],
+    "gender": "female"
+  },
+  "practitioner": {
+    "id": "example-practitioner-1",
+    "identifier": [
+      {
+        "system": "https://example.org/fhir/practitioner-id",
+        "value": "FICTIONAL-EXAMPLE-CLIN-001"
+      }
+    ],
+    "name": [
+      {
+        "family": "Exampleclinician",
+        "given": ["Fictional"]
+      }
+    ]
+  },
+  "encounter": {
+    "id": "example-encounter-1",
+    "status": "finished",
+    "class": {
+      "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+      "code": "AMB",
+      "display": "ambulatory"
+    },
+    "type": [
+      {
+        "text": "Office visit (fictional example)"
+      }
+    ],
+    "subject": {
+      "reference": "Patient/example-patient-1",
+      "display": "Fictional Examplepatient (fictional example)"
+    },
+    "period": {
+      "start": "2026-11-02T09:00:00-05:00",
+      "end": "2026-11-02T09:20:00-05:00"
+    }
+  }
+}

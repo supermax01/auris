@@ -1,0 +1,247 @@
+# Element sources for the Auris FHIR contract (hand-maintained).
+#
+# For every required (min >= 1) or fixed/pattern element in
+# src/auris/contract/checklist.json, where its value comes from:
+#   extracted     - stated in the visit; pulled by the extractor and
+#                   coded by the terminology mapper where A3 says so
+#   intake        - supplied by the A1 intake contract, never extracted
+#   fixed         - fixed/pattern value from the profile, or the
+#                   mapper's code table for that profile
+#   mapper-policy - an Auris policy value from the A3 matrix
+#                   (e.g. status=preliminary, intent=proposal)
+#   not-emitted   - never written in v1 (note says why)
+#   unresolved    - PLAN does not decide; must also appear in
+#                   [open_questions] with a reason
+#
+# A few additional Must Support elements whose source A3 fixes are also
+# included (e.g. MedicationRequest.requester); the coverage test
+# enforces only the required/fixed entries.
+# Sources are taken from PLAN A1/A3 and docs/fhir-reference.md only.
+
+[profiles.us-core-vital-signs.elements]
+# Base profile: Auris claims a specific vital-signs profile per reading.
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "mapper code table: the LOINC of the specific vital-signs profile claimed (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.component.code" = { source = "not-emitted", note = "no components under the base profile itself; components appear only via the specific blood-pressure and pulse-oximetry profiles" }
+
+[profiles.us-core-blood-pressure.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "pattern LOINC fixed by this profile (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.component" = { source = "extracted", note = "systolic and diastolic components built from the spoken reading (A3)" }
+"Observation.component.code" = { source = "fixed", note = "constrained by the component slice patterns when a component is emitted" }
+"Observation.component:systolic" = { source = "extracted", note = "spoken component value (A3)" }
+"Observation.component:systolic.code" = { source = "fixed", note = "pattern LOINC 8480-6 fixed by profile" }
+"Observation.component:systolic.value[x].value" = { source = "extracted", note = "spoken value" }
+"Observation.component:systolic.value[x].unit" = { source = "fixed", note = "mapper writes the unit for the fixed mm[Hg] code" }
+"Observation.component:systolic.value[x].system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.component:systolic.value[x].code" = { source = "fixed", note = "fixed mm[Hg] by profile; a unit-mismatched spoken value goes to review (A3)" }
+"Observation.component:diastolic" = { source = "extracted", note = "spoken component value (A3)" }
+"Observation.component:diastolic.code" = { source = "fixed", note = "pattern LOINC 8462-4 fixed by profile" }
+"Observation.component:diastolic.value[x].value" = { source = "extracted", note = "spoken value" }
+"Observation.component:diastolic.value[x].unit" = { source = "fixed", note = "mapper writes the unit for the fixed mm[Hg] code" }
+"Observation.component:diastolic.value[x].system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.component:diastolic.value[x].code" = { source = "fixed", note = "fixed mm[Hg] by profile; a unit-mismatched spoken value goes to review (A3)" }
+
+[profiles.us-core-heart-rate.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "pattern LOINC fixed by this profile (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
+"Observation.value[x]:valueQuantity.unit" = { source = "fixed", note = "mapper writes the unit for the profile-fixed UCUM code" }
+"Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.value[x]:valueQuantity.code" = { source = "fixed", note = "profile fixes exactly one UCUM unit, so the mapper supplies it (A3)" }
+"Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
+
+[profiles.us-core-respiratory-rate.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "pattern LOINC fixed by this profile (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
+"Observation.value[x]:valueQuantity.unit" = { source = "fixed", note = "mapper writes the unit for the profile-fixed UCUM code" }
+"Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.value[x]:valueQuantity.code" = { source = "fixed", note = "profile fixes exactly one UCUM unit, so the mapper supplies it (A3)" }
+"Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
+
+[profiles.us-core-body-temperature.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "pattern LOINC fixed by this profile (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
+"Observation.value[x]:valueQuantity.unit" = { source = "extracted", note = "written from the spoken unit" }
+"Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM within the profile's required unit set (ucum-bodytemp); only that set is accepted, so a unit outside it or a missing spoken unit goes to review, never converted silently (A3)" }
+"Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
+
+[profiles.us-core-body-weight.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "pattern LOINC fixed by this profile (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
+"Observation.value[x]:valueQuantity.unit" = { source = "extracted", note = "written from the spoken unit" }
+"Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM within the profile's required unit set (ucum-bodyweight); only that set is accepted, so a unit outside it or a missing spoken unit goes to review, never converted silently (A3)" }
+"Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
+
+[profiles.us-core-body-height.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "pattern LOINC fixed by this profile (A3)" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
+"Observation.value[x]:valueQuantity.unit" = { source = "extracted", note = "written from the spoken unit" }
+"Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.value[x]:valueQuantity.code" = { source = "extracted", note = "spoken unit mapped to UCUM within the profile's required unit set (ucum-bodylength); only that set is accepted, so a unit outside it or a missing spoken unit goes to review, never converted silently (A3)" }
+"Observation.component.code" = { source = "not-emitted", note = "components are never emitted for this profile in v1; required only inside a component, which stays absent" }
+
+[profiles.us-core-pulse-oximetry.elements]
+"Observation.status" = { source = "mapper-policy", note = "preliminary (A3); profiles do not narrow ObservationStatus" }
+"Observation.category" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat" = { source = "fixed", note = "mapper injects the VSCat slice (A2/A3)" }
+"Observation.category:VSCat.coding" = { source = "fixed", note = "single coding written by the mapper" }
+"Observation.category:VSCat.coding.system" = { source = "fixed", note = "fixed by profile" }
+"Observation.category:VSCat.coding.code" = { source = "fixed", note = "fixed vital-signs by profile" }
+"Observation.code" = { source = "fixed", note = "both pattern codings below are written by the mapper" }
+"Observation.code.coding" = { source = "fixed", note = "two codings required by the profile slices" }
+"Observation.code.coding:PulseOx" = { source = "fixed", note = "pattern LOINC 59408-5 fixed by profile" }
+"Observation.code.coding:O2Sat" = { source = "fixed", note = "pattern LOINC 2708-6 fixed by profile" }
+"Observation.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Observation.effective[x]" = { source = "mapper-policy", note = "in-visit measurement inherits Encounter.period.start; a reported or historical reading uses the spoken date at day precision (A3, vs-1)" }
+"Observation.value[x]:valueQuantity.value" = { source = "extracted", note = "spoken value" }
+"Observation.value[x]:valueQuantity.unit" = { source = "fixed", note = "mapper writes the unit for the profile-fixed UCUM code" }
+"Observation.value[x]:valueQuantity.system" = { source = "fixed", note = "fixed UCUM system by profile" }
+"Observation.value[x]:valueQuantity.code" = { source = "fixed", note = "profile fixes exactly one UCUM unit, so the mapper supplies it (A3)" }
+"Observation.component.code" = { source = "not-emitted", note = "no components are emitted in v1: pulse oximetry carries the SpO2 value only (A3); required only inside a component, which stays absent" }
+"Observation.component:FlowRate.code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].value" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].unit" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].system" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:FlowRate.value[x].code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen flow rate goes to the ledger (A3)" }
+"Observation.component:Concentration.code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].value" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].unit" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].system" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+"Observation.component:Concentration.value[x].code" = { source = "not-emitted", note = "component never emitted in v1; a spoken oxygen concentration goes to the ledger (A3)" }
+
+[profiles.us-core-condition-encounter-diagnosis.elements]
+"Condition.clinicalStatus" = { source = "mapper-policy", note = "from explicit temporality only (current -> active, explicitly resolved -> resolved); omitted on refuted encounter diagnoses (A3)" }
+"Condition.verificationStatus" = { source = "mapper-policy", note = "provisional for a clinician-assessed problem; refuted for a ruled-out one (A3)" }
+"Condition.category" = { source = "fixed", note = "mapper injects the us-core category slice (A3)" }
+"Condition.category:us-core" = { source = "fixed", note = "pattern encounter-diagnosis fixed by profile (A3)" }
+"Condition.code" = { source = "extracted", note = "extracted concept, coded by the terminology mapper (ICD-10-CM primary for encounter diagnoses) or text-only with a coding-review flag (A3)" }
+"Condition.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Condition.encounter" = { source = "intake", note = "always references the intake Encounter (fhir-reference consequences)" }
+"Condition.onset[x]" = { source = "extracted", note = "only from explicit evidence, never inferred (A3)" }
+"Condition.abatement[x]" = { source = "extracted", note = "only from explicit evidence, never inferred (A3)" }
+
+[profiles.us-core-condition-problems-health-concerns.elements]
+"Condition.clinicalStatus" = { source = "mapper-policy", note = "from explicit temporality only (A3); SHOULD be present for problem-list-item (con-3 guideline)" }
+"Condition.verificationStatus" = { source = "mapper-policy", note = "unconfirmed for patient-reported conditions (A3)" }
+"Condition.category" = { source = "fixed", note = "mapper injects the us-core category slice (A3)" }
+"Condition.category:us-core" = { source = "fixed", note = "problem-list-item (A3); the required binding also allows health-concern, which v1 never emits" }
+"Condition.code" = { source = "extracted", note = "extracted concept, coded by the terminology mapper or text-only with a coding-review flag (A3)" }
+"Condition.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"Condition.onset[x]" = { source = "extracted", note = "only from explicit evidence, never inferred (A3)" }
+"Condition.abatement[x]" = { source = "extracted", note = "only from explicit evidence, never inferred (A3)" }
+
+[profiles.us-core-medicationrequest.elements]
+"MedicationRequest.status" = { source = "mapper-policy", note = "draft; never activated (A3)" }
+"MedicationRequest.intent" = { source = "mapper-policy", note = "proposal (A3)" }
+"MedicationRequest.reported[x]" = { source = "mapper-policy", note = "reportedBoolean=false for in-visit orders (A3)" }
+"MedicationRequest.medication[x]" = { source = "extracted", note = "spoken medication, coded RxNorm by the terminology mapper or text-only (A3)" }
+"MedicationRequest.subject" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"MedicationRequest.encounter" = { source = "intake", note = "reference to the intake Encounter (A3)" }
+"MedicationRequest.authoredOn" = { source = "mapper-policy", note = "inherits Encounter.period.start with a provenance note (A3)" }
+"MedicationRequest.requester" = { source = "intake", note = "the identified initiating clinician, confirmed against the intake Practitioner (Auris policy in A3; the profile does not require it for proposal)" }
+"MedicationRequest.dosageInstruction.text" = { source = "extracted", note = "dose verbatim from the transcript, or absent (A3)" }
+"MedicationRequest.substitution.allowed[x]" = { source = "not-emitted", note = "the substitution backbone is never populated in v1 (absent from the A3 mapper semantics); required only inside that backbone" }
+
+[profiles.us-core-allergyintolerance.elements]
+"AllergyIntolerance.clinicalStatus" = { source = "mapper-policy", note = "active for an affirmed allergy (ait-1; A3)" }
+"AllergyIntolerance.verificationStatus" = { source = "mapper-policy", note = "unconfirmed for a stated allergy (A3)" }
+"AllergyIntolerance.type" = { source = "extracted", note = "omitted unless stated (A3)" }
+"AllergyIntolerance.code" = { source = "extracted", note = "stated allergen; drug allergens coded RxNorm, drug families and others text-only with uncoded_text_only, never a single ingredient (A3)" }
+"AllergyIntolerance.patient" = { source = "intake", note = "reference to the intake Patient (A1/A2)" }
+"AllergyIntolerance.reaction.manifestation" = { source = "extracted", note = "reaction is emitted only with a stated manifestation (A3)" }
+
+[profiles.us-core-patient.elements]
+"Patient.identifier" = { source = "intake", note = "A1 minimum: identifier system+value" }
+"Patient.identifier.system" = { source = "intake", note = "A1 minimum" }
+"Patient.identifier.value" = { source = "intake", note = "A1 minimum" }
+"Patient.name" = { source = "intake", note = "A1 minimum (family and/or given, us-core-6)" }
+"Patient.telecom.system" = { source = "intake", note = "only inside an optional parent the intake resource may carry; not part of the A1 minimum and never extracted" }
+"Patient.telecom.value" = { source = "intake", note = "only inside an optional parent the intake resource may carry; not part of the A1 minimum and never extracted" }
+"Patient.gender" = { source = "intake", note = "A1 minimum" }
+"Patient.communication.language" = { source = "intake", note = "only inside an optional parent the intake resource may carry; not part of the A1 minimum and never extracted" }
+"Patient.link.other" = { source = "intake", note = "only inside an optional parent the intake resource may carry; not part of the A1 minimum and never extracted" }
+"Patient.link.type" = { source = "intake", note = "only inside an optional parent the intake resource may carry; not part of the A1 minimum and never extracted" }
+
+[profiles.us-core-practitioner.elements]
+"Practitioner.identifier" = { source = "intake", note = "A1 minimum: identifier system+value" }
+"Practitioner.identifier.system" = { source = "intake", note = "A1 minimum" }
+"Practitioner.identifier.value" = { source = "intake", note = "A1 minimum" }
+"Practitioner.identifier:NPI" = { source = "intake", note = "optional NPI slice, only if the intake Practitioner uses it; its system is pattern-fixed by the profile" }
+"Practitioner.name" = { source = "intake", note = "A1 minimum" }
+"Practitioner.name.family" = { source = "intake", note = "A1 minimum: name.family" }
+"Practitioner.qualification.code" = { source = "intake", note = "only inside an optional qualification the intake resource may carry; never extracted" }
+
+[profiles.us-core-encounter.elements]
+"Encounter.identifier.system" = { source = "intake", note = "only inside an optional identifier the intake Encounter may carry; not part of the A1 minimum" }
+"Encounter.identifier.value" = { source = "intake", note = "only inside an optional identifier the intake Encounter may carry; not part of the A1 minimum" }
+"Encounter.status" = { source = "intake", note = "A1 minimum" }
+"Encounter.statusHistory.status" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
+"Encounter.statusHistory.period" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
+"Encounter.class" = { source = "intake", note = "A1 minimum" }
+"Encounter.classHistory.class" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
+"Encounter.classHistory.period" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
+"Encounter.type" = { source = "intake", note = "A1 minimum" }
+"Encounter.subject" = { source = "intake", note = "A1 minimum: the intake Patient" }
+"Encounter.diagnosis.condition" = { source = "not-emitted", note = "never written in v1: Auris never modifies the intake anchors and does not add Encounter.diagnosis references to extracted Conditions (A1); required only inside a diagnosis entry Auris never adds" }
+"Encounter.location.location" = { source = "intake", note = "only inside an optional parent the intake Encounter may carry; Auris never writes Encounter history or location" }
+
+# No open questions at present. An element whose source PLAN does not
+# decide gets source = "unresolved" above plus a [[open_questions]]
+# entry here (profile, element, reason); the coverage test enforces
+# the pairing.

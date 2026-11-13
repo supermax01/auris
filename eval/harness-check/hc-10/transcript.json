@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 7.0,
+      "text": "We are beginning fictional practice encounter 10, labeled ruled out.",
+      "words": null
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 8.0,
+      "end_seconds": 15.0,
+      "text": "After this assessment, diabetes has been ruled out for this visit.",
+      "words": null
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 16.0,
+      "end_seconds": 23.0,
+      "text": "The notes for practice encounter 10 can be checked after this conversation.",
+      "words": null
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 24.0,
+      "end_seconds": 31.0,
+      "text": "I have hypertension that is still being followed.",
+      "words": null
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 32.0,
+      "end_seconds": 39.0,
+      "text": "There is no chest pain during my walks.",
+      "words": null
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 40.0,
+      "end_seconds": 47.0,
+      "text": "That concludes the invented ruled out encounter numbered 10.",
+      "words": null
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+[tools]
+python = "3.12.16"
+uv = "0.13.7"
+java = "temurin-21"

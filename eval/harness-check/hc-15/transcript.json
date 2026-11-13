@@ -1,0 +1,59 @@
+{
+  "schema_version": "1",
+  "segments": [
+    {
+      "id": "s1",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 0.0,
+      "end_seconds": 7.0,
+      "text": "We are beginning fictional practice encounter 15, labeled resolved allergy.",
+      "words": null
+    },
+    {
+      "id": "s2",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 8.0,
+      "end_seconds": 15.0,
+      "text": "My old egg allergy was explicitly described as outgrown last year.",
+      "words": null
+    },
+    {
+      "id": "s3",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 16.0,
+      "end_seconds": 23.0,
+      "text": "The notes for practice encounter 15 can be checked after this conversation.",
+      "words": null
+    },
+    {
+      "id": "s4",
+      "speaker_cluster_id": "patient",
+      "role": "patient",
+      "start_seconds": 24.0,
+      "end_seconds": 31.0,
+      "text": "I used to take loratadine but stopped it last winter.",
+      "words": null
+    },
+    {
+      "id": "s5",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 32.0,
+      "end_seconds": 39.0,
+      "text": "Your height measurement here is 169 centimeters.",
+      "words": null
+    },
+    {
+      "id": "s6",
+      "speaker_cluster_id": "clinician",
+      "role": "clinician",
+      "start_seconds": 40.0,
+      "end_seconds": 47.0,
+      "text": "That concludes the invented resolved allergy encounter numbered 15.",
+      "words": null
+    }
+  ]
+}

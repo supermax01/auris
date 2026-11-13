@@ -1,0 +1,199 @@
+{
+  "encounters": [
+    {
+      "human_transcription": true,
+      "id": "day1_consultation02",
+      "length_stratum": "medium",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "af635e12da46d7921d99ee465b3d548b6b7e0a65cec4b199e091f08b362ee70f",
+      "transcript_sha256": "9d4db2dcc16a848a952a48272d2550b6233b9269cc171ce751d2037e7dc23ecb",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1762
+    },
+    {
+      "human_transcription": true,
+      "id": "day1_consultation06",
+      "length_stratum": "long",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "c693228583144dee11265e961744ff5ac1ad5702a773179c8fcbc8317f6f257a",
+      "transcript_sha256": "50016e628c2ffb2d214fc07ea2dfe3d55314f2a6867fa2b8ea3835195138f02e",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1955
+    },
+    {
+      "human_transcription": true,
+      "id": "day1_consultation09",
+      "length_stratum": "medium",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "e07f0af9169a0ead889dd538109b37b95c93eda00e06745c458f710c81ebd8b6",
+      "transcript_sha256": "0b14cc166e2492c271b4b4de66ed25906448e7f9b0ce9a94d309f0dd272c87a2",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1654
+    },
+    {
+      "human_transcription": true,
+      "id": "day1_consultation12",
+      "length_stratum": "short",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "afc38ec618a6e18cc69c204735f28c8f410c83457046770c050484960aa40907",
+      "transcript_sha256": "83c9892bd84915d554aa90ed2f5cfba9425c4deb4035bbab768d00dbc5b08b9b",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1227
+    },
+    {
+      "human_transcription": true,
+      "id": "day1_consultation14",
+      "length_stratum": "long",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "25df5d18fda3c19e573914ca23b8e05860e4a7557a95fc4e16781fcdde615dc8",
+      "transcript_sha256": "d2c83c7b9a58a6e11381164352d801a24cad858e092c745af9fa71e31d102c88",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 2012
+    },
+    {
+      "human_transcription": true,
+      "id": "day2_consultation01",
+      "length_stratum": "short",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "18776baec14f9b8a218fbd393ffee009afd5da63bacfb2fd59bc382fae3387e1",
+      "transcript_sha256": "e4ce8b0e57f3316d681d41a91d89f8d819a5bbbb631fd6685f015e3a82d4462e",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1221
+    },
+    {
+      "human_transcription": true,
+      "id": "day2_consultation04",
+      "length_stratum": "long",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "8fda242022cb28ae6ae15f7643f9f204d30d8afdf563bb1d7908ebfb75d81aec",
+      "transcript_sha256": "c526964b0de402a960fd1b16220906f54e8ce7d78c3f566b2a7a139a9c89d532",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1908
+    },
+    {
+      "human_transcription": true,
+      "id": "day2_consultation07",
+      "length_stratum": "medium",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "bf2c116d95cf2fa08dc16a37405b3000dac4eb4718911f045c6fcf227f77bed4",
+      "transcript_sha256": "e99f10d47e50d1842b7fe2eea7d2c9a8a11d31613d1dbd5826efb42371a73952",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1400
+    },
+    {
+      "human_transcription": true,
+      "id": "day2_consultation08",
+      "length_stratum": "long",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "c870694a978b9dd6cef12dcee0196fe4171617f0e8e08542feda3fdeb56d898b",
+      "transcript_sha256": "4970319f3a76ff64bea25ce22a5ef38b33e1d4c92dd560520f70210e9fb97d49",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1885
+    },
+    {
+      "human_transcription": true,
+      "id": "day3_consultation08",
+      "length_stratum": "short",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "31172e63c288a0902652d14d3ab7e8fc4e121b67376c69cbce023e8c8a17001a",
+      "transcript_sha256": "cebebd1b660d0ebf3ec434da31af2c0705a83bc5da8c19cece79da574d914738",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 953
+    },
+    {
+      "human_transcription": true,
+      "id": "day4_consultation01",
+      "length_stratum": "medium",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "804b9a547cc25f47e15e9b50a21ddcd6ccf8a13cbffc1310dccb99fa5c1fb2de",
+      "transcript_sha256": "b910423b0270e638484f15bdb5d564cd1be3626ec0327f1b68dfb905f332a216",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1311
+    },
+    {
+      "human_transcription": true,
+      "id": "day4_consultation04",
+      "length_stratum": "short",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "f150b6029b0b6e94564ec794f847ea0e0ebbcc4d03c630dda9c8366b9d52f600",
+      "transcript_sha256": "20ac34dbe4fdbdf3631918327b4a9149ca730ba37e774605e2ec79e6e958024d",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1041
+    },
+    {
+      "human_transcription": true,
+      "id": "day4_consultation06",
+      "length_stratum": "medium",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "eba173a3cc3a524682f8ded85c4b5693a5ee8cff77533ffb528a566307999670",
+      "transcript_sha256": "3afbff8af89b957fcf6f70330f9dec3c3fd967f5351e54dd681e1b6f2a2968e2",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1739
+    },
+    {
+      "human_transcription": true,
+      "id": "day4_consultation09",
+      "length_stratum": "long",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "ac9b25d0d9dc01ddd2ae2213a06b616c339d090ff48a7afd935d78f3fc926846",
+      "transcript_sha256": "150ad749e9fc58f6955a2c1c578b49a9548eaee2b1fddab7e6da3727eb8e72e5",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1799
+    },
+    {
+      "human_transcription": true,
+      "id": "day5_consultation01",
+      "length_stratum": "medium",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "5236f4033509f971551f78dfdd2094368c46611029d2b02c376d2beda6915d67",
+      "transcript_sha256": "0029f199e4b107235d402e1a477afb2359b0b464df73afde4dba0a4693771909",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1308
+    },
+    {
+      "human_transcription": true,
+      "id": "day5_consultation02",
+      "length_stratum": "short",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "5bb3715d29a516e5f0fcb0d29bf0cbbff181f59b9d486211205af3220bf961c4",
+      "transcript_sha256": "51adf24acd0789aa1fcf42ab07e45bf4276f14f6653549b9bff9ca89e2272b33",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 1119
+    },
+    {
+      "human_transcription": true,
+      "id": "day5_consultation05",
+      "length_stratum": "short",
+      "speaker_tags": "source roles; not adjudicated",
+      "text_sha256": "2621ca1af87d8b76ff0be95ce9f617aab9f18a4aebfd5ef2b66e9aa04cec4bdf",
+      "transcript_sha256": "23e43429eb6b8c0cf99dcfffc72470a2823053c55f01d050132f9b5cc1ac2a80",
+      "upstream_split": "all",
+      "variant": "human_textgrid",
+      "word_count": 957
+    }
+  ],
+  "gold_status": "none (awaiting clinician annotation)",
+  "id": "primock57",
+  "method": "word-count rank terciles; largest-remainder quotas; Python Random sample; v1",
+  "schema_version": "public-split-1",
+  "seed": 1729,
+  "source_manifest_sha256": "16a4242232f7b0a4bacaab4989aa99d16502a4d7838d0c47997b8f8d76196373",
+  "split": "dev",
+  "split_id": "primock57-dev-v1"
+}
