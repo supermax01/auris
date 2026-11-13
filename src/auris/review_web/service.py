@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from auris.extract.quarantine import QuarantinedItem
 from auris.fhir.models import MappingOutcome
+from auris.render.reasons import REASON_LABELS
 from auris.review_edits import LOCKED_FIELDS, MODELS, CorrectionChecker, unchecked
 from auris.review_state import ReviewEvent, ReviewRun
 from auris.validation.report import apply_validation
@@ -82,6 +83,15 @@ class ReviewSession:
                 {**item.review_item(), "errors": [e.model_dump() for e in item.errors]}
                 for item in self.run.quarantines
             ]
+            state["reason_labels"] = REASON_LABELS
+            state["reason_codes"] = {
+                item.id: list(
+                    dict.fromkeys(
+                        (*item.review_reasons, *item.consistency.failures, *item.evidence.failures)
+                    )
+                )
+                for item in self.run.outcomes
+            }
             state["fictional"] = self.run.inputs.note_metadata.fictional_demo
             state["busy"] = self.busy
             state["edit_schema"] = {

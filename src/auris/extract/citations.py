@@ -16,6 +16,7 @@ CitationClass = Literal[
     "malformed_or_nonexistent",
     "id_format_confusion",
 ]
+CITATION_RESOLUTION_REASON = "unique_shown_location"
 
 
 def classify_citation(
@@ -74,7 +75,7 @@ def resolve_citations(
                         "evidence_position": index,
                         "original_segment_id": item.segment_id,
                         "segment_id": candidates[0],
-                        "reason": "unique_shown_location",
+                        "reason": CITATION_RESOLUTION_REASON,
                     }
                 )
                 item = item.model_copy(update={"segment_id": candidates[0]})

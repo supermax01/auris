@@ -4,6 +4,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from auris.reason_codes import CheckReason
+
 
 class ItemError(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -28,7 +30,7 @@ class QuarantinedItem(BaseModel):
         # No raw model text leaves extraction.json for note/review summaries.
         return {
             "id": self.id,
-            "reason": "malformed_item_quarantined",
+            "reason": CheckReason.MALFORMED_ITEM_QUARANTINED,
             "is_material": True,
             "failing": True,
             "lanes": {"reduced_schema": {"state": "FAIL"}},

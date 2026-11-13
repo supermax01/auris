@@ -35,6 +35,7 @@ from auris.fhir.medications import build_order
 from auris.fhir.models import BuildResult, LaneState, MappingOutcome, ValidationLanes, ledger_entry
 from auris.fhir.vitals import BP_SPLIT_FIELDS_FLAG, build_vital, vital_profile, vital_synonyms
 from auris.intake import Intake
+from auris.reason_codes import CheckReason
 from auris.review import is_material, review_reasons
 from auris.terminology import TerminologyIndex
 from auris.terminology.text import ICD10CM, RXNORM
@@ -90,11 +91,11 @@ class Mapper:
         reasons.extend(flag for flag in built.flags if flag != BP_SPLIT_FIELDS_FLAG)
         reasons.extend(consistency.review_reasons)
         if consistency.failures:
-            reasons.append("consistency_failed")
+            reasons.append(CheckReason.CONSISTENCY_FAILED)
         if assertion.temporality in (None, Temporality.UNCLEAR):
-            reasons.append("temporality_unclear")
+            reasons.append(CheckReason.TEMPORALITY_UNCLEAR)
         if aligned.lane.value != "PASS":
-            reasons.append("evidence_failed")
+            reasons.append(CheckReason.EVIDENCE_FAILED)
         if EvidenceFailure.CITATION_OUTSIDE_WINDOW in aligned.failures:
             reasons.append(EvidenceFailure.CITATION_OUTSIDE_WINDOW.value)
         if EvidenceFailure.CITED_EMPTY_SEGMENT in aligned.failures:
@@ -105,7 +106,7 @@ class Mapper:
             if (segment := self.transcript.segment_by_id(item.segment_id)) is not None
         }
         if assertion.source_speaker_role not in cited_roles:
-            reasons.append("source_role_mismatch")
+            reasons.append(CheckReason.SOURCE_ROLE_MISMATCH)
         unique_reasons = tuple(dict.fromkeys(reasons))
         material = is_material(assertion) or consistency.force_material
         return MappingOutcome(
@@ -162,7 +163,7 @@ class Mapper:
             result = build_allergy_denial()
             if kind == "allergy_denial" and assertion.polarity != Polarity.NEGATED:
                 return result.model_copy(
-                    update={"reasons": (*result.reasons, "polarity_kind_mismatch")}
+                    update={"reasons": (*result.reasons, CheckReason.POLARITY_KIND_MISMATCH)}
                 )
             return result
         if kind == "patient_reported_condition" and assertion.polarity == Polarity.NEGATED:
@@ -177,12 +178,12 @@ class Mapper:
         }[kind]
         reasons = []
         if assertion.experiencer != Experiencer.PATIENT:
-            reasons.append("patient_experiencer_required")
+            reasons.append(CheckReason.PATIENT_EXPERIENCER_REQUIRED)
         expected_polarity = (
             Polarity.NEGATED if kind == "clinician_ruled_out_problem" else Polarity.AFFIRMED
         )
         if assertion.polarity != expected_polarity:
-            reasons.append("polarity_kind_mismatch")
+            reasons.append(CheckReason.POLARITY_KIND_MISMATCH)
         if assertion.concept_text is None:
             reasons.append("concept_text_missing")
         roles = {
@@ -195,11 +196,11 @@ class Mapper:
                 assertion.source_speaker_role != SpeakerRole.CLINICIAN
                 or SpeakerRole.CLINICIAN not in roles
             ):
-                reasons.append("clinician_not_identified")
+                reasons.append(CheckReason.CLINICIAN_NOT_IDENTIFIED)
         if kind == "explicit_new_order":
             assert isinstance(assertion, ExplicitNewOrderAssertion)
             if assertion.medication_intent != MedicationIntent.NEW_ORDER:
-                reasons.append("not_explicit_new_order")
+                reasons.append(CheckReason.NOT_EXPLICIT_NEW_ORDER)
             clinicians = {
                 segment.speaker_cluster_id
                 for segment in self.transcript.segments
@@ -210,9 +211,9 @@ class Mapper:
                 or SpeakerRole.CLINICIAN not in roles
                 or len(clinicians) != 1
             ):
-                reasons.append("prescriber_not_identified")
+                reasons.append(CheckReason.PRESCRIBER_NOT_IDENTIFIED)
             if assertion.temporality not in (Temporality.CURRENT, Temporality.FUTURE):
-                reasons.append("order_temporality_unclear")
+                reasons.append(CheckReason.ORDER_TEMPORALITY_UNCLEAR)
         if reasons:
             return BuildResult(profile=profile, reasons=tuple(reasons))
         match kind:

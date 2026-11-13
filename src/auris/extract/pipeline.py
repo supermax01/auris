@@ -66,6 +66,7 @@ from auris.extract.tokens import (
 )
 from auris.fhir import Mapper
 from auris.fhir.models import LaneState, MappingOutcome
+from auris.reason_codes import CheckReason
 from auris.transcript import Transcript
 from auris.validation.models import ValidationRun
 from auris.validation.report import validate_mappings, write_validation
@@ -641,7 +642,7 @@ def finish_pipeline(
             outcome = outcome.model_copy(
                 update={
                     "is_material": True,
-                    "review_reasons": (*outcome.review_reasons, "merge_conflict"),
+                    "review_reasons": (*outcome.review_reasons, CheckReason.MERGE_CONFLICT),
                 }
             )
         outcomes.append(outcome)

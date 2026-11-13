@@ -4,6 +4,7 @@ from auris.assertions import ExplicitNewOrderAssertion
 from auris.evidence import AssertionEvidenceResult
 from auris.fhir.common import Anchors, base, code_text
 from auris.fhir.models import BuildResult
+from auris.reason_codes import CheckReason
 from auris.terminology import RXNORM, TerminologyIndex
 from auris.transcript import Transcript
 
@@ -36,7 +37,7 @@ def _instruction(
                 start = aligned.char_start + offset
                 matches.append((positions[item.segment_id], start, start + len(piece)))
         if not matches:
-            raise ValueError("dosage_text_not_in_quote")
+            raise ValueError(CheckReason.DOSAGE_TEXT_NOT_IN_QUOTE)
         spans.append(min(matches))
     merged: list[tuple[int, int, int]] = []
     for segment, start, end in sorted(spans):
@@ -61,7 +62,7 @@ def build_order(
     try:
         instruction = _instruction(assertion, evidence, transcript)
     except ValueError:
-        return BuildResult(profile=PROFILE, reasons=("dosage_text_not_in_quote",))
+        return BuildResult(profile=PROFILE, reasons=(CheckReason.DOSAGE_TEXT_NOT_IN_QUOTE,))
     concept, reasons, flags = code_text(
         assertion.concept_text,
         RXNORM,

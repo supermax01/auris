@@ -20,6 +20,7 @@ from auris.extract.citations import classify_citation, resolve_citations
 from auris.fhir import Mapper
 from auris.fhir.contracts import load_unit_sets
 from auris.fhir.models import LaneState, MappingOutcome, resource_digest
+from auris.reason_codes import CheckReason
 from auris.terminology import TerminologyIndex
 from auris.transcript import Transcript
 
@@ -132,7 +133,7 @@ def replay_consultation(
             outcome = outcome.model_copy(
                 update={
                     "is_material": True,
-                    "review_reasons": (*outcome.review_reasons, "merge_conflict"),
+                    "review_reasons": (*outcome.review_reasons, CheckReason.MERGE_CONFLICT),
                 }
             )
         return outcome
@@ -142,7 +143,7 @@ def replay_consultation(
         before = map_one(assertion, position, invalid)
         concept = _carry_lanes(row, before, before)
         baseline = concept
-        if "concept_text_not_in_quote" in before.consistency.review_reasons:
+        if CheckReason.CONCEPT_TEXT_NOT_IN_QUOTE in before.consistency.review_reasons:
             baseline = concept.model_copy(
                 update={
                     "lanes": concept.lanes.model_copy(update={"evidence": LaneState.FAIL}),
@@ -151,7 +152,7 @@ def replay_consultation(
         if before.id != row["id"] or baseline.export_state != row["export_state"]:
             raise ValueError(f"replay baseline differs at assertion {position}")
         has_concept_failure = any(
-            issue.get("details", {}).get("text") == "concept_text_not_in_quote"
+            issue.get("details", {}).get("text") == CheckReason.CONCEPT_TEXT_NOT_IN_QUOTE
             for issue in row["lanes"]["evidence"]["issues"]
         )
         transition = f"{row['export_state']}->{concept.export_state}"
@@ -167,7 +168,7 @@ def replay_consultation(
         combined = _carry_lanes(row, before, after)
         # Isolate citation repair by restoring the old hard concept rule.
         citation = combined
-        if "concept_text_not_in_quote" in after.consistency.review_reasons:
+        if CheckReason.CONCEPT_TEXT_NOT_IN_QUOTE in after.consistency.review_reasons:
             citation = combined.model_copy(
                 update={"lanes": combined.lanes.model_copy(update={"evidence": LaneState.FAIL})}
             )
@@ -187,8 +188,10 @@ def replay_consultation(
             report["citation_state_changes"][f"{row['export_state']}->{citation.export_state}"] += 1
             report["citation_after_evidence_failures"].update(after.evidence.failures)
             report["citation_after_evidence_failures"].update(after.consistency.failures)
-            if "concept_text_not_in_quote" in after.consistency.review_reasons:
-                report["citation_after_evidence_failures"]["concept_text_not_in_quote"] += 1
+            if CheckReason.CONCEPT_TEXT_NOT_IN_QUOTE in after.consistency.review_reasons:
+                report["citation_after_evidence_failures"][
+                    CheckReason.CONCEPT_TEXT_NOT_IN_QUOTE
+                ] += 1
         report["combined_state_changes"][f"{row['export_state']}->{combined.export_state}"] += 1
     return report
 

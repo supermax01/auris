@@ -47,6 +47,32 @@ async function api(path, data) {
 }
 function error(e) {$('error').textContent = e.message; $('error').focus();}
 const titles = {reduced_schema:'Extracted form', evidence:'Evidence and consistency', base_r4:'FHIR rules', us_core_profile:'US Core profile', terminology:'Medical coding'};
+function reasonText(code) {return state.reason_labels[code] || code.replaceAll('_', ' ');}
+function validatorMessage(issue) {
+  const code = issue.details?.text || issue.diagnostics || issue.code;
+  const text = state.reason_labels[code] || (issue.details?.text || issue.diagnostics ? reasonText(code) : 'The validator reported an issue; see the support code');
+  const message = el('p', text, 'small');
+  message.title = [issue.code, code, issue.message_id].filter(Boolean).join(' · ');
+  return message;
+}
+function laneView(key, lane) {
+  const text = `${titles[key] || key}: ${lane.state}${lane.state === 'FAIL' ? ' — checks failed; approval cannot override this' : ''}${lane.reason ? ' — ' + reasonText(lane.reason) : ''}`;
+  const label = el('div', text, 'lane' + (lane.state === 'FAIL' ? ' fail' : ''));
+  if (lane.reason) label.title = lane.reason;
+  const notes = [];
+  for (const issue of lane.issues || []) {
+    // Error/fatal issues decide validator FAIL. Keep every diagnostic visible
+    // for a failed lane, including any warning attached by another checker.
+    if (lane.state === 'FAIL' || ['error', 'fatal'].includes(issue.severity)) label.append(validatorMessage(issue));
+    else notes.push(issue);
+  }
+  if (notes.length) {
+    const detail = el('details'); detail.append(el('summary', `Validator notes (${notes.length})`));
+    for (const issue of notes) detail.append(validatorMessage(issue));
+    label.append(detail);
+  }
+  return label;
+}
 async function load(polling = false) {try {
   state = await api('/api/state'); $('error').textContent = '';
   if (polling && state.busy) {poll = setTimeout(() => load(true), 750); return;}
@@ -144,7 +170,7 @@ function render() {
     buckets[group].push({...item, review:row});
   }
   for (const q of state.quarantines) {
-    const row = review[q.id]; buckets[row.state === 'dismiss' ? groups[7] : groups[6]].push({id:q.id, fact:'Malformed extracted item — not a clinical fact', label:'Withheld; extracted form checks failed; not validated', reasons:q.errors.map(e => `${e.type.replaceAll('_',' ')} at ${e.location.join(' / ')}`), review:row, quarantine:true});
+    const row = review[q.id]; buckets[row.state === 'dismiss' ? groups[7] : groups[6]].push({id:q.id, fact:'Malformed extracted item — not a clinical fact', label:'Withheld; extracted form checks failed; not validated', reasons:q.errors.map(e => `${reasonText(e.type)} at ${e.location.join(' / ') || 'item'}`), reasonCodes:[q.reason, ...q.errors.map(e => e.type)], review:row, quarantine:true});
   }
   for (const group of groups) {
     const section = el('section'); section.append(el('h2', `${group} (${buckets[group].length})`));
@@ -164,18 +190,23 @@ function card(item) {
   if (row.receipt) card.append(el('p', `${row.state === 'approve' ? 'Clinician-approved' : 'Dismissed'} by ${row.receipt.reviewer}, ${row.receipt.role} · ${row.receipt.timestamp}${row.receipt.reason ? ' · ' + row.receipt.reason : ''}`));
   const lanes = el('div', undefined, 'lanes');
   for (const [key, lane] of Object.entries(state.lanes[item.id] || {reduced_schema:{state:'FAIL',reason:'Malformed extraction withheld'}})) {
-    const text = `${titles[key] || key}: ${lane.state}${lane.state === 'FAIL' ? ' — checks failed; approval cannot override this' : ''}${lane.reason ? ' — ' + lane.reason : ''}`;
-    const label = el('div', text, 'lane' + (lane.state === 'FAIL' ? ' fail' : ''));
-    for (const issue of lane.issues || []) label.append(el('p', issue.details?.text || issue.diagnostics || issue.code, 'small'));
-    lanes.append(label);
+    lanes.append(laneView(key, lane));
   } card.append(lanes);
   if (state.lanes[item.id]?.evidence?.state === 'FAIL') card.append(el('p', 'This fact is not supported by its quote. Approval cannot override this. Dismiss it and document the correct value in your own system.', 'fail'));
-  if (item.reasons.length) {const list = el('ul'); for (const reason of item.reasons) list.append(el('li', reason)); card.append(list);}
+  if (item.reasons.length) {
+    const list = el('ul');
+    for (const reason of item.reasons) {
+      const entry = el('li', reason);
+      entry.title = (item.reasonCodes || state.reason_codes[item.id] || []).join(' · ');
+      list.append(entry);
+    }
+    card.append(list);
+  }
   for (const evidence of state.evidence[item.id] || []) {
     card.append(el('blockquote', evidence.quote));
     card.append(el('p', evidence.receipt, 'small'));
     if (evidence.alignment === 'disfluency-v2') card.append(el('p', 'matched ignoring fillers/repeats', 'small'));
-    if (evidence.failure) card.append(el('p', 'Evidence check failed: ' + evidence.failure.replaceAll('_',' '), 'fail'));
+    if (evidence.failure) {const failure = el('p', 'Evidence check failed: ' + reasonText(evidence.failure), 'fail'); failure.title = evidence.failure; card.append(failure);}
     const detail = el('details'); detail.append(el('summary', `Transcript context · ${evidence.segment_id || 'unknown segment'}`));
     if (!evidence.neighbors.length) detail.append(el('p', 'Cited segment unavailable; no transcript context.'));
     for (const segment of evidence.neighbors) detail.append(el(segment.cited ? 'mark' : 'p', `[${segment.receipt} · ${segment.role} · ${segment.id}] ${segment.text}`, 'neighbor'));

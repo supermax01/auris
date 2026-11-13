@@ -19,6 +19,7 @@ from auris.fhir.common import build_anchors
 from auris.fhir.mapper import Mapper
 from auris.fhir.models import MappingOutcome, resource_digest
 from auris.intake import Intake
+from auris.reason_codes import CheckReason
 from auris.transcript import SpeakerRole, Transcript
 from auris.validation.models import ValidationRun
 from auris.validation.outcomes import classify
@@ -292,9 +293,10 @@ def remap(
         resource = {**mapped.resource, "id": identifier} if mapped.resource else None
         # Stable card/resource identities survive kind and transcript-overlay changes.
         updates: dict[str, Any] = {"id": identifier, "resource": resource}
-        if "merge_conflict" in original.review_reasons:
+        if CheckReason.MERGE_CONFLICT in original.review_reasons:
             updates.update(
-                is_material=True, review_reasons=(*mapped.review_reasons, "merge_conflict")
+                is_material=True,
+                review_reasons=(*mapped.review_reasons, CheckReason.MERGE_CONFLICT),
             )
         results[identifier] = mapped.model_copy(update=updates)
     return results

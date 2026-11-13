@@ -4,8 +4,8 @@
 <style>
 :root{color-scheme:light dark;font:16px/1.5 system-ui,sans-serif;background:light-dark(#fafafa,#17191c);color:light-dark(#20252b,#e9edf2)}
 *{box-sizing:border-box}body{margin:0}header{padding:1rem;border-bottom:1px solid #888}h1{font-size:1.3rem;margin:0}main{display:grid;grid-template-columns:minmax(18rem,1fr) minmax(22rem,1fr);gap:1rem;padding:1rem;max-width:100rem;margin:auto}section,aside{min-width:0}button,input,select,textarea{font:inherit;padding:.4rem;border:1px solid #888;border-radius:.3rem;background:light-dark(white,#262a30);color:inherit}button{cursor:pointer}button:hover{border-color:#237ac1}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid #489cde;outline-offset:2px}button{margin:.2rem}label{display:block;margin:.6rem 0}label input,label select,label textarea{display:block;width:100%}textarea{min-height:4rem}fieldset{margin:1rem 0;border:1px solid #888}legend{font-weight:600}.turn{padding:.7rem;border-bottom:1px solid #888}.turn-text{white-space:pre-wrap;user-select:text;width:100%;border:0;background:transparent;resize:vertical;min-height:4rem}.meta{font-size:.85rem;opacity:.8}.turn select{font-size:.85rem;max-width:15rem}.toolbar{position:sticky;top:0;background:light-dark(#fafafa,#17191c);z-index:1;padding:.5rem 0}.facts{padding-left:1.5rem}#error{white-space:pre-wrap;color:light-dark(#9e1822,#ffadad)}#status{font-size:.9rem}.span{padding:.3rem;background:light-dark(#e7f0fa,#263648);white-space:pre-wrap}.hidden{display:none}summary{cursor:pointer}@media(max-width:800px){main{grid-template-columns:1fr}}@media print{button,.toolbar,form{display:none}main{display:block}}
-aside{position:sticky;top:0;align-self:start;max-height:100dvh;overflow:auto;padding:.4rem}#editor{scroll-margin-top:1rem}#editor .editor-actions{position:sticky;bottom:0;padding:.5rem;background:light-dark(#fafafa,#17191c);border-top:1px solid #888}.editing #error{position:fixed;top:0;right:1rem;max-width:40rem;z-index:30;background:light-dark(#fafafa,#17191c)}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}.comparison pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}.task{border:1px solid #888;padding:.5rem;margin-bottom:1rem}.audit{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
-@media(max-width:800px){aside{position:static;max-height:none;overflow:visible}#editor:not(.hidden){position:fixed;bottom:0;left:0;right:0;z-index:20;max-height:72dvh;overflow:auto;padding:1rem;background:light-dark(#fafafa,#17191c);border-top:2px solid #489cde;box-shadow:0 -4px 20px #0005}body.adjudication aside{position:fixed;bottom:0;left:0;right:0;z-index:5;max-height:50dvh;overflow:auto;background:light-dark(#fafafa,#17191c);border-top:2px solid #888}body.adjudication{padding-bottom:52dvh}.comparison{grid-template-columns:1fr}}
+aside{position:sticky;top:0;align-self:start;max-height:100dvh;overflow:auto;padding:.4rem}#editor{scroll-margin-top:1rem}#editor .editor-actions{position:sticky;bottom:0;padding:.5rem;background:light-dark(#fafafa,#17191c);border-top:1px solid #888}.editing #error{position:fixed;top:0;right:1rem;max-width:40rem;z-index:30;background:light-dark(#fafafa,#17191c)}.comparison{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.85rem}.comparison caption{text-align:left;margin:.5rem 0}.comparison th,.comparison td{border:1px solid #888;padding:.35rem;vertical-align:top;text-align:left;overflow-wrap:anywhere;white-space:pre-wrap}.comparison th:first-child{width:34%}.comparison tbody th{font-weight:500}.comparison .different{background:light-dark(#fff0ba,#4b3a13)}.task{border:1px solid #888;padding:.5rem;margin-bottom:1rem}.audit{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
+@media(max-width:800px){aside{position:static;max-height:none;overflow:visible}#editor:not(.hidden){position:fixed;bottom:0;left:0;right:0;z-index:20;max-height:72dvh;overflow:auto;padding:1rem;background:light-dark(#fafafa,#17191c);border-top:2px solid #489cde;box-shadow:0 -4px 20px #0005}body.adjudication aside{position:fixed;bottom:0;left:0;right:0;z-index:5;max-height:50dvh;overflow:auto;background:light-dark(#fafafa,#17191c);border-top:2px solid #888}body.adjudication{padding-bottom:52dvh}}
 </style>
 <header><h1>Auris · Independent human annotation</h1><div>Research annotation only · No AI assistance · Keep your work private</div><div id="identity"></div></header>
 <main><section aria-label="Transcript"><div class="toolbar"><label>Encounter <select id="encounter"></select></label><button id="add">Add fact from selection</button><button id="append">Add selected evidence to open fact</button><button id="important">Out-of-scope important fact</button><button id="roles">Confirm all source roles as correct</button><div id="status" role="status"></div></div><div id="transcript"></div></section>
@@ -410,15 +410,64 @@ function focusTask(){
   const next=$('adjudication-tasks').querySelector('[data-pending="true"] textarea');
   (next||$('done')).focus();
 }
-function answerPreview(answer,task){
-  if(answer===null)return 'No fact';
-  if(typeof answer==='string')return answer+'\n'+(turns.find(t=>t.id===task.segment_id)?.text||'');
-  let text=JSON.stringify(answer,null,2);
-  for(const span of answer.evidence||[]){
-    const turn=turns.find(t=>t.id===span.segment_id);
-    text+='\n'+span.segment_id+' ['+span.char_start+', '+span.char_end+'): '+Array.from(turn.text).slice(span.char_start,span.char_end).join('');
+const comparisonLabels={kind:'Kind',concept_text:'Concept',polarity:'Polarity',experiencer:'Experiencer',temporality:'Temporality',source_speaker_role:'Source role',value_text:'Value',unit_text:'Unit',stated_time_text:'Stated time',medication_intent:'Medication intent',dose_text:'Dose',route_text:'Route',frequency_text:'Frequency',allergen_text:'Allergen',reaction_manifestation_text:'Reaction',stated_resolution_text:'Stated resolution',gold_concept_id:'Gold concept ID',acceptable_texts:'Acceptable wordings',canonical_value:'Canonical values',ucum_unit:'UCUM unit',codes:'Codes',critical:'Critical attributes',allergy_denial:'Allergy denial scope',condition_assertion:'Condition assertion',order_authorization:'Order authorization',id:'Fact ID',notes:'Notes',category:'Category',reason:'Reason',evidence:'Evidence',segment_id:'Segment ID',char_start:'Start character',char_end:'End character (exclusive)',sha256:'SHA-256',quote:'Exact quoted text'};
+function answerFields(answer,task){
+  const fields=new Map();
+  if(answer===null)return fields;
+  const value=typeof answer==='string'?{source_speaker_role:answer,segment_id:task.segment_id,quote:turns.find(t=>t.id===task.segment_id)?.text??''}:answer;
+  function flatten(value,path){
+    if(value!==null&&typeof value==='object'&&Object.keys(value).length){
+      for(const [key,child] of Object.entries(value))flatten(child,path?path+'.'+key:key);
+    }else fields.set(path,value);
   }
-  return text;
+  const first=['kind','concept_text','polarity','experiencer','temporality','source_speaker_role'];
+  const specific=session.fields[value.kind]||[];
+  const ordered=[...new Set([...first,...specific,...Object.keys(value)])];
+  for(const key of ordered)if(key!=='evidence'&&Object.hasOwn(value,key))flatten(value[key],key);
+  // Include every span field, then its exact original text (Unicode code-point offsets).
+  if(Object.hasOwn(value,'evidence')){
+    if(!value.evidence.length)flatten(value.evidence,'evidence');
+    value.evidence.forEach((span,index)=>{
+      const path='evidence.'+index;
+      flatten(span,path);
+      const turn=turns.find(t=>t.id===span.segment_id);
+      fields.set(path+'.quote',turn?Array.from(turn.text).slice(span.char_start,span.char_end).join(''):'Cited turn unavailable');
+    });
+  }
+  return fields;
+}
+function comparisonValue(value){
+  if(value===undefined)return 'Not present';
+  if(value===null)return 'Not stated (null)';
+  if(value==='')return 'Empty text';
+  if(Array.isArray(value))return 'Empty list (0 items)';
+  if(typeof value==='object')return 'Empty object (0 fields)';
+  return String(value);
+}
+function answerPreview(task){
+  const sides=[answerFields(task.a,task),answerFields(task.b,task)];
+  const table=document.createElement('table');table.className='comparison';table.tabIndex=0;
+  const caption=document.createElement('caption');caption.textContent='Independent answers · differing fields are marked “differs”';table.append(caption);
+  const head=document.createElement('thead'),header=document.createElement('tr');
+  for(const label of ['Field','Annotator A'+(task.a===null?' · No fact':''),'Annotator B'+(task.b===null?' · No fact':'')]){
+    const cell=document.createElement('th');cell.scope='col';cell.textContent=label;header.append(cell);
+  }head.append(header);table.append(head);
+  const body=document.createElement('tbody');
+  const keys=[...new Set(sides.flatMap(fields=>[...fields.keys()]))];
+  // Even when kinds differ, keep common fields first and all evidence last.
+  keys.sort((a,b)=>Number(a.startsWith('evidence'))-Number(b.startsWith('evidence')));
+  for(const key of keys){
+    const row=document.createElement('tr');row.dataset.field=key;
+    const different=JSON.stringify(sides[0].get(key))!==JSON.stringify(sides[1].get(key));
+    if(different)row.className='different';
+    const name=document.createElement('th');name.scope='row';
+    name.textContent=key.split('.').map(part=>/^\d+$/.test(part)?Number(part)+1:comparisonLabels[part]||part.replaceAll('_',' ')).join(' · ')+(different?' — differs':'');
+    row.append(name);
+    for(const fields of sides){
+      const cell=document.createElement('td');cell.textContent=comparisonValue(fields.get(key));row.append(cell);
+    }body.append(row);
+  }
+  table.append(body);return table;
 }
 function renderTasks(){
   const root=$('adjudication-tasks');
@@ -430,8 +479,7 @@ function renderTasks(){
     box.dataset.pending=String(adjudicationData.pending_task_ids.includes(task.id));
     const heading=document.createElement('h3');
     heading.textContent=task.id+' · '+task.attributes.join(', ')+(adjudicationData.pending_task_ids.includes(task.id)?' · unresolved':' · decided');box.append(heading);
-    const comparison=document.createElement('div');comparison.className='comparison';
-    for(const side of ['a','b']){const pre=document.createElement('pre');pre.textContent=side.toUpperCase()+': '+answerPreview(task[side],task);comparison.append(pre);}box.append(comparison);
+    box.append(answerPreview(task));
     const label=document.createElement('label');label.textContent='Required reason for this decision';
     const reason=document.createElement('textarea');label.append(reason);box.append(label);
     const accept=async choice=>{

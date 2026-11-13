@@ -24,6 +24,7 @@ from auris.extract.consultation_replay import _carry_lanes
 from auris.fhir import Mapper
 from auris.fhir.contracts import load_unit_sets
 from auris.fhir.models import MappingOutcome
+from auris.reason_codes import CheckReason
 from auris.terminology import TerminologyIndex
 from auris.transcript import Transcript
 
@@ -86,7 +87,7 @@ def replay_evidence(
             outcome = outcome.model_copy(
                 update={
                     "is_material": True,
-                    "review_reasons": (*outcome.review_reasons, "merge_conflict"),
+                    "review_reasons": (*outcome.review_reasons, CheckReason.MERGE_CONFLICT),
                 }
             )
         return outcome

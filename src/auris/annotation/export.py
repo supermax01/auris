@@ -81,7 +81,15 @@ def export_gold(
         confirmed=confirmed,
     )
     records = {}
-    for path in sorted(adjudicated.glob("*.adjudication.json")):
+    paths = sorted(adjudicated.glob("*.adjudication.json"))
+    if not paths:
+        raise ValueError(
+            f"No *.adjudication.json files found in {adjudicated}. "
+            "Adjudication records are written to <workdir>/adjudications; "
+            "the coordinator workflow uses out/annotation/adjudication/work/adjudications. "
+            "Pass that folder with --adjudicated."
+        )
+    for path in paths:
         if path.is_symlink():
             raise ValueError("adjudication record cannot be a symlink")
         record = AdjudicationRecord.model_validate_json(path.read_bytes())
@@ -89,7 +97,12 @@ def export_gold(
             raise ValueError("duplicate adjudicated encounter")
         records[record.encounter_id] = record
     if set(records) != set(keys):
-        raise ValueError("adjudicated encounter set differs from assignment")
+        missing = ", ".join(sorted(set(keys) - set(records))) or "none"
+        unexpected = ", ".join(sorted(set(records) - set(keys))) or "none"
+        raise ValueError(
+            "adjudicated encounter set differs from assignment; "
+            f"missing encounter ids: {missing}; unexpected encounter ids: {unexpected}"
+        )
     # Validate the whole package before creating output.
     entries, files = [], {}
     for key in keys:

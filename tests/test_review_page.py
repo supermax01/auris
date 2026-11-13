@@ -693,3 +693,44 @@ def test_quarantine_must_be_bound_to_this_visit(map_case, tmp_path, transcript_h
     )
     with pytest.raises(ValueError, match="this visit's transcript hash"):
         prepare(tmp_path / "run", mapper, [outcome], quarantines=[item])
+
+
+def test_failure_wording_support_codes_and_validator_disclosures(map_case, tmp_path):
+    from auris.render.reasons import REASON_LABELS
+
+    mapper, _, outcome = map_case("heart-rate", changes={"value_text": "9999"})
+    item = QuarantinedItem(
+        call_index=0,
+        window_id="fictional-window",
+        position=1,
+        transcript_sha256=mapper.transcript.content_hash,
+        raw_item={"kind": "FICTIONAL unsupported kind"},
+        errors=(ItemError(type="union_tag_invalid", location=()),),
+    )
+    run = prepare(tmp_path / "run", mapper, [outcome], quarantines=[item])
+    session = ReviewSession(run.directory)
+    status, state = session.dispatch("GET", "/api/state", session.token, b"")
+    assert status == 200
+    assert state["reason_labels"] == REASON_LABELS
+    assert "value_text_number_not_in_quote" in state["reason_codes"][outcome.id]
+    note = (run.directory / "note.md").read_text()
+    assert REASON_LABELS["value_text_number_not_in_quote"] in note
+    assert "value_text_number_not_in_quote" not in note
+    # The real context path carries an evidence failure as a support code.
+    state["evidence"][outcome.id][0]["failure"] = "quote_not_found"
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("existing Node runtime unavailable for inline JavaScript DOM probe")
+    script = PAGE.decode().split("<script>")[1].split("</script>")[0]
+    probe = (Path(__file__).parent / "review_polish_probe.js").read_text()
+    result = subprocess.run(
+        [node],
+        input="const snapshot = "
+        + json.dumps(state)
+        + ";\n"
+        + probe.replace("/* PAGE SCRIPT */", script.removesuffix("load();\n")),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr

@@ -907,3 +907,114 @@ returnToTranscript(null);
     )
     assert syntax.returncode == 0, syntax.stderr
     assert "position:fixed;bottom:0" in PAGE.decode()
+
+
+def test_comparison_preserves_all_fields_and_exact_quotes(tmp_path):
+    from auris.assertions import ASSERTION_MODELS
+
+    app, _, _ = launch(tmp_path)
+    _, response = opened(app)
+    # Include the unpaired side, role conflicts and out-of-scope facts too.
+    assert {task["category"] for task in response["tasks"]} == {"fact", "role", "outside"}
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("existing Node runtime unavailable for inline JavaScript DOM probe")
+    fixture = {
+        "turns": response["turns"],
+        "tasks": response["tasks"],
+        "fields": {
+            model.model_fields["kind"].annotation.__args__[0]: list(model.model_fields)
+            for model in ASSERTION_MODELS
+        },
+    }
+    script = PAGE.decode().split("<script>")[1].split("</script>")[0]
+    functions = script[
+        script.index("const comparisonLabels=") : script.index("function renderTasks()")
+    ]
+    probe = (Path(__file__).parent / "comparison_probe.js").read_text()
+    result = subprocess.run(
+        [node],
+        input="const fixture = "
+        + json.dumps(fixture)
+        + ";\n"
+        + probe.replace("/* COMPARISON FUNCTIONS */", functions),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    # The fixed-layout table wraps long IDs/hashes at tablet width; no nested
+    # horizontal scrolling or focusable JSON pane is needed to read either side.
+    assert "width:100%;table-layout:fixed" in PAGE.decode()
+    assert "overflow-wrap:anywhere;white-space:pre-wrap" in PAGE.decode()
+
+
+@pytest.mark.parametrize("folder", ["missing-folder", "empty-folder", "adjudicator"])
+def test_export_cli_names_empty_folder_and_record_location(tmp_path, capsys, folder):
+    app, cache, manifests = launch(tmp_path)
+    supplied = tmp_path / folder
+    if folder == "empty-folder":
+        supplied.mkdir()
+    assignment_path = tmp_path / "adjudication-assignment.json"
+    write_private_text(assignment_path, app.adjudication.model_dump_json())
+    out = tmp_path / "gold"
+    assert (
+        main(
+            [
+                "annotate",
+                "export-gold",
+                "--assignment",
+                str(assignment_path),
+                "--adjudicated",
+                str(supplied),
+                "--intakes",
+                str(tmp_path / "intakes"),
+                "--out",
+                str(out),
+                "--cache",
+                str(cache),
+                "--manifests",
+                str(manifests),
+            ]
+        )
+        == 1
+    )
+    error = capsys.readouterr().err
+    assert "No *.adjudication.json files found" in error
+    assert str(supplied) in error
+    assert "<workdir>/adjudications" in error
+    assert "out/annotation/adjudication/work/adjudications" in error
+    assert "--adjudicated" in error
+    assert not out.exists()
+
+
+@pytest.mark.parametrize("mismatch", ["missing", "unexpected", "both"])
+def test_export_lists_missing_and_unexpected_encounter_ids(tmp_path, mismatch):
+    app, cache, manifests = launch(tmp_path)
+    decide_all(app)
+    missing = app.assignment.encounter_ids[0]
+    if mismatch in ("missing", "both"):
+        (app.folder / f"{missing}.adjudication.json").unlink()
+    if mismatch in ("unexpected", "both"):
+        record = app.records[missing].model_copy(update={"encounter_id": "fictional-unexpected"})
+        write_private_text(
+            app.folder / "fictional-unexpected.adjudication.json", record.model_dump_json()
+        )
+    out = tmp_path / "gold"
+    with pytest.raises(ValueError) as caught:
+        export_gold(
+            app.adjudication,
+            app.folder,
+            tmp_path / "intakes",
+            out,
+            cache=cache,
+            manifests=manifests,
+        )
+    message = str(caught.value)
+    assert f"missing encounter ids: {missing if mismatch != 'unexpected' else 'none'};" in message
+    assert (
+        f"unexpected encounter ids: {'fictional-unexpected' if mismatch != 'missing' else 'none'}"
+        in message
+    )
+    assert "café" not in message  # Only public dataset IDs, never transcript text.
+    assert not out.exists()

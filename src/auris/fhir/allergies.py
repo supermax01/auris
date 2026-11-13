@@ -3,6 +3,7 @@
 from auris.assertions import AllergyStatementAssertion
 from auris.fhir.common import Anchors, base, code_text, status_concept
 from auris.fhir.models import BuildResult
+from auris.reason_codes import CheckReason
 from auris.terminology import RXNORM, TerminologyIndex
 
 PROFILE = "us-core-allergyintolerance"
@@ -15,7 +16,7 @@ def build_allergy(
     terminology: TerminologyIndex,
 ) -> BuildResult:
     if assertion.allergen_text is None:
-        return BuildResult(profile=PROFILE, reasons=("allergen_not_stated",))
+        return BuildResult(profile=PROFILE, reasons=(CheckReason.ALLERGEN_NOT_STATED,))
     concept, reasons, flags = code_text(
         assertion.allergen_text,
         RXNORM,

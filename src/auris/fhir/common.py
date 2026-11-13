@@ -10,6 +10,7 @@ from uuid import NAMESPACE_URL, uuid5
 
 from auris.fhir.contracts import profile_url
 from auris.intake import Intake
+from auris.reason_codes import CheckReason
 from auris.terminology import ICD10CM, TerminologyIndex
 
 Resource = dict[str, Any]
@@ -80,10 +81,14 @@ def code_text(
     reasons: tuple[str, ...] = ()
     if system == ICD10CM and not terminology.icd_valid_on(encounter_start):
         match = None
-        reasons = ("terminology_release_out_of_period",)
+        reasons = (CheckReason.TERMINOLOGY_RELEASE_OUT_OF_PERIOD,)
     else:
         match = terminology.exact(text, system)
     if match is None:
-        return concept, (*reasons, "needs_coding_review"), ("uncoded_text_only",)
+        return (
+            concept,
+            (*reasons, CheckReason.NEEDS_CODING_REVIEW),
+            (CheckReason.UNCODED_TEXT_ONLY,),
+        )
     concept["coding"] = [match.coding()]
     return concept, (), ()

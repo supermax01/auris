@@ -16,6 +16,7 @@ from auris.fhir.common import Anchors, base
 from auris.fhir.contracts import UnitSets, element, fixed
 from auris.fhir.models import BuildResult
 from auris.intake import IntakeDateTime
+from auris.reason_codes import CheckReason
 from auris.terminology import normalise
 from auris.transcript import SpeakerRole
 
@@ -78,7 +79,7 @@ _UNIT_DISPLAYS = {
 }
 _NUMBER = r"[+-]?(?:\d+(?:\.\d+)?|\.\d+)"
 _BP_PAIR = rf"(?P<systolic>{_NUMBER})\s*(?:/|over|on)\s*(?P<diastolic>{_NUMBER})"
-BP_SPLIT_FIELDS_FLAG = "bp_parsed_from_value_and_unit"
+BP_SPLIT_FIELDS_FLAG = CheckReason.BP_PARSED_FROM_VALUE_AND_UNIT
 _DATETIME = TypeAdapter(IntakeDateTime)
 
 
@@ -162,7 +163,7 @@ def build_vital(
 ) -> BuildResult:
     profile = vital_profile(assertion.concept_text)
     if profile is None:
-        return BuildResult(ledger_only=True, reasons=("vital_not_supported",))
+        return BuildResult(ledger_only=True, reasons=(CheckReason.VITAL_NOT_SUPPORTED,))
     reasons: list[str] = []
     notes: list[str] = []
     flags: list[str] = []
@@ -185,28 +186,28 @@ def build_vital(
         # default one. Recover only a known unit directly after these values.
         spoken = _unit_from_quote(assertion, evidence, unit_sets, bp=bp)
         if spoken is None:
-            reasons.append("unit_missing")
+            reasons.append(CheckReason.UNIT_MISSING)
     if spoken is None:
         unit = fixed_unit
         if unit is None:
-            reasons.append("unit_missing")
+            reasons.append(CheckReason.UNIT_MISSING)
     else:
         # Preserve case-sensitive UCUM spelling; aliases are only spoken words.
         unit = _UNIT_NAMES.get(spoken.strip().casefold(), spoken.strip())
         if fixed_unit and unit != fixed_unit:
-            reasons.append("unit_not_in_profile_set")
+            reasons.append(CheckReason.UNIT_NOT_IN_PROFILE_SET)
     if not fixed_unit and unit is not None:
         set_id = unit_definition["binding"]["value_set"].split("|")[0].rsplit("/", 1)[-1]
         if unit not in unit_sets[set_id]:
-            reasons.append("unit_not_in_profile_set")
+            reasons.append(CheckReason.UNIT_NOT_IN_PROFILE_SET)
 
     if bp:
         if len(values) != 2:
-            reasons.append("bp_component_missing")
+            reasons.append(CheckReason.BP_COMPONENT_MISSING)
     else:
         value = _number(assertion.value_text)
         if value is None:
-            reasons.append("value_missing_or_unparseable")
+            reasons.append(CheckReason.VALUE_MISSING_OR_UNPARSEABLE)
         else:
             values = [value]
 
@@ -215,9 +216,9 @@ def build_vital(
         effective = _date(assertion.stated_time_text)
         if effective is None:
             reasons.append(
-                "historical_without_date"
+                CheckReason.HISTORICAL_WITHOUT_DATE
                 if assertion.temporality == Temporality.PAST
-                else "measurement_date_not_day_precision"
+                else CheckReason.MEASUREMENT_DATE_NOT_DAY_PRECISION
             )
     elif (
         assertion.temporality == Temporality.CURRENT
@@ -225,20 +226,20 @@ def build_vital(
     ):
         effective = _date(anchors.encounter["period"]["start"])
         if effective is None:
-            reasons.append("measurement_date_not_day_precision")
+            reasons.append(CheckReason.MEASUREMENT_DATE_NOT_DAY_PRECISION)
         else:
             notes.append(
                 "effectiveDateTime inherited from Encounter.period.start (in-visit reading)"
             )
     else:
-        reasons.append("historical_without_date")
+        reasons.append(CheckReason.HISTORICAL_WITHOUT_DATE)
     if assertion.temporality in (
         None,
         Temporality.UNCLEAR,
         Temporality.FUTURE,
         Temporality.RESOLVED,
     ):
-        reasons.append("vital_temporality_unclear")
+        reasons.append(CheckReason.VITAL_TEMPORALITY_UNCLEAR)
     if reasons:
         return BuildResult(profile=profile, reasons=tuple(dict.fromkeys(reasons)))
 

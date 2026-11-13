@@ -164,6 +164,12 @@ The same loopback/token/origin protections and no-network policy apply.
   --out out/annotation/gold
 ```
 
+Point `--adjudicated` at the records folder, **`work/adjudications`**, not the
+parent assignment or work directory. In the workflow above this is
+`out/annotation/adjudication/work/adjudications`. If no `*.adjudication.json`
+files are found, export names the supplied folder and explains this path.
+An encounter-set mismatch lists the missing and unexpected encounter IDs.
+
 The complete assigned encounter set must be adjudicated. Export checks the trusted
 frozen manifest, assignment/audit identity, evidence and the unchanged 7a fictional
 anchors before writing. It packages the harness `manifest.json`, stand-off gold,

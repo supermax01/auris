@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, SerializerFunctionWrapHandler, model
 
 from auris.assertions import AssertionBase, Experiencer, Polarity
 from auris.evidence import AssertionEvidenceResult, has_negation, normalised_tokens, sentence_texts
+from auris.reason_codes import CheckReason
 from auris.transcript import SpeakerRole, Transcript
 
 FAMILY_CUES = frozenset(
@@ -73,9 +74,9 @@ def _field_hygiene(assertion: AssertionBase) -> ConsistencyResult:
         elif field in _VALUE_FIELDS and _COMMENTARY.search(text):
             unusable.append(field)
     return ConsistencyResult(
-        informational_flags=("literal_null_normalised",) if nulls else (),
+        informational_flags=(CheckReason.LITERAL_NULL_NORMALISED,) if nulls else (),
         normalised_null_fields=tuple(nulls),
-        review_reasons=("field_contains_commentary",) if unusable else (),
+        review_reasons=(CheckReason.FIELD_CONTAINS_COMMENTARY,) if unusable else (),
         unusable_fields=tuple(unusable),
     )
 
@@ -118,7 +119,12 @@ def check_consistency(
     for field in ("value_text", "dose_text"):
         text = getattr(assertion, field, None)
         if text and not numeric_tokens(text).issubset(numbers):
-            failures.append(f"{field}_number_not_in_quote")
+            failures.append(
+                {
+                    "value_text": CheckReason.VALUE_TEXT_NUMBER_NOT_IN_QUOTE,
+                    "dose_text": CheckReason.DOSE_TEXT_NUMBER_NOT_IN_QUOTE,
+                }[field]
+            )
     key_terms: list[str] = []
     for field in ("concept_text", "allergen_text"):
         text = getattr(assertion, field, None)
@@ -128,7 +134,12 @@ def check_consistency(
         key_terms.extend(aliases)
         if not any(contains_phrase(quote, alias) for quote in quotes for alias in aliases):
             target = reasons if field == "concept_text" else failures
-            target.append(f"{field}_not_in_quote")
+            target.append(
+                {
+                    "concept_text": CheckReason.CONCEPT_TEXT_NOT_IN_QUOTE,
+                    "allergen_text": CheckReason.ALLERGEN_TEXT_NOT_IN_QUOTE,
+                }[field]
+            )
     polarity_texts: list[str] = []
     for quote in quotes:
         matching_sentences = [
@@ -140,18 +151,18 @@ def check_consistency(
         polarity_texts.extend(matching_sentences or [quote])
     negation = any(has_negation(text) for text in polarity_texts)
     if assertion.polarity == Polarity.AFFIRMED and negation:
-        reasons.append("polarity_conflicts_with_quote")
+        reasons.append(CheckReason.POLARITY_CONFLICTS_WITH_QUOTE)
     if (
         assertion.polarity == Polarity.NEGATED or assertion.kind in _NEGATED_KINDS
     ) and not negation:
-        reasons.append("negation_not_in_quote")
+        reasons.append(CheckReason.NEGATION_NOT_IN_QUOTE)
     if assertion.experiencer == Experiencer.PATIENT and any(
         # Possessive mother’s is the same family cue; don't stem clinical names.
         token.removesuffix("'s") in FAMILY_CUES
         for quote in quotes
         for token in normalised_tokens(quote)
     ):
-        reasons.append("experiencer_cue_conflict")
+        reasons.append(CheckReason.EXPERIENCER_CUE_CONFLICT)
     roles = {
         segment.role
         for item in evidence.items
@@ -159,11 +170,11 @@ def check_consistency(
         and (segment := transcript.segment_by_id(item.segment_id)) is not None
     }
     if assertion.source_speaker_role not in roles:
-        reasons.append("source_role_mismatch")
+        reasons.append(CheckReason.SOURCE_ROLE_MISMATCH)
     if assertion.kind in _CLINICIAN_KINDS and (
         assertion.source_speaker_role != SpeakerRole.CLINICIAN or SpeakerRole.CLINICIAN not in roles
     ):
-        reasons.append("kind_role_mismatch")
+        reasons.append(CheckReason.KIND_ROLE_MISMATCH)
     return hygiene.model_copy(
         update={"failures": tuple(failures), "review_reasons": tuple(reasons)}
     )
