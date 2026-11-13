@@ -225,7 +225,10 @@ def run_dataset(
             mapper = mapper_factory(intake, transcripts[encounter.id])
             encounter_dir = output / identity / encounter.id
             outcomes, _ = finish_pipeline(
-                run, mapper, validator_factory(encounter.fictional), encounter_dir
+                run,
+                mapper,
+                validator_factory(encounter.fictional or intake.fictional),
+                encounter_dir,
             )
             model_predictions[encounter.id] = [
                 freeze_prediction(a, o).model_dump(mode="json")

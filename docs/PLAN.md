@@ -476,6 +476,10 @@ modifies the intake anchors; for example, it does not add
   only tier 1 can report terminology PASS.
 - **Mapper flags are not lanes.** Flags such as `uncoded_text_only` are
   review reasons.
+- **Concept normalisation (Step 9).** `concept_text_not_in_quote` requires
+  clinician review; it is not an evidence-lane FAIL. Unsupported vital/dose
+  numbers and unsupported allergen text remain hard FAILs. Quote alignment,
+  qualifier checks and the shown-window citation boundary remain mandatory.
 - **Repair.** Validator feedback may trigger one evidence-grounded
   structural repair, never invented facts.
 

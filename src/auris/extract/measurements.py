@@ -1,5 +1,6 @@
 """Quote-free measurements of generation cost and evidence failures."""
 
+import re
 from collections import Counter
 from collections.abc import Sequence
 from statistics import mean, median
@@ -9,6 +10,31 @@ from auris.assertions import AssertionBase
 from auris.evidence import EvidenceFailure, align_assertion_evidence, normalised_tokens
 from auris.fhir.models import LaneState, MappingOutcome
 from auris.transcript import Transcript
+
+
+def repetition_metrics(text: str) -> dict[str, Any]:
+    """Content-free diagnostics for pretty and compact output, including truncation.
+
+    Measure adjacent repeated lexical/punctuation n-grams of widths 1..16;
+    report the longest covered run in tokens. Repeated-line ratio counts nonblank
+    lines beyond their first occurrence. Neither metric changes extraction.
+    """
+    words = re.findall(r"\w+|[^\w\s]", text)
+    longest = 0
+    for width in range(1, min(16, len(words) // 2) + 1):
+        run = [0] * len(words)
+        for i in range(width, len(words)):
+            if words[i] == words[i - width]:
+                run[i] = run[i - 1] + 1
+                if run[i] >= width:
+                    longest = max(longest, run[i] + width)
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return {
+        "version": "repetition-v1",
+        "longest_repeated_ngram_run_tokens": longest,
+        "max_ngram_tokens": 16,
+        "repeated_line_ratio": (len(lines) - len(set(lines))) / len(lines) if lines else 0,
+    }
 
 
 def length_stats(lengths: Sequence[int]) -> dict[str, int | float | None]:

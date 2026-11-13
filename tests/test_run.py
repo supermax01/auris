@@ -159,7 +159,12 @@ def test_failed_run_has_only_diagnostics(
         ]
     )
     assert main([command, *args]) == 1
-    assert {p.name for p in directory.iterdir()} == {"extraction.json", "validation.json"}
+    names = {p.name for p in directory.iterdir()}
+    assert {"extraction.json", "validation.json"}.issubset(names)
+    assert all(
+        name.startswith("discarded-call-")
+        for name in names - {"extraction.json", "validation.json"}
+    )
     assert "single transcript segment still truncated" in capsys.readouterr().err
     assert json.loads((directory / "extraction.json").read_text())["assertions"] == []
 

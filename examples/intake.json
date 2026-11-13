@@ -1,4 +1,5 @@
 {
+  "fictional": true,
   "patient": {
     "id": "example-patient-1",
     "identifier": [

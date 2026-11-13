@@ -10,7 +10,13 @@ from auris.assertions import extraction_json_schema
 from auris.config import load_frozen_config
 from auris.extract.backend import ExtractionError, FakeBackend
 from auris.extract.pipeline import extract, finish_pipeline, parse_completion
-from auris.extract.prompt import messages, prompt_sha256, prompt_text, render_transcript
+from auris.extract.prompt import (
+    WINDOW_INSTRUCTION,
+    messages,
+    prompt_sha256,
+    prompt_text,
+    render_transcript,
+)
 from auris.fhir import Mapper
 from auris.fhir.models import LaneState
 from auris.validation.models import ValidationRun
@@ -33,7 +39,8 @@ def test_prompt_snapshot_and_hash():
         {"role": "system", "content": prompt_text()},
         {
             "role": "user",
-            "content": "Transcript:\n[s3 | patient | 00:42.1–00:45.0] I have no cough.",
+            "content": WINDOW_INSTRUCTION.format(ids="s3")
+            + "[s3 | patient | 00:42.1–00:45.0] I have no cough.",
         },
     ]
     assert prompt_sha256() == "0db6b464e45c02bfe5f16ee9f392f4b8456ecb3ceabcef71611fbdabd31ab581"
@@ -363,8 +370,9 @@ def test_seventh_call_bad_citation_survives_splits_and_cannot_merge_or_export(
     ]
 
 
+@pytest.mark.parametrize("fictional", [False, True])
 def test_cli_runs_the_pipeline_and_selects_model(
-    terminology, units, intake, tmp_path, monkeypatch, capsys
+    fictional, terminology, units, intake, tmp_path, monkeypatch, capsys
 ):
     from contextlib import nullcontext
 
@@ -376,6 +384,7 @@ def test_cli_runs_the_pipeline_and_selects_model(
 
     transcript, assertion = case_input("vital_sign")
     transcript.save(tmp_path / "transcript.json")
+    intake = intake.model_copy(update={"fictional": fictional})
     intake.save(tmp_path / "intake.json")
     config = load_frozen_config().extractor
     selected = []
@@ -389,7 +398,13 @@ def test_cli_runs_the_pipeline_and_selects_model(
     monkeypatch.setattr(
         terminology_module, "TerminologyIndex", lambda path: nullcontext(terminology)
     )
-    monkeypatch.setattr(runner_module, "ValidatorRunner", lambda *args, **kwargs: fake_validator())
+    runners = []
+
+    def runner(*args, **kwargs):
+        runners.append(kwargs)
+        return fake_validator()
+
+    monkeypatch.setattr(runner_module, "ValidatorRunner", runner)
     status = main(
         [
             "extract",
@@ -405,6 +420,7 @@ def test_cli_runs_the_pipeline_and_selects_model(
     )
     assert status == 0
     assert selected == [config.candidate("gemma-4-e4b-it-q4_0").id]
+    assert runners == [{"allow_example_urls": fictional}]
     assert "wrote extraction.json and validation.json" in capsys.readouterr().out
     assert json.loads((tmp_path / "run/extraction.json").read_text())["status"] == "complete"
 

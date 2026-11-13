@@ -25,6 +25,7 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 from auris.config import ExtractorCandidate
+from auris.extract.timeout import TimeoutBudget
 from auris.setup.fhir_packages import sha256_file
 
 TESTED_RUNTIME = "version: 0.9.0 (build 12110, commit cd959bae9)"
@@ -33,6 +34,10 @@ MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 
 class ExtractionError(ValueError):
     """A safe-to-log failure reason; never includes clinical response text."""
+
+
+class ExtractionTimeoutError(ExtractionError):
+    """A local request exceeded its budget; distinct from connection failures."""
 
 
 @dataclass
@@ -56,6 +61,8 @@ class Backend(Protocol):
         temperature: float,
         max_tokens: int,
         grammar: str | None = None,
+        timeout: float | None = None,
+        sampling: dict[str, object] | None = None,
     ) -> dict[str, Any]: ...
 
     def tokenize(self, text: str) -> int | None: ...
@@ -138,7 +145,13 @@ class HttpBackend:
         except HTTPError as exc:
             # Do not include server diagnostics: they may echo the transcript.
             raise ExtractionError(f"local extractor HTTP {exc.code}") from None
-        except (OSError, URLError, ValueError) as exc:
+        except TimeoutError:
+            raise ExtractionTimeoutError("local extractor request timed out") from None
+        except URLError as exc:
+            if isinstance(exc.reason, TimeoutError):
+                raise ExtractionTimeoutError("local extractor request timed out") from None
+            raise ExtractionError("local extractor connection failed") from None
+        except (OSError, ValueError) as exc:
             if isinstance(exc, ExtractionError):
                 raise
             raise ExtractionError("local extractor connection or JSON response failed") from None
@@ -151,7 +164,14 @@ class HttpBackend:
         temperature: float,
         max_tokens: int,
         grammar: str | None = None,
+        timeout: float | None = None,
+        sampling: dict[str, object] | None = None,
     ) -> dict[str, Any]:
+        # Pipeline calls supply their measured rendered-input budget. Direct
+        # transport callers get a conservative byte estimate, never a fixed cap.
+        if timeout is None:
+            input_bytes = len(json.dumps(_chat_input(messages, schema, grammar=grammar)).encode())
+            timeout = max(self.timeout, TimeoutBudget(max_tokens, input_bytes).seconds)
         return self.request(
             "/v1/chat/completions",
             {
@@ -159,7 +179,9 @@ class HttpBackend:
                 "temperature": temperature,
                 "max_tokens": max_tokens,
                 "stream": False,
+                **(sampling or {}),
             },
+            timeout=timeout,
         )
 
     def tokenize(self, text: str) -> int:
@@ -379,12 +401,17 @@ class FakeBackend:
         temperature: float,
         max_tokens: int,
         grammar: str | None = None,
+        timeout: float | None = None,
+        sampling: dict[str, object] | None = None,
     ) -> dict[str, Any]:
         self.calls.append(
             dict(messages=messages, schema=schema, temperature=temperature, max_tokens=max_tokens)
         )
         if grammar is not None:
             self.calls[-1]["grammar"] = grammar
+        self.calls[-1]["timeout"] = timeout
+        if sampling:
+            self.calls[-1]["sampling"] = sampling
         try:
             return next(self.responses)
         except StopIteration:

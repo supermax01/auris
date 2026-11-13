@@ -489,13 +489,16 @@ def test_transport_and_measurement_use_selected_constraint(profile):
         ("abl-order", "8d0d142e2344f1f5386eb71ecd9c986cde1e6dbfb68f32fbb30a69a7364a7904"),
     ],
 )
-def test_prior_profile_request_bytes_match_committed_backend(profile, digest):
-    # Captured by executing HEAD's backend before Step 8c, with these inputs.
+def test_frozen_profile_request_bytes_remain_replayable(profile, digest):
+    # Frozen pre-Step-9 window wrapper. Transport changes must not mutate it
+    # when replayed; new runs use the versioned allowed-id wrapper instead.
     contract = profile_contract(profile)
     client = HttpBackend("http://127.0.0.1:8000")
     client.request = Mock(return_value=completion())
+    frozen_messages = messages([], profile)
+    frozen_messages[1]["content"] = "Transcript:\n"
     client.complete(
-        messages([], profile),
+        frozen_messages,
         extraction_json_schema(contract.schema_version, property_order=contract.property_order),
         temperature=0,
         max_tokens=1024,
@@ -511,7 +514,7 @@ def test_pipeline_passes_grammar_to_counting_generation_and_records_identity(pro
     transcript, assertion = case_input("vital_sign")
     client = HttpBackend("http://127.0.0.1:8000")
 
-    def request(path, payload):
+    def request(path, payload, **kwargs):
         if path == "/tokenize":
             return {"tokens": [0] * 111}
         if path == "/apply-template":

@@ -18,7 +18,13 @@ from auris.assertions import (
     parse_extraction_json,
 )
 from auris.config import ExtractorCandidate, ExtractorConfig
-from auris.extract.backend import Backend, ExtractionError, ManagedLlamaServer, RuntimeMetadata
+from auris.extract.backend import (
+    Backend,
+    ExtractionError,
+    ExtractionTimeoutError,
+    ManagedLlamaServer,
+    RuntimeMetadata,
+)
 from auris.extract.chunking import (
     Chunk,
     measure_chunk,
@@ -26,15 +32,23 @@ from auris.extract.chunking import (
     plan_chunks,
     split_segments,
 )
+from auris.extract.citations import resolve_citations
 from auris.extract.grammar import json_grammar
 from auris.extract.identity import profile_identity
 from auris.extract.measurements import (
     extraction_measurements,
     json_whitespace_stats,
     mapped_evidence_measurements,
+    repetition_metrics,
 )
-from auris.extract.profiles import ExtractionProfile, SchemaVersion, profile_contract
+from auris.extract.profiles import (
+    ExtractionProfile,
+    SchemaVersion,
+    profile_contract,
+    sampling_parameters,
+)
 from auris.extract.prompt import messages, prompt_text
+from auris.extract.timeout import TimeoutBudget
 from auris.extract.tokens import (
     HEADROOM_TOKENS,
     OUTPUT_ESTIMATE,
@@ -126,6 +140,7 @@ class ExtractionRun:
     conflict_positions: frozenset[int] = frozenset()
     citation_failures: dict[int, frozenset[str]] = field(default_factory=dict)
     calls: list[dict[str, Any]] = field(default_factory=list)
+    discarded_responses: dict[int, dict[str, Any]] = field(default_factory=dict, repr=False)
     splits: list[dict[str, Any]] = field(default_factory=list)
     window_reuses: list[dict[str, str]] = field(default_factory=list)
     wall_seconds: float = 0
@@ -184,6 +199,7 @@ def extract(
     started = time.monotonic()
     profile = config.extraction_profile
     contract = profile_contract(profile)
+    sampling = sampling_parameters(profile)
     run = ExtractionRun(
         model=model,
         decoding={
@@ -194,6 +210,7 @@ def extract(
             "n_ctx": config.n_ctx,
             "thinking": config.thinking,
             "output_estimate": dict(OUTPUT_ESTIMATE),
+            "sampling_parameters": sampling,
             "json_whitespace": (
                 f"grammar_{contract.grammar_whitespace}_json"
                 if contract.grammar_whitespace is not None
@@ -207,6 +224,8 @@ def extract(
         extraction_profile=profile,
     )
     try:
+        if sampling and config.temperature != 0:
+            raise ExtractionError("full-v0-dry requires temperature 0")
         counter = TokenCounter(backend)
         run.prompt_tokens = counter.count(prompt_text(profile))
         run.prompt_token_count_method = counter.method
@@ -282,7 +301,16 @@ def extract(
                 "transcript_token_count_method": chunk.transcript_token_count_method,
                 "planned_output_tokens": chunk.planned_output_tokens,
                 "output_estimate_exceeds_budget": chunk.planned_output_tokens > max_tokens,
+                "repetition": None,
             }
+            budget = TimeoutBudget(
+                max_tokens,
+                chunk.input_tokens,
+                generation_tokens_per_second=model.generation_tokens_per_second,
+                prompt_tokens_per_second=model.prompt_tokens_per_second,
+            )
+            call["timeout"] = {**asdict(budget), "seconds": budget.seconds, "source": "configured"}
+            call_index = len(run.calls)
             run.calls.append(call)
             call_started = time.monotonic()
             truncated = False
@@ -292,9 +320,17 @@ def extract(
                     schema,
                     temperature=config.temperature,
                     max_tokens=max_tokens,
+                    timeout=budget.seconds,
+                    **({"sampling": sampling} if sampling else {}),
                     **({"grammar": grammar} if grammar is not None else {}),
                 )
                 call["raw_response"] = response
+                # Diagnose even invalid/truncated output, without parsing it.
+                choices = response.get("choices")
+                if isinstance(choices, list) and len(choices) == 1 and isinstance(choices[0], dict):
+                    message = choices[0].get("message")
+                    if isinstance(message, dict) and isinstance(message.get("content"), str):
+                        call["repetition"] = repetition_metrics(message["content"])
                 call["usage"] = response.get("usage")
                 usage = call["usage"]
                 actual = usage.get("completion_tokens") if isinstance(usage, dict) else None
@@ -310,22 +346,40 @@ def extract(
                     response["choices"][0]["message"]["content"]
                 )
                 allowed = frozenset(s.id for s in chunk.segments)
+                assertions, resolutions = resolve_citations(
+                    result.assertions,
+                    chunk.segments,
+                    known_segment_ids=frozenset(s.id for s in transcript.segments),
+                )
+                call["citation_resolutions"] = resolutions
                 call["citation_failure_positions"] = [
                     i
-                    for i, assertion in enumerate(result.assertions)
+                    for i, assertion in enumerate(assertions)
                     if any(item.segment_id not in allowed for item in assertion.evidence)
                 ]
                 call["parsed_assertions"] = result.model_dump(mode="json")["assertions"]
-                groups.append(result.assertions)
+                groups.append(assertions)
                 group_windows.append(allowed)
-            except TruncatedCompletionError:
-                # Discard the entire generated body, including syntactically
-                # complete JSON. Only usage, timing and split metadata survive.
-                del call["raw_response"]
-                del response
-                call["finish_reason"] = "length"
-                call["output_discarded"] = True
-                truncated = True
+            except ExtractionError as exc:
+                call["failure_type"] = (
+                    "timeout" if isinstance(exc, ExtractionTimeoutError) else type(exc).__name__
+                )
+                if "raw_response" in call:
+                    # Kept only in a separate, clearly discarded private artifact.
+                    # Never included in the extraction document or assertions.
+                    run.discarded_responses[call_index] = {
+                        "status": "discarded",
+                        "used_for_assertions": False,
+                        "reason": str(exc),
+                        "response": call.pop("raw_response"),
+                    }
+                    call["discarded_response_file"] = f"discarded-call-{call_index:04d}.json"
+                    call["output_discarded"] = True
+                if isinstance(exc, TruncatedCompletionError):
+                    call["finish_reason"] = "length"
+                    truncated = True
+                else:
+                    raise
             finally:
                 call["wall_seconds"] = time.monotonic() - call_started
             if comparison["status"] in ("mismatch", "usage_unavailable"):
@@ -348,7 +402,7 @@ def extract(
             run.reduced_schema_state = LaneState.FAIL
         run.failure = str(exc) if isinstance(exc, ExtractionError) else "local extractor I/O failed"
         # Successful/invalid per-call output is diagnostic only on failure.
-        # Truncated bodies are discarded entirely, never parsed or mapped.
+        # Discarded bodies are private diagnostics, never parsed or mapped.
     finally:
         run.wall_seconds = time.monotonic() - started
         run.measurements = extraction_measurements(
@@ -402,6 +456,10 @@ def finish_pipeline(
     if not run.measurements:
         run.measurements = extraction_measurements(
             run.assertions, run.calls, mapper.transcript, run.citation_failures
+        )
+    for index, response in run.discarded_responses.items():
+        write_private_text(
+            output_dir / f"discarded-call-{index:04d}.json", json.dumps(response, indent=2) + "\n"
         )
     write_private_text(output_dir / "extraction.json", json.dumps(run.document(), indent=2) + "\n")
     if run.failure:

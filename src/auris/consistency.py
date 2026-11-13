@@ -1,8 +1,7 @@
 """Deterministic lane-2 checks after quote alignment (PLAN A2/A4).
 
-Hard failures require exact numeric support or whole-token concept support.
-A concept may also use an explicit terminology alias for the same unambiguous
-code (no fuzzy candidates). Lexical scope ambiguity is review, never a FAIL.
+Numbers and allergen substances require exact support. Concept normalisation
+outside explicit terminology aliases requires review, never a lane FAIL.
 """
 
 from __future__ import annotations
@@ -128,7 +127,8 @@ def check_consistency(
         aliases = [text, *(synonyms(text, assertion.kind) if synonyms else ())]
         key_terms.extend(aliases)
         if not any(contains_phrase(quote, alias) for quote in quotes for alias in aliases):
-            failures.append(f"{field}_not_in_quote")
+            target = reasons if field == "concept_text" else failures
+            target.append(f"{field}_not_in_quote")
     polarity_texts: list[str] = []
     for quote in quotes:
         matching_sentences = [

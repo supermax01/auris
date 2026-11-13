@@ -5,6 +5,7 @@ from typing import Literal
 
 ExtractionProfile = Literal[
     "full-v0",
+    "full-v0-dry",
     "lean-v1",
     "abl-optional",
     "abl-quotes",
@@ -20,6 +21,7 @@ PropertyOrder = Literal["canonical", "evidence-last"]
 GrammarWhitespace = Literal["compact", "newline"]
 PROFILES: tuple[ExtractionProfile, ...] = (
     "full-v0",
+    "full-v0-dry",
     "lean-v1",
     "abl-optional",
     "abl-quotes",
@@ -43,6 +45,7 @@ class Profile:
 
 _CONTRACTS: dict[ExtractionProfile, Profile] = {
     "full-v0": Profile("1", "extraction_v3"),
+    "full-v0-dry": Profile("1", "extraction_v3"),
     "lean-v1": Profile("2", "extraction_v4", compact_json=True),
     "abl-optional": Profile("2", "extraction_abl_optional_v1"),
     "abl-quotes": Profile("1", "extraction_abl_quotes_v1"),
@@ -67,3 +70,31 @@ def profile_contract(profile: ExtractionProfile = "full-v0") -> Profile:
         return _CONTRACTS[profile]
     except KeyError:
         raise ValueError("unsupported extraction profile") from None
+
+
+def sampling_parameters(profile: ExtractionProfile) -> dict[str, object]:
+    """Pre-registered unit-strength DRY, otherwise the pinned server defaults.
+
+    See docs/engineering/step-9.md; never choose parameters from visit results.
+    """
+    if profile != "full-v0-dry":
+        return {}
+    return {
+        "dry_multiplier": 1.0,
+        "dry_base": 1.75,
+        "dry_allowed_length": 2,
+        "dry_penalty_last_n": 64,
+        "dry_sequence_breakers": ["\n", ":", '"', "*"],
+        "samplers": [
+            "penalties",
+            "dry",
+            "top_n_sigma",
+            "top_k",
+            "typ_p",
+            "top_p",
+            "min_p",
+            "xtc",
+            "temperature",
+        ],
+        "seed": 0,
+    }

@@ -339,6 +339,7 @@ def test_profile_identities_are_distinct():
                 i["prompt_sha256"],
                 i["schema_property_order"],
                 i.get("grammar_sha256"),
+                json.dumps(i.get("sampling_parameters"), sort_keys=True),
             )
             for i in identities
         }

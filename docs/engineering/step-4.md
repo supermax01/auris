@@ -192,18 +192,21 @@ Hard FAILs are:
   Numeric digits embedded in words such as SpO2 are not measurement values.
   Spelled-out numbers are not converted. The shared tokenizer now preserves
   leading decimals (`.5`, `-.5`) so they cannot silently match `5`.
-- Non-null concept/allergen text absent as a contiguous, normalized whole-token
+- Non-null allergen text absent as a contiguous, normalized whole-token
   phrase from any aligned quote, unless an explicit terminology synonym is
   present. The synonym rule permits only unambiguous exact same-code aliases
   from the local index, existing audited UK/US whole-name drug aliases, and
   the mapper's existing vital-name groups. No fuzzy candidates, inferred
   drug families, or new clinical synonym lists are used. Null fields stay
-  mapper/review concerns. Paraphrases outside these aliases can still fail;
-  the prompt asks for verbatim fields to limit that burden.
+  mapper/review concerns. As amended by Step 9, absent concept text uses the
+  same lexical/alias check but raises `concept_text_not_in_quote` for review
+  instead of failing the lane. This permits clinician review of normalised
+  speech without automatically accepting its clinical meaning.
 
 Review reasons (without turning lexical ambiguity into a hard FAIL) are
 `polarity_conflicts_with_quote`, `negation_not_in_quote`,
-`experiencer_cue_conflict`, `source_role_mismatch`, and `kind_role_mismatch`.
+`experiencer_cue_conflict`, `source_role_mismatch`, `kind_role_mismatch`, and
+`concept_text_not_in_quote` (Step 9).
 They inspect aligned quotes and actual cited segment roles. The shared
 negation detector includes none, nil, negative, nothing and absent in
 addition to the existing cues, contractions, and "ruled out". Family and

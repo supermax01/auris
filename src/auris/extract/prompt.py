@@ -8,6 +8,12 @@ from auris.extract.profiles import ExtractionProfile, profile_contract
 from auris.transcript import TranscriptSegment
 
 PROMPT_VERSION = "extraction_v3"
+WINDOW_PROMPT_VERSION = "allowed-segment-ids-v1"
+WINDOW_INSTRUCTION = (
+    "Allowed segment_id values for this window (including overlap): {ids}.\n"
+    "Copy segment_id from the FIRST field in brackets. The third field is a location, "
+    "never an id. Cite only segments in this window; do not renumber them.\nTranscript:\n"
+)
 
 
 def prompt_text(profile: ExtractionProfile = "full-v0") -> str:
@@ -30,12 +36,13 @@ def render_transcript(segments: Sequence[TranscriptSegment]) -> str:
     # Escape embedded line breaks, leaving the original text in Transcript
     # for evidence alignment. Quotes must use original words, not escapes.
     return "\n".join(
-        f"[{s.id} | {s.role} | {_location(s)}] " + s.text.replace("\r", "\\r").replace("\n", "\\n")
+        f"[{s.id} | {s.role} | {segment_location(s)}] "
+        + s.text.replace("\r", "\\r").replace("\n", "\\n")
         for s in segments
     )
 
 
-def _location(segment: TranscriptSegment) -> str:
+def segment_location(segment: TranscriptSegment) -> str:
     if segment.start_seconds is None:
         return f"turn {segment.turn_number}"
     assert segment.end_seconds is not None
@@ -47,5 +54,9 @@ def messages(
 ) -> list[dict[str, str]]:
     return [
         {"role": "system", "content": prompt_text(profile)},
-        {"role": "user", "content": "Transcript:\n" + render_transcript(segments)},
+        {
+            "role": "user",
+            "content": WINDOW_INSTRUCTION.format(ids=", ".join(s.id for s in segments) or "none")
+            + render_transcript(segments),
+        },
     ]

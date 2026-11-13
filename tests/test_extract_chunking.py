@@ -46,7 +46,7 @@ def test_windows_have_two_segment_overlap_and_cover_every_segment():
     assert all(c.token_count_method == "server_apply_template_tokenize" for c in chunks)
 
 
-@pytest.mark.parametrize("context,reason", [(1000, "no context"), (5600, "one transcript segment")])
+@pytest.mark.parametrize("context,reason", [(1000, "no context"), (6000, "one transcript segment")])
 def test_oversized_prompt_or_segment_fails_clearly(context, reason):
     transcript, _ = case_input("vital_sign")
     transcript = Transcript(

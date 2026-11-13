@@ -167,7 +167,7 @@ def _cmd_extract(args: argparse.Namespace) -> int:
         )
         # Model is unloaded before any JVM is started (A6).
         runner = ValidatorRunner(
-            config, validator.default_cache_dir(), allow_example_urls=fictional_demo
+            config, validator.default_cache_dir(), allow_example_urls=intake.fictional
         )
         if args.command == "extract":
             outcomes, validation = finish_pipeline(run, mapper, runner, args.out)

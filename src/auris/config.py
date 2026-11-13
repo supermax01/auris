@@ -130,6 +130,8 @@ class ExtractorCandidate(_FrozenModel):
     runtime_flags: tuple[str, ...]
     role: Literal["default", "comparator"]
     bytes: int | None = Field(default=None, gt=0)
+    generation_tokens_per_second: float = Field(default=20, gt=0, allow_inf_nan=False)
+    prompt_tokens_per_second: float = Field(default=100, gt=0, allow_inf_nan=False)
 
     @model_validator(mode="after")
     def _pins(self) -> ExtractorCandidate:

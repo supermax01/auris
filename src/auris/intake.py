@@ -265,6 +265,7 @@ class Intake(_IntakeModel):
     patient: PatientIntake
     practitioner: PractitionerIntake
     encounter: EncounterIntake
+    fictional: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def _check_subject_matches_patient(self) -> Intake:

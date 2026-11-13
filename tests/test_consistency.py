@@ -76,8 +76,8 @@ def test_absent_key_term_keeps_whole_quote_negation_scope(polarity):
         changes={"concept_text": "albuterol", "polarity": polarity},
         quote="I use the inhaler. I can never remember the label.",
     )
-    assert result.failures == ("concept_text_not_in_quote",)
-    assert result.review_reasons == (
+    assert not result.failures
+    assert result.review_reasons == ("concept_text_not_in_quote",) + (
         ("polarity_conflicts_with_quote",) if polarity == "affirmed" else ()
     )
 
@@ -237,8 +237,12 @@ def test_numeric_support_preserves_punctuation(value):
         ("vital_sign", "concept_text", "weight"),
     ],
 )
-def test_absent_concept_or_allergen_fails(case, field, value):
-    assert f"{field}_not_in_quote" in checked(case, changes={field: value}).failures
+def test_absent_concept_requires_review_and_allergen_still_fails(case, field, value):
+    result = checked(case, changes={field: value})
+    target = result.review_reasons if field == "concept_text" else result.failures
+    assert f"{field}_not_in_quote" in target
+    if field == "concept_text":
+        assert not result.failures and result.force_material
     assert not checked(case).failures
 
 
@@ -250,11 +254,32 @@ def test_exact_synonyms_allowed_but_fuzzy_candidates_not(terminology, units, int
     )
     outcome = Mapper(intake, transcript, terminology, units).map_assertion(assertion, 0)
     assert not outcome.consistency.failures
-    # Wrong drug with similar text must not pass by a Jaccard candidate.
+    # A fuzzy drug candidate still requires clinician review.
     wrong = assertion.model_copy(update={"concept_text": "amoxicillin"})
     assert (
-        Mapper(intake, transcript, terminology, units).map_assertion(wrong, 0).consistency.failures
+        "concept_text_not_in_quote"
+        in Mapper(intake, transcript, terminology, units)
+        .map_assertion(wrong, 0)
+        .consistency.review_reasons
     )
+
+
+def test_normalised_concept_is_reviewable_after_passing_validation(terminology, units, intake):
+    transcript, assertion = case_input(
+        "patient_condition",
+        changes={"concept_text": "hypertension"},
+        quote="I have high blood pressure.",
+    )
+    outcome = Mapper(intake, transcript, terminology, units).map_assertion(assertion, 0)
+    assert outcome.lanes.evidence == LaneState.PASS
+    assert "concept_text_not_in_quote" in outcome.review_reasons
+    assert not outcome.consistency.failures
+    outcome = apply_validation(outcome, passing_run(intake, [outcome]))
+    assert outcome.export_state == "needs_review"
+    approved = outcome.model_copy(
+        update={"reviewed_resource_digest": resource_digest(outcome.resource)}
+    )
+    assert approved.export_state == "final_exportable"
 
 
 def test_vital_alias_reuses_mapper_names(terminology, units, intake):

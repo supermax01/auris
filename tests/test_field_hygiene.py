@@ -43,7 +43,8 @@ def test_concept_and_allergen_are_never_cleaned(field, literal):
     )
     assert not result.informational_flags
     assert getattr(result.usable_assertion(assertion), field) == literal
-    assert f"{field}_not_in_quote" in result.failures
+    target = result.review_reasons if field == "concept_text" else result.failures
+    assert f"{field}_not_in_quote" in target
 
 
 @pytest.mark.parametrize(

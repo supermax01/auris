@@ -42,6 +42,7 @@ def fictional_intake(dataset_id: str, encounter_id: str) -> Intake:
     system = "https://example.org/auris/fictional-evaluation"
     return Intake.model_validate(
         {
+            "fictional": True,
             "patient": {
                 "id": patient_id,
                 "identifier": [{"system": system, "value": f"FICTIONAL-P-{key[:16]}"}],
