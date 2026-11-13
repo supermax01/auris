@@ -11,6 +11,7 @@ from auris.eval.diagnostics import render_diagnostics
 from auris.eval.gold import Dataset, digest
 from auris.eval.metrics import SCORE_VIEWS, sum_counts
 from auris.eval.noncritical import NONCRITICAL_ERRORS
+from auris.eval.profiles import compare_profiles
 from auris.eval.runs import load_run, scorer_hash, write_json
 from auris.eval.statistics import bootstrap
 
@@ -75,6 +76,10 @@ def selection(dataset: Dataset, scores: dict, default: str, *, seed: int, sample
             and equal_coverage
             and no_increase
             and within_budget
+            and not (
+                "extraction_profile" in candidate["metadata"]
+                and candidate["metadata"]["model"]["id"] == baseline["metadata"]["model"]["id"]
+            )
         )
         comparisons[model] = {
             "delta_micro_lenient_f1": delta,
@@ -131,6 +136,10 @@ def render_report(report: dict) -> str:
         "",
     ]
     models = report["models"]
+    if report.get("profile_comparisons"):
+        lines += ["Profile comparisons (same model; separate from A5 model selection):", ""]
+        for model_id, comparison in report["profile_comparisons"].items():
+            lines += [f"`{model_id}`: `{json.dumps(comparison, sort_keys=True)}`.", ""]
     names = list(models)
     lines += ["| Metric | " + " | ".join(names) + " |", "|---|" + "---|" * len(names)]
     for mode in SCORE_VIEWS:
@@ -242,6 +251,9 @@ def compare_run(output: Path) -> dict:
         seed=document["seed"],
         samples=document["bootstrap_samples"],
     )
+    profiles = compare_profiles(report["models"])
+    if profiles:
+        report["profile_comparisons"] = profiles
     write_json(output / "report.json", report)
     write_private_text(output / "report.md", render_report(report))
     return report

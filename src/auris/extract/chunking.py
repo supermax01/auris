@@ -38,7 +38,7 @@ def measure_chunk(
     counter: InputTokenCounter,
     transcript_counter: TokenCounter | None = None,
 ) -> Chunk:
-    count = counter.count(messages(segments))
+    count = counter.count(messages(segments, counter.profile))
     transcript_counter = transcript_counter or TokenCounter(counter.backend)
     transcript_tokens = transcript_counter.count(render_transcript(segments))
     return Chunk(

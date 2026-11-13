@@ -4,17 +4,19 @@ import hashlib
 from collections.abc import Sequence
 from importlib.resources import files
 
+from auris.extract.profiles import ExtractionProfile, profile_contract
 from auris.transcript import TranscriptSegment
 
 PROMPT_VERSION = "extraction_v3"
 
 
-def prompt_text() -> str:
-    return files("auris.extract").joinpath(f"prompts/{PROMPT_VERSION}.md").read_text("utf-8")
+def prompt_text(profile: ExtractionProfile = "full-v0") -> str:
+    version = profile_contract(profile).prompt_version
+    return files("auris.extract").joinpath(f"prompts/{version}.md").read_text("utf-8")
 
 
-def prompt_sha256() -> str:
-    return hashlib.sha256(prompt_text().encode("utf-8")).hexdigest()
+def prompt_sha256(profile: ExtractionProfile = "full-v0") -> str:
+    return hashlib.sha256(prompt_text(profile).encode("utf-8")).hexdigest()
 
 
 def _timestamp(seconds: float) -> str:
@@ -40,8 +42,10 @@ def _location(segment: TranscriptSegment) -> str:
     return f"{_timestamp(segment.start_seconds)}–{_timestamp(segment.end_seconds)}"
 
 
-def messages(segments: Sequence[TranscriptSegment]) -> list[dict[str, str]]:
+def messages(
+    segments: Sequence[TranscriptSegment], profile: ExtractionProfile = "full-v0"
+) -> list[dict[str, str]]:
     return [
-        {"role": "system", "content": prompt_text()},
+        {"role": "system", "content": prompt_text(profile)},
         {"role": "user", "content": "Transcript:\n" + render_transcript(segments)},
     ]

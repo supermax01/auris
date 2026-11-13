@@ -15,11 +15,18 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     leakage = commands.add_parser("leakage-report")
     leakage.add_argument("--dataset", required=True, help="Public dataset ID or manifest path")
     leakage.add_argument(
-        "--prompt-version", choices=("extraction_v1", "extraction_v2", "extraction_v3")
+        "--prompt-version",
+        choices=("extraction_v1", "extraction_v2", "extraction_v3", "extraction_v4"),
     )
     run = commands.add_parser("run")
     run.add_argument("--dataset", type=Path, required=True)
     run.add_argument("--model", action="append", default=None)
+    run.add_argument(
+        "--extraction-profile",
+        action="append",
+        choices=("full-v0", "lean-v1"),
+        help="Repeat to compare profiles of each selected model in one run",
+    )
     run.add_argument("--out", type=Path, required=True)
     run.add_argument("--seed", type=int, default=1729)
     run.add_argument("--bootstrap-samples", type=int, default=2000)
@@ -126,6 +133,7 @@ def _command(args: argparse.Namespace) -> int:
             locked_run=args.locked_test_run,
             seed=args.seed,
             samples=args.bootstrap_samples,
+            profiles=args.extraction_profile,
         )
     print(result["notice"])
     print(

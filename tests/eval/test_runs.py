@@ -30,6 +30,7 @@ def run_factory(tmp_path, terminology, units):
         confirmed=False,
         locked_run=False,
         models=None,
+        profiles=None,
     ):
         config = load_frozen_config()
         dataset, transcripts = load_dataset(manifest)
@@ -77,10 +78,37 @@ def run_factory(tmp_path, terminology, units):
             confirmed=confirmed,
             locked_run=locked_run,
             samples=25,
+            profiles=profiles,
         )
         return output, result, events
 
     return run
+
+
+def test_same_model_two_profiles_compare_and_replay(run_factory, tmp_path):
+    candidate = load_frozen_config().extractor.candidate()
+    output, run, events = run_factory(models=[candidate.id], profiles=["full-v0", "lean-v1"])
+    assert run["models"] == [f"{candidate.id}@full-v0", f"{candidate.id}@lean-v1"]
+    assert events == [(action, candidate.id) for _ in range(2) for action in ("start", "stop")]
+    assert all(p["leakage_check"] == "pass" for p in run["leakage"]["profiles"].values())
+    frozen = {p: p.read_bytes() for p in output.rglob("*") if p.is_file()}
+    score_run(output, ledger=tmp_path / "ledger.jsonl")
+    report = compare_run(output)
+    comparison = report["profile_comparisons"][candidate.id]
+    assert comparison["delta_micro_lenient_f1"] == 0
+    assert comparison["f1_target_met"] and comparison["no_critical_error_increase"]
+    assert comparison["evidence_failure_rate_delta"] == 0
+    assert comparison["output_tokens_per_assertion_saving_fraction"] == 0
+    for profile in ("full-v0", "lean-v1"):
+        metadata = report["models"][f"{candidate.id}@{profile}"]["metadata"]
+        assert metadata["extraction_profile"] == profile
+        assert len(metadata["measurements_by_encounter"]) == 20
+        assert metadata["measurements_by_encounter"]["hc-01"]["quote_characters"]["count"] > 0
+    assert all(p.read_bytes() == value for p, value in frozen.items())
+    before = [(output / name).read_bytes() for name in ("report.json", "report.md")]
+    compare_run(output)
+    assert before == [(output / name).read_bytes() for name in ("report.json", "report.md")]
+    assert "Profile comparisons" in before[1].decode()
 
 
 def test_fake_run_replay_compare_byte_identical(run_factory, tmp_path, monkeypatch, capsys):
@@ -154,6 +182,25 @@ def test_leakage_refuses_before_runtime_and_records_result(run_factory, tmp_path
     assert not (tmp_path / "run/run.json").exists()
 
 
+def test_each_selected_profile_is_audited_before_inference(run_factory, tmp_path, monkeypatch):
+    from auris.extract.prompt import prompt_text
+
+    transcript = TRANSCRIPTS[DATASET.encounters[0].id]
+    monkeypatch.setattr(
+        "auris.eval.runs.prompt_text",
+        lambda profile="full-v0": (
+            transcript.segments[1].text if profile == "lean-v1" else prompt_text()
+        ),
+    )
+    with pytest.raises(ValueError, match="leakage"):
+        run_factory(profiles=["full-v0", "lean-v1"])
+    data = json.loads((tmp_path / "run/leakage.json").read_text())
+    assert data["leakage_check"] == "fail"
+    assert data["profiles"]["full-v0"]["leakage_check"] == "pass"
+    assert data["profiles"]["lean-v1"]["leakage_check"] == "fail"
+    assert not (tmp_path / "run/run.json").exists()
+
+
 def test_test_split_run_once_score_once_and_record_confirmation(run_factory, tmp_path):
     shutil.copytree(MANIFEST.parent, tmp_path / "test-data")
     manifest = tmp_path / "test-data/manifest.json"
@@ -216,8 +263,9 @@ def test_compare_can_perform_initial_score_and_receipt_rejects_edits(run_factory
 
 
 @pytest.mark.parametrize("fail", [False, True])
+@pytest.mark.parametrize("profiles", [None, ["full-v0", "lean-v1"]])
 def test_run_cli_uses_frozen_candidates_and_managed_flags(
-    tmp_path, terminology, units, monkeypatch, capsys, fail
+    tmp_path, terminology, units, monkeypatch, capsys, fail, profiles
 ):
     from contextlib import nullcontext
 
@@ -265,6 +313,8 @@ def test_run_cli_uses_frozen_candidates_and_managed_flags(
         "--bootstrap-samples",
         "10",
     ]
+    for profile in profiles or []:
+        args.extend(["--extraction-profile", profile])
     assert main(args) == int(fail)
     stderr = capsys.readouterr().err
     saved = json.loads((out / "run.json").read_text())
@@ -279,10 +329,10 @@ def test_run_cli_uses_frozen_candidates_and_managed_flags(
         else:
             assert stderr == ""
     assert events == [
-        config.extractor.candidates[0].id,
-        "unloaded",
-        config.extractor.candidates[1].id,
-        "unloaded",
+        event
+        for candidate in config.extractor.candidates[:2]
+        for _ in profiles or ["full-v0"]
+        for event in (candidate.id, "unloaded")
     ]
     assert (
         _build_parser()
@@ -303,6 +353,14 @@ def test_version_one_replay_enriches_from_frozen_artifacts_without_mutation(run_
     path.write_text(canonical_json(rows))
     document["scorer_version"] = "1"
     document["scorer_sha256"] = "a" * 64
+    del document["extraction_profiles"]
+    for field in (
+        "extraction_profile",
+        "schema_version",
+        "prompt_version",
+        "measurements_by_encounter",
+    ):
+        del document["model_metadata"][model][field]
     del document["model_metadata"][model]["failure_reasons"]
     document["artifacts"][f"{model}/predictions.json"] = digest(path.read_bytes())
     (output / "run.json").write_text(canonical_json(document))
@@ -312,11 +370,16 @@ def test_version_one_replay_enriches_from_frozen_artifacts_without_mutation(run_
     assert result["inference_scorer"] == {"version": "1", "sha256": "a" * 64}
     assert result["models"][model]["metadata"]["failure_reasons"] == {}
     compare_run(output)
+    old_reports = [(output / name).read_bytes() for name in ("report.json", "report.md")]
+    assert "profile_comparisons" not in json.loads(old_reports[0])
+    assert "extraction_profile" not in result["models"][model]["metadata"]
     assert (output / "run.json").read_bytes() == frozen_run
     assert path.read_bytes() == frozen_predictions
     first = (output / "scores.json").read_bytes()
     score_run(output, ledger=tmp_path / "ledger.jsonl")
     assert (output / "scores.json").read_bytes() == first
+    compare_run(output)
+    assert old_reports == [(output / name).read_bytes() for name in ("report.json", "report.md")]
 
 
 def test_v2_run_replays_both_scorers_without_mutating_predictions(

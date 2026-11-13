@@ -10,7 +10,13 @@ from pathlib import Path
 from typing import Any
 
 from auris._storage import prepare_output_directory, write_private_text
-from auris.assertions import MAX_ASSERTIONS, AssertionBase, ExtractionResult, extraction_json_schema
+from auris.assertions import (
+    MAX_ASSERTIONS,
+    AssertionBase,
+    ExtractionResult,
+    extraction_json_schema,
+    parse_extraction_json,
+)
 from auris.config import ExtractorCandidate, ExtractorConfig
 from auris.extract.backend import Backend, ExtractionError, ManagedLlamaServer, RuntimeMetadata
 from auris.extract.chunking import (
@@ -20,7 +26,13 @@ from auris.extract.chunking import (
     plan_chunks,
     split_segments,
 )
-from auris.extract.prompt import PROMPT_VERSION, messages, prompt_sha256, prompt_text
+from auris.extract.measurements import (
+    extraction_measurements,
+    json_whitespace_stats,
+    mapped_evidence_measurements,
+)
+from auris.extract.profiles import ExtractionProfile, SchemaVersion, profile_contract
+from auris.extract.prompt import messages, prompt_sha256, prompt_text
 from auris.extract.tokens import (
     HEADROOM_TOKENS,
     OUTPUT_ESTIMATE,
@@ -59,7 +71,9 @@ def _reject_constant(_: str) -> None:
     raise SchemaResponseError("schema-invalid extraction response (non-finite JSON number)")
 
 
-def parse_completion(response: dict[str, Any]) -> ExtractionResult:
+def parse_completion(
+    response: dict[str, Any], *, schema_version: SchemaVersion = "1"
+) -> ExtractionResult:
     try:
         choices = response["choices"]
         if not isinstance(choices, list) or len(choices) != 1:
@@ -83,7 +97,7 @@ def parse_completion(response: dict[str, Any]) -> ExtractionResult:
             object_pairs_hook=_unique_object,
             parse_constant=_reject_constant,
         )
-        result = ExtractionResult.model_validate_json(content, strict=True)
+        result = parse_extraction_json(content, schema_version=schema_version)
     except (AttributeError, KeyError, TypeError, ValueError) as exc:
         if isinstance(exc, ExtractionError):
             raise
@@ -101,6 +115,8 @@ class ExtractionRun:
     decoding: dict[str, Any]
     transcript_sha256: str
     runtime: RuntimeMetadata
+    extraction_profile: ExtractionProfile = "full-v0"
+    measurements: dict[str, Any] = field(default_factory=dict)
     started_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     prompt_tokens: int | None = None
     prompt_token_count_method: str | None = None
@@ -140,8 +156,11 @@ class ExtractionRun:
                 "quantization": self.model.quantization,
                 "runtime_flags": self.model.runtime_flags,
                 "runtime": asdict(self.runtime),
-                "prompt_version": PROMPT_VERSION,
-                "prompt_sha256": prompt_sha256(),
+                "extraction_profile": self.extraction_profile,
+                "schema_version": profile_contract(self.extraction_profile).schema_version,
+                "prompt_version": profile_contract(self.extraction_profile).prompt_version,
+                "prompt_sha256": prompt_sha256(self.extraction_profile),
+                "measurements": self.measurements,
                 "prompt_tokens": self.prompt_tokens,
                 "prompt_token_count_method": self.prompt_token_count_method,
                 "decoding": self.decoding,
@@ -164,6 +183,8 @@ def extract(
     model: ExtractorCandidate,
 ) -> ExtractionRun:
     started = time.monotonic()
+    profile = config.extraction_profile
+    contract = profile_contract(profile)
     run = ExtractionRun(
         model=model,
         decoding={
@@ -174,16 +195,18 @@ def extract(
             "n_ctx": config.n_ctx,
             "thinking": config.thinking,
             "output_estimate": dict(OUTPUT_ESTIMATE),
+            "json_whitespace": "prompt_compact_json" if profile == "lean-v1" else "server_default",
         },
         transcript_sha256=transcript.content_hash,
         runtime=backend.runtime,
+        extraction_profile=profile,
     )
     try:
         counter = TokenCounter(backend)
-        run.prompt_tokens = counter.count(prompt_text())
+        run.prompt_tokens = counter.count(prompt_text(profile))
         run.prompt_token_count_method = counter.method
-        schema = extraction_json_schema()
-        input_counter = InputTokenCounter(backend, schema)
+        schema = extraction_json_schema(contract.schema_version)
+        input_counter = InputTokenCounter(backend, schema, profile=profile)
         chunks = plan_chunks(
             transcript,
             schema,
@@ -253,7 +276,7 @@ def extract(
             truncated = False
             try:
                 response = backend.complete(
-                    messages(chunk.segments),
+                    messages(chunk.segments, profile),
                     schema,
                     temperature=config.temperature,
                     max_tokens=max_tokens,
@@ -269,7 +292,10 @@ def extract(
                     InputTokens(chunk.input_tokens, chunk.token_count_method), call["usage"]
                 )
                 call["input_token_comparison"] = comparison
-                result = parse_completion(response)
+                result = parse_completion(response, schema_version=contract.schema_version)
+                call["json_whitespace"] = json_whitespace_stats(
+                    response["choices"][0]["message"]["content"]
+                )
                 allowed = frozenset(s.id for s in chunk.segments)
                 call["citation_failure_positions"] = [
                     i
@@ -312,6 +338,9 @@ def extract(
         # Truncated bodies are discarded entirely, never parsed or mapped.
     finally:
         run.wall_seconds = time.monotonic() - started
+        run.measurements = extraction_measurements(
+            run.assertions, run.calls, transcript, run.citation_failures
+        )
     return run
 
 
@@ -329,6 +358,7 @@ def extract_local(
         run = ExtractionRun(
             model=model,
             runtime=manager.runtime,
+            extraction_profile=config.extraction_profile,
             transcript_sha256=transcript.content_hash,
             decoding={
                 "temperature": config.temperature,
@@ -356,6 +386,10 @@ def finish_pipeline(
         prepare_output_directory(output_dir)
     except ValueError as exc:
         raise ExtractionError(str(exc)) from None
+    if not run.measurements:
+        run.measurements = extraction_measurements(
+            run.assertions, run.calls, mapper.transcript, run.citation_failures
+        )
     write_private_text(output_dir / "extraction.json", json.dumps(run.document(), indent=2) + "\n")
     if run.failure:
         write_private_text(
@@ -404,6 +438,7 @@ def finish_pipeline(
             )
         outcomes.append(outcome)
     checked, validation = validate_mappings(validator, mapper.intake, outcomes)
+    run.measurements.update(mapped_evidence_measurements(checked))
     write_validation(output_dir / "validation.json", mapper.intake, checked, validation)
     # Preserve mapper resources/ledger and exact offsets for downstream review.
     document = run.document()

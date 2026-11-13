@@ -20,7 +20,7 @@ def leakage_report(
     from auris.datasets.splits import PublicSplit
     from auris.setup.datasets import default_cache_dir, verified_corpus
 
-    if prompt_version not in ("extraction_v1", "extraction_v2", "extraction_v3"):
+    if prompt_version not in ("extraction_v1", "extraction_v2", "extraction_v3", "extraction_v4"):
         raise ValueError("unsupported prompt version")
     root = _repo_root().resolve()
     public_id = dataset if dataset in ("primock57", "aci-bench") else None

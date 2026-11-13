@@ -16,6 +16,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from auris.extract.profiles import ExtractionProfile
+
 TODO_PLACEHOLDER_PREFIX = "TODO-"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -144,6 +146,7 @@ class ExtractorCandidate(_FrozenModel):
 
 
 class ExtractorConfig(_FrozenModel):
+    extraction_profile: ExtractionProfile = "full-v0"
     model: str = Field(min_length=1)
     revision: str = Field(min_length=1)
     gguf_filename: str = Field(min_length=1)

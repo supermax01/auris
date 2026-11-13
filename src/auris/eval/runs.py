@@ -26,6 +26,7 @@ from auris.eval.predictions import Prediction, freeze_prediction
 from auris.extract.backend import Backend, ExtractionError, RuntimeMetadata
 from auris.extract.leakage import check_leakage
 from auris.extract.pipeline import ExtractionRun, extract, finish_pipeline
+from auris.extract.profiles import ExtractionProfile, profile_contract
 from auris.extract.prompt import prompt_text
 from auris.fhir import Mapper
 from auris.intake import Intake, load_intake
@@ -61,6 +62,7 @@ def run_dataset(
     locked_run: bool = False,
     seed: int = 1729,
     samples: int = 2000,
+    profiles: list[ExtractionProfile] | None = None,
 ) -> dict:
     from auris.datasets.splits import PublicSplit
 
@@ -79,6 +81,12 @@ def run_dataset(
     candidates = [config.extractor.candidate(model) for model in models]
     if not candidates or len({c.id for c in candidates}) != len(candidates):
         raise ValueError("select at least one unique model")
+    selected_profiles = profiles if profiles is not None else [config.extractor.extraction_profile]
+    if not selected_profiles or len(set(selected_profiles)) != len(selected_profiles):
+        raise ValueError("select at least one unique extraction profile")
+    for profile in selected_profiles:
+        profile_contract(profile)
+    variants = [(c, p, f"{c.id}@{p}") for c in candidates for p in selected_profiles]
     if samples < 2:
         raise ValueError("bootstrap needs at least two replicates")
     prepare_output_directory(output)
@@ -100,14 +108,24 @@ def run_dataset(
                 _repo_root() / "eval/datasets" / f"{pin.id}-sources.json",
             )
             corpus.extend("\n".join(s.text for s in t.segments) for t in full.values())
-    leakage = check_leakage(
-        prompt_text(),
-        corpus,
-        clinical_terms=dataset.clinical_watchlist,
-        clinical_policy="warn" if public else "refuse",
-    )
-    write_json(output / "leakage.json", leakage.metadata())
-    leakage.raise_if_failed()  # Before reservation, mapper, or server startup.
+    audits = {}
+    prompts = {}
+    for profile in selected_profiles:
+        prompts[profile] = prompt_text() if profile == "full-v0" else prompt_text(profile)
+        audits[profile] = check_leakage(
+            prompts[profile],
+            corpus,
+            clinical_terms=dataset.clinical_watchlist,
+            clinical_policy="warn" if public else "refuse",
+        )
+    leakage_metadata = {
+        **audits[selected_profiles[0]].metadata(),
+        "leakage_check": "pass" if all(a.passed for a in audits.values()) else "fail",
+        "profiles": {p: a.metadata() for p, a in audits.items()},
+    }
+    write_json(output / "leakage.json", leakage_metadata)
+    for audit in audits.values():
+        audit.raise_if_failed()  # Before reservation, mapper, or server startup.
     lock = register_test_use(
         ledger, dataset, run_id, "run", confirmed=confirmed, locked_run=locked_run
     )
@@ -133,7 +151,9 @@ def run_dataset(
     load_dataset(output / "dataset.json")
     intakes = {e.id: load_intake(output / e.intake_path) for e in dataset.encounters}
     write_json(output / "config.json", config.model_dump(mode="json"))
-    write_private_text(output / "prompt.md", prompt_text())
+    write_private_text(output / "prompt.md", prompts[selected_profiles[0]])
+    for profile, text in prompts.items():
+        write_private_text(output / f"prompt-{profile}.md", text)
     document: dict[str, Any] = {
         "schema_version": "1",
         "scorer_version": SCORER_VERSION,
@@ -146,9 +166,10 @@ def run_dataset(
         "status": "running",
         "seed": seed,
         "bootstrap_samples": samples,
-        "models": [c.id for c in candidates],
-        "default_model": config.extractor.candidate().id,
-        "leakage": leakage.metadata(),
+        "models": [identity for _, _, identity in variants],
+        "extraction_profiles": selected_profiles,
+        "default_model": f"{config.extractor.candidate().id}@{selected_profiles[0]}",
+        "leakage": leakage_metadata,
         "test_use": lock,
         "implementation_sha256": digest(
             canonical_json(
@@ -169,7 +190,8 @@ def run_dataset(
         "model_metadata": {},
     }
     write_json(output / "run.json", document)
-    for candidate in candidates:
+    for candidate, profile, identity in variants:
+        extractor_config = config.extractor.model_copy(update={"extraction_profile": profile})
         started = time.monotonic()
         extractions: dict[str, ExtractionRun] = {}
         manager = server_factory(candidate)
@@ -177,7 +199,7 @@ def run_dataset(
             with manager as backend:
                 for encounter in dataset.encounters:
                     extractions[encounter.id] = extract(
-                        backend, transcripts[encounter.id], config.extractor, candidate
+                        backend, transcripts[encounter.id], extractor_config, candidate
                     )
         except (ExtractionError, OSError) as exc:
             # Failures are explicit zero-prediction encounters, never dropped.
@@ -185,7 +207,8 @@ def run_dataset(
                 if encounter.id not in extractions:
                     extractions[encounter.id] = ExtractionRun(
                         model=candidate,
-                        decoding=config.extractor.model_dump(mode="json"),
+                        extraction_profile=profile,
+                        decoding=extractor_config.model_dump(mode="json"),
                         transcript_sha256=encounter.transcript_sha256,
                         runtime=getattr(manager, "runtime", RuntimeMetadata()),
                         failure=str(exc)
@@ -199,7 +222,7 @@ def run_dataset(
             run = extractions[encounter.id]
             intake = intakes[encounter.id]
             mapper = mapper_factory(intake, transcripts[encounter.id])
-            encounter_dir = output / candidate.id / encounter.id
+            encounter_dir = output / identity / encounter.id
             outcomes, _ = finish_pipeline(
                 run, mapper, validator_factory(encounter.fictional), encounter_dir
             )
@@ -208,8 +231,12 @@ def run_dataset(
                 for a, o in zip(run.assertions, outcomes, strict=True)
             ]
         runtime = next(iter(extractions.values())).runtime
-        document["model_metadata"][candidate.id] = {
+        document["model_metadata"][identity] = {
             "model": candidate.model_dump(mode="json"),
+            "extraction_profile": profile,
+            "schema_version": profile_contract(profile).schema_version,
+            "prompt_version": profile_contract(profile).prompt_version,
+            "measurements_by_encounter": {key: r.measurements for key, r in extractions.items()},
             "runtime": asdict(runtime),
             "managed_inference_wall_seconds": inference_seconds,
             "extraction_wall_seconds": sum(r.wall_seconds for r in extractions.values()),
@@ -228,7 +255,7 @@ def run_dataset(
             ),
             "budget_status": "unverified: whole-pipeline memory and audio runtime not measured",
         }
-        write_json(output / candidate.id / "predictions.json", model_predictions)
+        write_json(output / identity / "predictions.json", model_predictions)
         write_json(output / "run.json", document)
     document["status"] = "complete"
     # Hash every frozen input/output. Reports and audit entries are derived files.

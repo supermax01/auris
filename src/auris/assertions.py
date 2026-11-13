@@ -8,13 +8,19 @@ coding is a later, deterministic step.
 
 Every clinical field is nullable (PLAN A5): anything unsaid stays
 empty (``null``) and is flagged downstream rather than invented.
-Fields are *required but nullable* — the key must be present, its
+In schema v1 fields are *required but nullable* — the key must be present, its
 value may be ``null`` — so constrained decoding always emits the
 complete form. Blank clinical text is normalised to ``null``.
 Classification fields are also nullable; their enums carry explicit
 abstention values (``unknown`` / ``unclear``) and ``null`` means the
 same abstention. The only non-nullable parts are the discriminator
 ``kind`` and ``evidence`` (at least one quote, always).
+
+Schema v2 permits kind-specific detail keys to be omitted. Its plain
+``properties``/``required`` form retains nullable detail values and all required
+classifications, including medication intent. The parser fills only absent
+detail keys with null before validating through the unchanged v1 models.
+Concept text stays required: a missing name must remain explicit abstention.
 
 ``extraction_json_schema()`` exports the JSON Schema used for
 constrained decoding, reduced to the lowest-common subset of
@@ -38,14 +44,28 @@ import copy
 import json
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
+from auris.extract.profiles import SchemaVersion
 from auris.transcript import SpeakerRole
 
 MAX_EVIDENCE_ITEMS = 8
 MAX_ASSERTIONS = 64
+OPTIONAL_DETAIL_FIELDS = frozenset(
+    {
+        "value_text",
+        "unit_text",
+        "stated_time_text",
+        "dose_text",
+        "route_text",
+        "frequency_text",
+        "allergen_text",
+        "reaction_manifestation_text",
+        "stated_resolution_text",
+    }
+)
 
 
 class AssertionKind(StrEnum):
@@ -237,9 +257,41 @@ class ExtractionResult(_AssertionModel):
     assertions: tuple[Assertion, ...] = Field(max_length=MAX_ASSERTIONS)
 
 
-def parse_assertion(data: dict[str, Any]) -> AssertionBase:
+def _check_version(version: SchemaVersion) -> None:
+    if version not in ("1", "2"):
+        raise ValueError("unsupported extraction schema version")
+
+
+def _with_optional_nulls(data: Any) -> Any:
+    """Normalize only v2 details belonging to this kind; never fill classifications."""
+    if not isinstance(data, dict):
+        return data
+    for model in ASSERTION_MODELS:
+        if get_args(model.model_fields["kind"].annotation) == (data.get("kind"),):
+            return {
+                **dict.fromkeys(OPTIONAL_DETAIL_FIELDS & model.model_fields.keys()),
+                **data,
+            }
+    return data
+
+
+def parse_extraction_json(text: str, *, schema_version: SchemaVersion = "1") -> ExtractionResult:
+    """Parse either wire contract into the unchanged canonical v1 models."""
+    _check_version(schema_version)
+    if schema_version == "2":
+        data = json.loads(text)
+        if isinstance(data, dict) and isinstance(data.get("assertions"), list):
+            data["assertions"] = [_with_optional_nulls(a) for a in data["assertions"]]
+        text = json.dumps(data, allow_nan=False)
+    return ExtractionResult.model_validate_json(text, strict=True)
+
+
+def parse_assertion(data: dict[str, Any], *, schema_version: SchemaVersion = "1") -> AssertionBase:
     """Parse one assertion dict through the discriminated union."""
-    wrapper = ExtractionResult.model_validate({"assertions": [data]})
+    _check_version(schema_version)
+    wrapper = ExtractionResult.model_validate(
+        {"assertions": [_with_optional_nulls(data) if schema_version == "2" else data]}
+    )
     return wrapper.assertions[0]
 
 
@@ -276,16 +328,22 @@ def _inline_refs(node: Any, defs: dict[str, Any], active: frozenset[str]) -> Any
     return node
 
 
-def extraction_json_schema() -> dict[str, Any]:
+def extraction_json_schema(schema_version: SchemaVersion = "1") -> dict[str, Any]:
     """JSON Schema for constrained decoding of :class:`ExtractionResult`.
 
     Reduced to the lowest-common subset described in the module
     docstring. Raises ValueError if the generated schema cannot be
     reduced (e.g. a recursive model is introduced later).
     """
+    _check_version(schema_version)
     raw = ExtractionResult.model_json_schema()
     defs = raw.pop("$defs", {})
     schema = _inline_refs(raw, defs, frozenset())
+    if schema_version == "2":
+        for variant in schema["properties"]["assertions"]["items"]["oneOf"]:
+            variant["required"] = [
+                name for name in variant["required"] if name not in OPTIONAL_DETAIL_FIELDS
+            ]
     violations = check_schema_subset(schema)
     if violations:
         raise ValueError(
@@ -294,8 +352,8 @@ def extraction_json_schema() -> dict[str, Any]:
     return schema
 
 
-def write_extraction_json_schema(path: str | Path) -> None:
-    text = json.dumps(extraction_json_schema(), indent=2, ensure_ascii=False) + "\n"
+def write_extraction_json_schema(path: str | Path, *, schema_version: SchemaVersion = "1") -> None:
+    text = json.dumps(extraction_json_schema(schema_version), indent=2, ensure_ascii=False) + "\n"
     Path(path).write_text(text, encoding="utf-8")
 
 

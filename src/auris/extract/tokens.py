@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from auris.extract.backend import Backend, ExtractionError
+from auris.extract.profiles import ExtractionProfile
 
 HEADROOM_TOKENS = 256
 MEASURED_INPUT = "server_apply_template_tokenize"
@@ -74,9 +75,12 @@ class InputTokens:
 
 
 class InputTokenCounter:
-    def __init__(self, backend: Backend, schema: dict[str, Any]) -> None:
+    def __init__(
+        self, backend: Backend, schema: dict[str, Any], *, profile: ExtractionProfile = "full-v0"
+    ) -> None:
         self.backend = backend
         self.schema = schema
+        self.profile = profile
         self._cache: dict[str, InputTokens] = {}
 
     def count(self, messages: list[dict[str, str]]) -> InputTokens:
