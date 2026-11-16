@@ -78,23 +78,20 @@ def export_decision(
     )
     if exported:
         summary = (
-            f"Bundle: {len(exported)} eligible extracted record(s) and supplied intake anchors."
+            f"Export file: {len(exported)} approved record(s), with the patient, clinician "
+            "and visit."
         )
     else:
-        summary = "Bundle: intake anchors only; no extracted records exported."
+        summary = "Export file: the patient, clinician and visit only; no records yet."
     if blockers:
-        summary += (
-            " Final export waits until a clinician approves or dismisses every record"
-            " and every flagged item."
-        )
+        summary += " Export waits until a clinician approves or dismisses every item."
     if not anchors_checked:
-        summary += " Intake anchors have not passed FHIR and profile checks."
+        summary += " The patient, clinician and visit details have not passed the FHIR checks."
     if validation.failure:
         summary += (
-            " Validator NOT_CHECKED; see validation.json for the reason. "
-            "Setup: auris setup fhir; auris setup validator --fetch."
+            " The FHIR validator did not run (the reason is in validation.json); set it up "
+            "with auris setup fhir and auris setup validator --fetch."
         )
-    summary += " Coding not checked."
     return ExportDecision(
         exported_ids=exported,
         blocking_ids=blockers,

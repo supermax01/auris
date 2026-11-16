@@ -46,30 +46,33 @@ def test_demo_outcomes_and_exact_note(demo_outcomes):
     note = render_note(items, metadata(), export_summary=summary)
     assert note == (FIXTURES / "note.md").read_text()
     assert note == render_note(items, metadata(), export_summary=summary)
-    assert "validated" not in note.replace("not validated", "")
+    assert "validated" not in note
     for line in note.splitlines():
         if line.startswith("- "):
-            assert re.search(r"\[\d+:\d{2} · (patient|clinician)\]", line)
-            assert "transcript-supported · " in line and "coding not checked" in line
-    review = note.split("## Needs review — not validated\n", 1)[1].split("## Discussed", 1)[0]
-    ledger = note.split("## Discussed, not captured as records\n", 1)[1]
+            # Who said it and when, in plain words; no internal item numbers.
+            assert re.search(r"\((patient|clinician), \d+:\d{2}\) — ", line), line
+            assert not re.match(r"- [SOAPD]\d+ ", line), line
+            assert "transcript-supported" not in line and "ledger" not in line
+    ledger = note.split("## Also discussed\n", 1)[1].split("\n---\n", 1)[0]
     for item in items:
-        assert (item.review_line() in review) == bool(item.reasons)
+        # Each item's reasons sit directly under it.
+        assert (f"{item.line()}\n{item.review_line()}" in note) == bool(item.reasons)
         assert note.count(item.fact) == 1
         assert (item.line() in ledger) == (item.in_ledger and item.section == "D")
-    assert items[0].reasons == () and items[0].reference not in review
+    assert items[0].reasons == ()
+    assert f"**{sum(bool(item.reasons) for item in items)} items need review**" in note
     assert "Symptom:" not in ledger and "Family history" not in ledger
     assert "Allergy denial:" not in ledger
     assert "Continuing medicine (not a new order)" in ledger
     assert "Discussed medicine (not ordered)" in ledger
-    assert "drug family, kept as text · needs coding review" in note
+    assert "drug family, kept as words" in note
     assert "Family history (not the patient's condition)" in note
     assert "Blood pressure 126/78" in note and "Heart rate 84" in note
     assert "name not captured" not in note
     order = next(o for o in outcomes if o.kind == "explicit_new_order")
     instruction = order.resource["dosageInstruction"][0]["text"]
     assert instruction == "500 milligrams by mouth every eight hours as needed"
-    assert instruction in note.split("## P — Plan", 1)[1].split("## Needs review", 1)[0]
+    assert instruction in note.split("## Plan", 1)[1].split("## Also discussed", 1)[0]
     assessed = next(o for o in outcomes if o.kind == "clinician_assessed_problem")
     assert assessed.resource["code"] == {"text": "acute bronchitis"}
     assert "needs_coding_review" in assessed.review_reasons
@@ -77,9 +80,9 @@ def test_demo_outcomes_and_exact_note(demo_outcomes):
 
 def test_empty_sections_are_explicit():
     note = render_note((), metadata(), export_summary="No extracted records exported.")
-    assert note.count("\nnot captured\n") == 6
-    assert "## Dismissed in review" not in note
-    assert "FICTIONAL DEMO" in note and "clinician review mandatory" in note
+    assert note.count("\nNothing recorded.\n") == 5
+    assert "## Dismissed" not in note and "need review" not in note
+    assert "Fictional demo" in note and "clinician review mandatory" in note
 
 
 def test_word_time_and_actual_speaker_are_used(terminology, units):
@@ -125,8 +128,8 @@ def test_failed_evidence_is_never_presented_as_supported(demo_outcomes):
     )
     item = note_items((failed,), transcript, validation)[0]
     assert item.export_state == "validation_failed"
-    assert item.fact.startswith("Unconfirmed extraction")
-    assert "transcript-supported" not in item.label
+    assert item.fact.startswith("⚠ Not supported by its quote")
+    assert "in the export file" not in item.label and "validated" not in item.label
     assert "checks failed" in item.label
 
 

@@ -182,7 +182,7 @@ function routineSection(items) {
     for (const item of list) {
       const li = el('li'); const detail = el('details');
       const what = extracted(item); const quotes = (state.evidence[item.id] || []).map(e => `“${e.quote}”`).join(' ');
-      detail.append(el('summary', (item.reference ? item.reference + ' — ' : '') + (what ? `${what} — ${quotes}` : item.fact))); detail.append(card(item));
+      detail.append(el('summary', what ? `${what} — ${quotes}` : item.fact)); detail.append(card(item));
       li.append(detail); ul.append(li);
     }
     section.append(ul);
@@ -202,7 +202,7 @@ function render() {
   const root = $('records'); root.replaceChildren();
   const review = Object.fromEntries(state.review.map(r => [r.id, r]));
   const routineIds = new Set(state.routine_ids || []);
-  const groups = ['S — Subjective','O — Objective','A — Assessment','P — Plan','Needs review','Ledger / discussed','Quarantined','Dismissed in review'];
+  const groups = ['Subjective','Objective','Assessment','Plan','Needs review','Also discussed','Could not be read','Dismissed'];
   const buckets = Object.fromEntries(groups.map(g => [g, []]));
   const attention = []; const routine = [];
   for (const item of state.items) {
@@ -214,7 +214,7 @@ function render() {
     buckets[group].push(entry);
   }
   for (const q of state.quarantines) {
-    const row = review[q.id]; const entry = {id:q.id, fact:'Malformed extracted item — not a clinical fact', label:'Withheld; extracted form checks failed; not validated', reasons:q.errors.map(e => `${reasonText(e.type)} at ${e.location.join(' / ') || 'item'}`), reasonCodes:[q.reason, ...q.errors.map(e => e.type)], review:row, quarantine:true};
+    const row = review[q.id]; const entry = {id:q.id, fact:'An extracted item that could not be read — not a clinical fact', label:'Left out: it did not match the expected form', reasons:q.errors.map(e => `${reasonText(e.type)} at ${e.location.join(' / ') || 'item'}`), reasonCodes:[q.reason, ...q.errors.map(e => e.type)], review:row, quarantine:true};
     if (row.state === 'dismiss') buckets[groups[7]].push(entry); else attention.push(entry);
   }
   if (attention.length || routine.length) {
@@ -230,7 +230,7 @@ function render() {
   }
 }
 function card(item) {
-  const row = item.review; const card = el('article'); const heading = el('h3', (item.reference ? item.reference + ' — ' : '') + item.fact); heading.tabIndex = -1; heading.id = 'item-' + item.id; card.append(heading);
+  const row = item.review; const card = el('article'); const heading = el('h3', item.fact); heading.tabIndex = -1; heading.id = 'item-' + item.id; card.append(heading);
   if (state.export.blocking_ids.includes(item.id)) card.append(el('p', 'blocks final export', 'badge'));
   card.append(el('p', item.label));
   if (extracted(item)) card.append(el('p', 'Extracted: ' + extracted(item)));

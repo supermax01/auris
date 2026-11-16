@@ -217,7 +217,7 @@ def test_quarantine_export_review_and_note(terminology, units, intake, tmp_path)
     assert len(decision.blocking_ids) == 2
     assert not decision.exported_ids
     assert (
-        "1 extracted item(s) were malformed and withheld — review required"
+        "1 extracted item(s) could not be read and were left out — review required"
         in (path / "note.md").read_text()
     )
     document = json.loads((path / "extraction.json").read_text())

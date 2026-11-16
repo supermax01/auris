@@ -294,6 +294,67 @@ in the visit note.
 
 </details>
 
+### The visit note
+
+The same visit also produces a short note in the SOAP layout. Every line says
+who said it, when, and whether it went into the export file. An excerpt:
+
+```markdown
+## Objective
+
+- Blood pressure 126/78 mmHg (clinician, 2:36) — in the export file · approved by Dr Tobin Hale (clinician) · checked against US Core
+- Heart rate 84 /min (clinician, 2:44) — in the export file · approved by Dr Tobin Hale (clinician) · checked against US Core
+
+## Plan
+
+- Draft order: acetaminophen — 500 milligrams by mouth every eight hours as needed (clinician, 3:39) — in the export file · approved by Dr Tobin Hale (clinician) · checked against US Core
+```
+
+<details>
+<summary><b>The whole note</b></summary>
+
+```markdown
+# Visit note
+
+Export file: 7 approved record(s), with the patient, clinician and visit.
+
+## Subjective
+
+_Symptoms and denials stay in this note; they are not exported._
+
+- Symptom: “I have had a cough for four days. It keeps waking me up, and I am supposed to be back at work tomorrow. I thought I had better get it checked” (patient, 0:13) — note only · approved by Dr Tobin Hale (clinician)
+- Symptom: “No fever. I checked a couple of times at home because I wondered about that too” (patient, 0:40) — note only · approved by Dr Tobin Hale (clinician)
+- Allergy: sulfa (unconfirmed); stated reaction: rash (patient, 1:57) — in the export file · approved by Dr Tobin Hale (clinician) · drug family, kept as words · checked against US Core
+- Allergy denial: “I am not allergic to penicillin. I have taken that before without any trouble” (patient, 2:18) — note only · approved by Dr Tobin Hale (clinician)
+  - Note: The installed code set cannot represent this allergy denial as a record
+
+## Objective
+
+- Blood pressure 126/78 mmHg (clinician, 2:36) — in the export file · approved by Dr Tobin Hale (clinician) · checked against US Core
+- Heart rate 84 /min (clinician, 2:44) — in the export file · approved by Dr Tobin Hale (clinician) · checked against US Core
+
+## Assessment
+
+- Patient-reported: asthma (unconfirmed, active) (patient, 1:01) — in the export file · approved by Dr Tobin Hale (clinician) · kept as words, no code · checked against US Core
+- Family history (not the patient's condition): “My father has diabetes. He has been telling me I should find a regular doctor instead of just coming in when I am sick” (patient, 1:11) — note only · approved by Dr Tobin Hale (clinician)
+- Assessed: acute bronchitis (provisional, active) (clinician, 2:58) — in the export file · approved by Dr Tobin Hale (clinician) · kept as words, no code · checked against US Core
+- Ruled out: pneumonia (refuted) (clinician, 3:11) — in the export file · approved by Dr Tobin Hale (clinician) · kept as words, no code · checked against US Core
+
+## Plan
+
+- Draft order: acetaminophen — 500 milligrams by mouth every eight hours as needed (clinician, 3:39) — in the export file · approved by Dr Tobin Hale (clinician) · checked against US Core
+
+## Also discussed
+
+_Kept in this note, not exported as records._
+
+- Continuing medicine (not a new order): “I still use albuterol. I brought the inhaler with me because I can never remember everything on the label” (patient, 1:35) — note only · approved by Dr Tobin Hale (clinician)
+```
+
+It ends with a short footer naming the model and the time it was written.
+
+</details>
+
 ## Quick start
 
 Requirements: macOS or Linux, [mise](https://mise.jdx.dev), `llama-server`

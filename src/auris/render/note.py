@@ -40,15 +40,21 @@ class NoteItem(BaseModel):
     reasons: tuple[str, ...]
     in_ledger: bool
     section: Literal["S", "O", "A", "P", "D"]
+    # Stable order within a section (S1, S2, ...); used for sorting, never shown.
     reference: str
+    # Who said it and when, in plain words ("patient, 0:13").
+    source: str = ""
+    approved: bool = False
     dismissed: bool = False
     dismissal: str | None = None
 
     def line(self) -> str:
-        return f"- {self.reference} — {self.fact} {self.receipts} — {self.label}"
+        said = f" ({self.source})" if self.source else ""
+        return f"- {self.fact}{said} — {self.label}"
 
     def review_line(self) -> str:
-        return f"- {self.reference} {self.receipts} — {self.label} — {'; '.join(self.reasons)}"
+        """The item's open questions (or, once approved, its remaining notes)."""
+        return f"  - {'Note' if self.approved else 'To check'}: {'; '.join(self.reasons)}"
 
 
 def _text(value: object) -> str:
@@ -79,10 +85,10 @@ def _fact(outcome: MappingOutcome) -> str:
             "patient_reported_condition": "Patient-reported condition",
             "clinician_assessed_problem": "Assessed problem",
             "clinician_ruled_out_problem": "Ruled-out problem",
-            "explicit_new_order": "Proposed order (no record)",
-            "plan_item": "Plan (test, referral or advice; no record)",
-            "social_history": "Social history (no record)",
-            "vital_sign": "Measurement (no record)",
+            "explicit_new_order": "Order, not made into a record",
+            "plan_item": "Plan",
+            "social_history": "Social history",
+            "vital_sign": "Measurement, not made into a record",
         }[outcome.kind]
         if ledger.get("medication_intent") == "discussed":
             prefix = "Discussed medicine (not ordered)"
@@ -90,8 +96,10 @@ def _fact(outcome: MappingOutcome) -> str:
             prefix = "Continuing medicine (not a new order)"
         if ledger.get("experiencer") == "family_member":
             prefix = "Family history (not the patient's condition)"
-        elif ledger.get("experiencer") in ("other", "unknown", None):
-            prefix += " (" + str(ledger.get("experiencer") or "unknown") + " experiencer)"
+        elif ledger.get("experiencer") == "other":
+            prefix += " (about someone else)"
+        elif ledger.get("experiencer") in ("unknown", None):
+            prefix += " (unclear who this is about)"
         quotes = dict.fromkeys(
             item.aligned.aligned_text if item.aligned else item.quote
             for item in outcome.evidence.items
@@ -123,8 +131,8 @@ def _fact(outcome: MappingOutcome) -> str:
         dose = "; ".join(
             _text(d["text"]) for d in resource.get("dosageInstruction", []) if d.get("text")
         )
-        fact = f"DRAFT — {_code_text(resource['medicationCodeableConcept'])}"
-        fact += f" — {dose}" if dose else " — dose not captured"
+        fact = f"Draft order: {_code_text(resource['medicationCodeableConcept'])}"
+        fact += f" — {dose}" if dose else " — dose not said"
     else:
         fact = (
             f"Allergy: {_code_text(resource['code'])} ({_status(resource, 'verificationStatus')})"
@@ -137,8 +145,31 @@ def _fact(outcome: MappingOutcome) -> str:
         if reactions:
             fact += "; stated reaction: " + "; ".join(reactions)
     if outcome.lanes.evidence != LaneState.PASS:
-        fact = "Unconfirmed extraction — " + fact
+        fact = "⚠ Not supported by its quote — " + fact
     return fact
+
+
+def _source(outcome: MappingOutcome, transcript: Transcript) -> str:
+    """Who said it and when, in plain words: "patient, 0:13; clinician, 0:30"."""
+    parts = []
+    fillers = False
+    for item in outcome.evidence.items:
+        segment = transcript.segment_by_id(item.segment_id)
+        role = segment.role.value if segment else "speaker unknown"
+        seconds = (
+            item.aligned.audio_start_seconds
+            if item.aligned
+            else (segment.start_seconds if segment else None)
+        )
+        if transcript.timing_mode == "untimed":
+            when = f"turn {segment.turn_number}" if segment else ""
+        else:
+            when = f"{int(seconds) // 60}:{int(seconds) % 60:02d}" if seconds is not None else ""
+        part = f"{role}, {when}" if when else role
+        if part not in parts:
+            parts.append(part)
+        fillers = fillers or bool(item.aligned and item.aligned.alignment_method == "disfluency-v2")
+    return "; ".join(parts) + ("; matched ignoring filler words" if fillers else "")
 
 
 def _receipts(outcome: MappingOutcome, transcript: Transcript) -> str:
@@ -177,41 +208,34 @@ def awaiting_approval_only(outcome: MappingOutcome) -> bool:
 
 
 def _label(outcome: MappingOutcome, approval: tuple[str, str] | None = None) -> str:
-    labels = []
-    if outcome.lanes.evidence == LaneState.PASS:
-        labels.append("transcript-supported")
+    """The item's review and export status in plain words."""
     state = outcome.export_state
-    labels.append(
-        "awaiting clinician approval · not validated"
+    labels = [
+        "awaiting approval"
         if awaiting_approval_only(outcome)
         else {
-            "needs_review": "⚠ needs clinician review · not validated",
-            "validation_failed": "⚠ checks failed · needs clinician review · not validated",
-            "pending_validation": "checks incomplete · not validated",
-            "ledger_only": "ledger only",
-            "final_exportable": "eligible for export",
+            "needs_review": "⚠ needs review",
+            "validation_failed": "⚠ checks failed, needs review",
+            "pending_validation": "checks still running",
+            "ledger_only": "note only",
+            "final_exportable": "in the export file",
         }[state]
-    )
+    ]
     if approval:
-        labels.append(f"clinician-approved by {_text(approval[0])}, {_text(approval[1])}")
+        labels.append(f"approved by {_text(approval[0])} ({_text(approval[1])})")
     if state == "ledger_only" and outcome.review_reasons and not approval:
-        labels.append("needs clinician review · not validated")
+        labels.append("needs review")
     if "uncoded_text_only" in outcome.mapper_flags:
         concept = (outcome.resource or {}).get("code", {}).get("text", "")
         family = outcome.kind == "allergy_statement" and normalise(concept) in DRUG_FAMILIES
-        labels.append(
-            ("drug family, kept as text" if family else "kept as text")
-            + (" · text-only coding approved" if approval else " · needs coding review")
-        )
+        labels.append("drug family, kept as words" if family else "kept as words, no code")
     if outcome.lanes.export_checks_pass:
         if outcome.lanes.terminology == LaneState.PASS and state == "final_exportable":
             labels.append("validated")
         else:
-            labels.append("profile-checked")
-    if outcome.lanes.terminology == LaneState.NOT_CHECKED:
-        labels.append("coding not checked")
-    elif outcome.lanes.terminology == LaneState.FAIL:
-        labels.append("coding checks failed")
+            labels.append("checked against US Core")
+    if outcome.lanes.terminology == LaneState.FAIL:
+        labels.append("⚠ code checks failed")
     return " · ".join(labels)
 
 
@@ -291,6 +315,8 @@ def note_items(
                 in_ledger=outcome.ledger is not None,
                 section=section,
                 reference=f"{section}{counts[section]}",
+                source=_source(outcome, transcript),
+                approved=outcome.id in (approvals or {}),
             )
         )
     return tuple(items)
@@ -303,34 +329,24 @@ def render_note(
     export_summary: str,
     malformed_item_count: int = 0,
     unresolved_malformed_count: int | None = None,
+    dismissed_lines: Sequence[str] = (),
 ) -> str:
     dismissed = [item for item in items if item.dismissed]
     items = [item for item in items if not item.dismissed]
-    lines = ["# Auris visit summary", ""]
+    lines = ["# Visit note", ""]
     if metadata.fictional_demo:
         lines.extend(
-            ["**FICTIONAL DEMO — no real patient data; scripted times, no recording.**", ""]
+            [
+                "**Fictional demo: no real patient data. Times are scripted; "
+                "there is no recording.**",
+                "",
+            ]
         )
-    lines.extend(
-        [
-            SCOPE,
-            "",
-            f"Model: {_text(metadata.model_id)} · Prompt: {_text(metadata.prompt_version)} · "
-            f"Run: {_text(metadata.run_timestamp)}",
-            "",
-            (
-                "Evidence cites turn numbers for untimed transcripts; no audio time is inferred."
-                if any("[turn " in item.receipts for item in items)
-                else "Evidence times use aligned audio offsets or segment starts; "
-                "segment times are approximate."
-            ),
-            "",
-            "Review entries refer to the item labels below (S, O, A, P and D).",
-            "",
-            _text(export_summary),
-            "",
-        ]
-    )
+    to_check = [item for item in items if item.reasons and not item.approved]
+    if to_check:
+        noun = "item needs" if len(to_check) == 1 else "items need"
+        lines.extend([f"**{len(to_check)} {noun} review**, marked ⚠ or “To check” below.", ""])
+    lines.extend([_text(export_summary), ""])
     if malformed_item_count:
         unresolved = (
             malformed_item_count
@@ -340,34 +356,60 @@ def render_note(
         status = "review required" if unresolved else "reviewed and dismissed with reasons"
         lines.extend(
             [
-                f"**{malformed_item_count} extracted item(s) were malformed and withheld "
+                f"**{malformed_item_count} extracted item(s) could not be read and were left out "
                 f"— {status}**",
                 "",
             ]
         )
+
+    def block(selected: Sequence[NoteItem]) -> list[str]:
+        out = []
+        for item in selected:
+            out.append(item.line())
+            if item.reasons:
+                out.append(item.review_line())
+        return out or ["Nothing recorded."]
+
     sections = (
-        (
-            "S — Subjective (quoted from the transcript; symptoms are not FHIR records in v1)",
-            "S",
-        ),
-        ("O — Objective", "O"),
-        ("A — Assessment", "A"),
-        ("P — Plan", "P"),
+        ("Subjective", "S", "Symptoms and denials stay in this note; they are not exported."),
+        ("Objective", "O", None),
+        ("Assessment", "A", None),
+        ("Plan", "P", None),
     )
-    for title, section in sections:
+    for title, section, hint in sections:
         lines.extend([f"## {title}", ""])
-        lines.extend([item.line() for item in items if item.section == section] or ["not captured"])
+        if hint:
+            lines.extend([f"_{hint}_", ""])
+        lines.extend(block([item for item in items if item.section == section]))
         lines.append("")
-    lines.extend(["## Needs review — not validated", ""])
-    lines.extend([item.review_line() for item in items if item.reasons] or ["not captured"])
-    lines.extend(["", "## Discussed, not captured as records", ""])
-    lines.extend(
-        [item.line() for item in items if item.in_ledger and item.section == "D"]
-        or ["not captured"]
-    )
-    if dismissed:
-        lines.extend(["", "## Dismissed in review", ""])
+    lines.extend(["## Also discussed", ""])
+    lines.extend(["_Kept in this note, not exported as records._", ""])
+    lines.extend(block([item for item in items if item.in_ledger and item.section == "D"]))
+    if dismissed or dismissed_lines:
+        lines.extend(["", "## Dismissed", ""])
         lines.extend(
-            f"{item.line()} — {_text(item.dismissal or 'dismissed')}" for item in dismissed
+            f"- {item.fact}"
+            + (f" ({item.source})" if item.source else "")
+            + f" — {_text(item.dismissal or 'dismissed')}"
+            for item in dismissed
         )
+        lines.extend(dismissed_lines)
+    timing = (
+        "Items cite turn numbers because the transcript has no times."
+        if items and all(item.source and "turn " in item.source for item in items)
+        else "Times are from the transcript and approximate."
+    )
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "Written by Auris from the visit transcript. Every item quotes what was said, "
+            f"by whom and when. {timing} Records are checked against US Core; medical codes "
+            "are not checked against a terminology server.",
+            "",
+            f"Model {_text(metadata.model_id)} · prompt {_text(metadata.prompt_version)} · "
+            f"written {_text(metadata.run_timestamp)}. {SCOPE}",
+        ]
+    )
     return "\n".join(lines) + "\n"

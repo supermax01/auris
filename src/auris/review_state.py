@@ -496,8 +496,8 @@ class ReviewRun:
                     "blocking_ids": tuple(dict.fromkeys((*decision.blocking_ids, *checking_ids))),
                     "exported_ids": (),
                     "summary": (
-                        "Bundle: intake anchors only. Re-checks incomplete or failed; "
-                        "final export blocked. Coding not checked."
+                        "Export file: the patient, clinician and visit only. A correction is "
+                        "still being checked or failed its checks, so export is blocked."
                     ),
                 }
             )
@@ -518,7 +518,9 @@ class ReviewRun:
                 item = item.model_copy(
                     update={
                         "dismissed": True,
-                        "dismissal": f"dismissed by {event.reviewer}, {event.role}: {event.reason}",
+                        "dismissal": (
+                            f"dismissed by {event.reviewer} ({event.role}): {event.reason}"
+                        ),
                     }
                 )
             elif item.id in approvals and outcome.export_state in (
@@ -606,23 +608,20 @@ class ReviewRun:
             {**item.review_item(), "dismissed": bool(self.current(item))}
             for item in self.quarantines
         ]
+        quarantine_dismissals = [
+            f"- Unreadable extracted item {item.id}, left out — dismissed by "
+            f"{_text(event.reviewer)} ({_text(event.role)}): {_text(event.reason)}"
+            for item in self.quarantines
+            if (event := self.current(item))
+        ]
         note = render_note(
             rendered,
             self.inputs.note_metadata,
             export_summary=decision.summary,
             malformed_item_count=len(self.quarantines),
             unresolved_malformed_count=len(unresolved),
+            dismissed_lines=quarantine_dismissals,
         )
-        quarantine_dismissals = [
-            f"- {item.id} — malformed item withheld — dismissed by {_text(event.reviewer)}, "
-            f"{_text(event.role)}: {_text(event.reason)} — checks failed, not validated"
-            for item in self.quarantines
-            if (event := self.current(item))
-        ]
-        if quarantine_dismissals:
-            if not dismissed:
-                note += "\n## Dismissed in review\n"
-            note += "\n" + "\n".join(quarantine_dismissals) + "\n"
         write_private_text(self.directory / "note.md", note)
         write_bundle(self.directory / "bundle.json", bundle)
         write_private_text(self.directory / "validation.json", json.dumps(report, indent=2) + "\n")

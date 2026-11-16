@@ -60,13 +60,14 @@ def test_cli_demo_writes_all_four_files_and_shared_states(
         "Practitioner",
         "Encounter",
     ]
-    assert "intake anchors only" in note and "intake anchors only" in capsys.readouterr().out
-    assert "FICTIONAL DEMO" in note
+    only = "the patient, clinician and visit only"
+    assert only in note and only in capsys.readouterr().out
+    assert "Fictional demo" in note
     for mapping, row in zip(extraction["mappings"], report["resources"][3:], strict=True):
         assert row["id"] == mapping["id"]
         assert row["export_state"] == mapping["export_state"] == row["note"]["export_state"]
         rendered = row["note"]
-        assert f"{rendered['fact']} {rendered['receipts']} — {rendered['label']}" in note
+        assert f"{rendered['fact']} ({rendered['source']}) — {rendered['label']}" in note
     assert "validated" not in note.replace("not validated", "")
 
 
@@ -139,7 +140,7 @@ def test_run_export_gates_are_nonvacuous(mode, monkeypatch, terminology, units, 
     rows = {row["id"]: row for row in report["resources"]}
     assert all(rows[identifier]["export_state"] == "final_exportable" for identifier in exported)
     if mode == "unavailable":
-        assert "NOT_CHECKED" in capsys.readouterr().out
+        assert "validator did not run" in capsys.readouterr().out
         assert "auris setup validator --fetch" in (out / "note.md").read_text()
         assert all(row["lanes"]["base_r4"]["state"] == "NOT_CHECKED" for row in rows.values())
     full_urls = {e["fullUrl"] for e in bundle["entry"]}

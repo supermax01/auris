@@ -117,14 +117,15 @@ def test_a3_approval_preserves_content_and_ledger_rules(map_case, tmp_path, case
     assert state["export"]["exported_ids"] == ([outcome.id] if exported else [])
     assert run.targets[outcome.id].resource == original
     note = (run.directory / "note.md").read_text()
-    assert "clinician-approved by FICTIONAL Reviewer, fictional clinician" in note
+    assert "approved by FICTIONAL Reviewer (fictional clinician)" in note
     assert "validated" not in note.replace("not validated", "")
     if case in ("nka", "allergy-denial"):
         assert "cannot represent this allergy denial" in note
-        assert "## Needs review" in note
+        # Approved: why it cannot be a record is information, not an open task.
+        assert "  - Note: " in note and "need review" not in note
     if case == "allergy-family":
         assert "coding" not in original["code"]
-        assert "text-only coding approved" in note
+        assert "drug family, kept as words" in note
     if case == "clinician_ruled_out_problem":
         assert original["verificationStatus"]["coding"][0]["code"] == "refuted"
         assert "clinicalStatus" not in original
@@ -165,7 +166,7 @@ def test_dismiss_attribution_atomic_private_outputs_and_immutable_sources(
         assert path.stat().st_ino != inode
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
     note = (run.directory / "note.md").read_text()
-    before, after = note.split("## Dismissed in review")
+    before, after = note.split("## Dismissed")
     assert "Allergy:" not in before and "Allergy:" in after
     assert "FICTIONAL duplicate" in after
     assert all((run.directory / name).read_bytes() == data for name, data in original.items())
@@ -299,7 +300,7 @@ def test_resourceless_review_resolves_only_to_unchanged_ledger(map_case, tmp_pat
         (item,) = state["items"]
         assert item["export_state"] == "ledger_only" and item["in_ledger"]
         assert not item["reasons"] and "needs clinician review" not in item["label"]
-        assert "ledger only" in item["label"] and "clinician-approved" in item["label"]
+        assert "note only" in item["label"] and "approved by" in item["label"]
         assert read_events(run.log_path)[0].target_sha256 == resource_digest(ledger)
         undone = act(run, outcome, "undo")
         assert undone["items"][0]["export_state"] == "needs_review"
@@ -359,7 +360,7 @@ def test_quarantine_reuses_step10_receipt_and_undo(map_case, tmp_path):
     assert not act(run, item, "undo")["ready"]
     assert run.log_path.read_bytes().startswith(before)
     assert act(run, item, "dismiss", "FICTIONAL invalid sibling")["ready"]
-    assert "malformed item withheld — dismissed by" in (run.directory / "note.md").read_text()
+    assert "left out — dismissed by" in (run.directory / "note.md").read_text()
 
 
 @pytest.fixture
@@ -397,7 +398,7 @@ def test_full_fictional_run_reviewed_to_completion(fictional_run):
     family = next(item for item in state["items"] if item["reference"] == "A2")
     assert family["export_state"] == "ledger_only" and not family["reasons"]
     assert "needs clinician review" not in family["label"]
-    assert "## Dismissed in review" not in (directory / "note.md").read_text()
+    assert "## Dismissed" not in (directory / "note.md").read_text()
     assert (directory / "extraction.json").read_bytes() == original
     assert "validated" not in (directory / "note.md").read_text().replace("not validated", "")
 
@@ -600,7 +601,7 @@ def test_quote_context_has_both_neighbors_and_disfluency_receipt(
     assert [s["id"] for s in context["neighbors"]] == ["s1", "s2", "s3"]
     assert [s["cited"] for s in context["neighbors"]] == [False, True, False]
     assert context["receipt"] == ("[turn 2 · patient]" if untimed else "[00:20 · patient]")
-    assert "matched ignoring fillers/repeats" in (run.directory / "note.md").read_text()
+    assert "matched ignoring filler words" in (run.directory / "note.md").read_text()
 
 
 def test_review_cli_and_invalid_inputs_do_not_print_private_values(
