@@ -1,0 +1,10 @@
+html, body { margin: 0; height: 100%; background: #ffffff; }
+body {
+  display: flex; align-items: center; justify-content: center;
+  color: #111111; font: 400 16px/24px ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 32px; text-align: center; }
+p { margin: 0; color: #6b6b6b; }
+.title { color: #111111; font-weight: 600; font-size: 18px; }
+code { font-size: 14px; }

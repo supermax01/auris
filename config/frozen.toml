@@ -1,0 +1,423 @@
+# Auris frozen reference configuration.
+#
+# Every value here is pinned. Changing a value means re-auditing the
+# artefact it names (source, licence, checksum).
+# Loaded and validated by src/auris/config.py.
+
+# ---------------------------------------------------------------------------
+# FHIR R4 4.0.1 + US Core 6.1.0
+#
+# Package SHA-256 values were computed locally from the tarballs downloaded
+# from the official FHIR package registry on 2026-11-12, e.g.
+#   https://packages.fhir.org/hl7.fhir.r4.core/4.0.1
+#   https://packages.fhir.org/hl7.fhir.us.core/6.1.0
+# (fallback registry base: https://packages2.fhir.org/packages).
+# The registry does not publish SHA-256 digests, so the first download is
+# the trust anchor; `auris setup fhir` refuses any later mismatch.
+# Licence values are the `license` field of each package's package.json,
+# read from the downloaded tarballs on the same date.
+# ---------------------------------------------------------------------------
+
+[fhir]
+version = "4.0.1"
+us_core_package_id = "hl7.fhir.us.core"
+us_core_version = "6.1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.r4.core"
+version = "4.0.1"
+sha256 = "ebd7731df7d36b5b7d39d5fb6c9d77b44bb7fe5742f1a2e87f164738c3289d44"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.us.core"
+version = "6.1.0"
+sha256 = "ec096f29bc4ce8f04117dfc4ef82e7289c67a7e2188892e86288c45389d158d9"
+license = "CC0-1.0"
+
+# Dependencies declared in hl7.fhir.us.core 6.1.0's package.json
+# (`dependencies` field, read 2026-11-12). Fetched into the local cache
+# only; never bundled. Note the mixed licences: redistribution
+# for offline Docker needs a licence check before any image ships with a
+# prefilled cache.
+
+[[fhir.packages]]
+id = "hl7.terminology.r4"
+version = "5.0.0"
+sha256 = "c863bef14eddb01d2884d8f14826b9b152f9fcef6b99e107025136af69ce2c18"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.extensions.r4"
+version = "1.0.0"
+sha256 = "b270eb5b0ea3d015398a5af6c86cab2718070cbb850e366ef050ce6d6eb4a9d3"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.bulkdata"
+version = "2.0.0"
+sha256 = "2dca9c8aeebad2c3db8e0d8db919cb3a65a24b9fcf6d46f02badbb1ae89b86cb"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.smart-app-launch"
+version = "2.1.0"
+sha256 = "c1f26d40e5b58fc0c101f7f7e109ddc40b8156015e1632439d2cb34cf67a612c"
+license = "CC-BY-4.0"
+
+[[fhir.packages]]
+id = "us.nlm.vsac"
+version = "0.11.0"
+sha256 = "37aa3f718c68283ec7123bfa77adf8c5fcdd90b35be37e19d76a8b66121bc88d"
+license = "US Govt"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.sdc"
+version = "3.0.0"
+sha256 = "be5c3f0a7f82e072b40739e05fb68f3e58e44c9bd040cd901b1b55c62f23dca2"
+license = "CC0-1.0"
+
+[[fhir.packages]]
+id = "us.cdc.phinvads"
+version = "0.12.0"
+sha256 = "cf565971a6bcca3193de4d7ff71f5c443fc4e00adaeef8c88416d21c778e3a3f"
+license = "HHS/Open"
+
+[[fhir.packages]]
+id = "ihe.formatcode.fhir"
+version = "1.1.0"
+sha256 = "3c9bf67d35d5b090ce5a2215ea7e650c9e826918ebddc95eaa35439a436f7d84"
+license = "CC-BY-SA-4.0"
+
+# Second-order: declared by hl7.fhir.uv.sdc 3.0.0, not by US Core itself.
+# Pinned so the cache closure is complete and auditable.
+[[fhir.packages]]
+id = "hl7.fhir.r4.examples"
+version = "4.0.1"
+sha256 = "e18b31e7a52145a31f1f3f409cf6847583b08b7306cc4e9460a95a7b5efba930"
+license = "CC0-1.0"
+
+# Validator 7.0.5 runtime closure, observed in an isolated online setup run.
+# These are required by the validator, not declared US Core dependencies.
+# Their declared R5 core dependency was not needed by this R4 validator run.
+
+[[fhir.packages]]
+id = "hl7.fhir.xver-extensions"
+version = "0.1.0"
+sha256 = "f3bb9fa2083402e88a02b41f433655274e8a1cca563211c8f7ba6fd0badf537a"
+bytes = 183877
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.extensions"
+version = "5.4.0"
+sha256 = "9e72cb92118a3e64babf442394fdc300b97f5d53b295469aee5ed34f216a830e"
+bytes = 1252695
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.fhir.uv.extensions.r4"
+version = "5.2.0"
+sha256 = "b406e75575f05676559d0759770c5939d023ee72fb2ef38e0b3259328487720a"
+bytes = 1302452
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.terminology"
+version = "7.5.0"
+sha256 = "c54ebe534cd3f2474459eaed68e54c34f09b003766605b19e5552db376f2cc42"
+bytes = 4971232
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.terminology.r4"
+version = "6.2.0"
+sha256 = "79404c9cc95491fc0155627cd039c401a6eb4748175328131e91b709a41300e2"
+bytes = 5661217
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+[[fhir.packages]]
+id = "hl7.terminology.r5"
+version = "7.5.0"
+sha256 = "cabae9ff7828c05173369bd2244ab6eabafe19d65b02c140a76638c1f3a56bf9"
+bytes = 4911910
+license = "CC0-1.0"
+required_by = "validator 7.0.5"
+
+# ---------------------------------------------------------------------------
+# Speech-to-text, laptop profile.
+# Source is OpenAI's original; Auris converts it to CTranslate2 INT8
+# itself (`auris setup asr --fetch`). Revision, licence and file pins from
+# the Hugging Face API, read 2026-11-12 / 2026-11-13:
+#   https://huggingface.co/api/models/openai/whisper-large-v3-turbo/revision/<sha>?blobs=true
+# (`siblings[].lfs.sha256` for the weights, `siblings[].blobId` for the
+# rest). The conversion is deterministic: two conversions with
+# CTranslate2 4.9.0 gave byte-identical files, pinned below.
+# ---------------------------------------------------------------------------
+
+[asr.laptop]
+source_model = "openai/whisper-large-v3-turbo"
+revision = "41f01f3fe87f28c78e2fbf8b568835947dd65ed9"
+license = "MIT"
+source_files = [
+  { name = "added_tokens.json", bytes = 34648, git_blob_sha1 = "1b33526d33aaa60d79f78ae8651dae50b730185a" },
+  { name = "config.json", bytes = 1256, git_blob_sha1 = "ad2f44ff1ed66e12765b2392dc041469db91a462" },
+  { name = "generation_config.json", bytes = 3772, git_blob_sha1 = "cbe752958dc3e4671b0e0220aa1c545423a6d5f5" },
+  { name = "merges.txt", bytes = 493869, git_blob_sha1 = "6038932a2a1f09a66991b1c2adae0d14066fa29e" },
+  { name = "model.safetensors", bytes = 1617824864, sha256 = "542566a422ae4f3fd23f1ba11add198fca01bbf82e66e6a2857b3f608b1eb9d1" },
+  { name = "normalizer.json", bytes = 52666, git_blob_sha1 = "dd6ae819ad738ac1a546e9f9282ef325c33b9ea0" },
+  { name = "preprocessor_config.json", bytes = 340, git_blob_sha1 = "931c77a740890c46365c7ae0c9d350ba3cca908f" },
+  { name = "special_tokens_map.json", bytes = 2186, git_blob_sha1 = "312bc106291bb51bf2cc1648df070bef963a0639" },
+  { name = "tokenizer.json", bytes = 2710337, git_blob_sha1 = "17456db595adc78a973f97d69d8cb50bc87c0b1c" },
+  { name = "tokenizer_config.json", bytes = 282843, git_blob_sha1 = "06ffdc8308eae6bb7bd1fdd81e94b0a881a539ab" },
+  { name = "vocab.json", bytes = 1036558, git_blob_sha1 = "0f3456460629e21d559c6daa23ab6ce3644e8271" },
+]
+
+[asr.laptop.conversion]
+tool = "ctranslate2"
+tool_version = "4.9.0"
+quantization = "int8"
+copy_files = ["tokenizer.json", "preprocessor_config.json"]
+files = [
+  { name = "config.json", sha256 = "b0253ea6c0d3bea6b1e19e91a02acfd3b53f4467362efcb5a3e6b16c9b3a9b7e" },
+  { name = "model.bin", sha256 = "7482f978f9493b93b3d0bf68a148a1a62ca02547e8ee981358ff8ef2de8a9418" },
+  { name = "preprocessor_config.json", sha256 = "7ccc62c6f2765af1f3b46c00c9b5894426835a05021c8b9c01eecb6dfb542711" },
+  { name = "tokenizer.json", sha256 = "297b13372ac43916285644fb9687add3cc62ee2a1adb60da3dc25cc94c1871fd" },
+  { name = "vocabulary.json", sha256 = "c69260f2ab26d659b7c398f9a2b2b48ed0df16c3b47d7326782fd9cba71690c1" },
+]
+
+# Deterministic decoding (temperature 0, beam 5, Silero VAD from
+# faster-whisper, no conditioning on earlier text to avoid loops).
+[asr.decoding]
+language = "en"
+beam_size = 5
+temperature = 0.0
+condition_on_previous_text = false
+vad_filter = true
+word_timestamps = true
+# Style only: without it Whisper often drops punctuation. It must say nothing
+# clinical (enforced).
+initial_prompt = "Hello, how are you? Fine, thanks. Shall we start?"
+# The same sentence for every 30-second window; off by default.
+style_every_window = false
+
+# A speaker's consecutive pieces joined into turns (auris.speech.turns): no one
+# else speaking between them, a pause of at most gap_seconds, a turn of at most
+# max_seconds. Off by default.
+[asr.segmentation]
+join_turns = false
+gap_seconds = 1.5
+max_seconds = 60
+
+# Drug-name hints (faster-whisper hotwords). Off by default. The words are the most-filled US outpatient prescriptions,
+# 2024, from AHRQ MEPS HC-254A (public domain; names from Multum Lexicon),
+# reduced to spoken ingredient names, in rank order, until 223 Whisper tokens
+# (data/asr-hints/: SOURCE.md, top_drugs.tsv, build_hints.py).
+[asr.hints]
+enabled = false
+source = "AHRQ MEPS HC-254A 2024 prescribed medicines, top fills (data/asr-hints)"
+words = [
+    "atorvastatin",
+    "metformin",
+    "levothyroxine",
+    "amlodipine",
+    "lisinopril",
+    "albuterol",
+    "losartan",
+    "metoprolol",
+    "rosuvastatin",
+    "omeprazole",
+    "gabapentin",
+    "sertraline",
+    "escitalopram",
+    "semaglutide",
+    "amphetamine",
+    "dextroamphetamine",
+    "pantoprazole",
+    "bupropion",
+    "hydrochlorothiazide",
+    "fluoxetine",
+    "trazodone",
+    "montelukast",
+    "amoxicillin",
+    "tamsulosin",
+    "apixaban",
+    "insulin glargine",
+    "simvastatin",
+    "empagliflozin",
+    "furosemide",
+    "meloxicam",
+    "acetaminophen",
+    "hydrocodone",
+    "tirzepatide",
+    "fluticasone",
+    "methylphenidate",
+    "duloxetine",
+    "prednisone",
+    "carvedilol",
+    "famotidine",
+    "ibuprofen",
+    "buspirone",
+    "venlafaxine",
+    "tramadol",
+    "allopurinol",
+]
+
+# Drug-name spelling (auris.speech.spelling):
+# a misheard drug name that is not English becomes the one RxNorm ingredient
+# it sounds like; the heard text is kept. Off until measured. English word
+# list: Webster's Second International (1934, copyright lapsed; public
+# domain) as kept by FreeBSD, commit 4a65e12dfbaba7193e37fcd2e14fbc20776a78b9.
+[asr.spelling]
+enabled = false
+
+[asr.spelling.word_list]
+url = "https://raw.githubusercontent.com/freebsd/freebsd-src/4a65e12dfbaba7193e37fcd2e14fbc20776a78b9/share/dict/web2"
+sha256 = "92165d95d72a67377e80052b1b9c3d63a4ac402ccd71690c89d949e809738238"
+bytes = 2494065
+license = "Public domain (Webster's Second International, 1934; copyright lapsed)"
+
+# "Who spoke when": SpeechBrain ECAPA speaker embeddings.
+# Only the embedding weights are used, loaded with weights_only (no pickled
+# code, no HyperPyYAML). Pins from
+#   https://huggingface.co/api/models/speechbrain/spkrec-ecapa-voxceleb?blobs=true
+# read 2026-11-13 (`cardData.license` = "apache-2.0").
+[asr.speaker_embedding]
+source_model = "speechbrain/spkrec-ecapa-voxceleb"
+revision = "0f99f2d0ebe89ac095bcc5903c4dd8f72b367286"
+license = "Apache-2.0"
+file = { name = "embedding_model.ckpt", bytes = 83316686, sha256 = "0575cb64845e6b9a10db9bcb74d5ac32b326b8dc90352671d345e2ee3d0126a2" }
+
+# ---------------------------------------------------------------------------
+# Fact-extraction model. Metadata only — weights are downloaded by
+# `auris setup model`. Revision is field `sha` and the file digest is
+# `siblings[].lfs.sha256` for the Q4_K_M file, from:
+#   https://huggingface.co/api/models/Qwen/Qwen3-8B-GGUF?blobs=true
+# read 2026-11-12. `cardData.license` = "apache-2.0".
+# Temperature 0 (greedy decoding).
+# ---------------------------------------------------------------------------
+
+[extractor]
+extraction_profile = "full-v0"
+model = "Qwen/Qwen3-8B-GGUF"
+revision = "7c41481f57cb95916b40956ab2f0b139b296d974"
+gguf_filename = "Qwen3-8B-Q4_K_M.gguf"
+gguf_sha256 = "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+license = "Apache-2.0"
+n_ctx = 8192
+max_output_tokens = 4096
+min_output_tokens = 1024
+thinking = false
+temperature = 0.0
+temperature_status = "greedy baseline"
+
+[extractor.loop_guard]
+version = "loop-guard-v1"
+identical_assertion_limit = 4
+
+# Each call reserves measured input + 256 headroom, up to the output ceiling.
+# Windows also shrink to fit the conservative output estimate.
+# Truncated output is discarded before deterministic splitting; a truncated
+# single segment fails the entire run.
+[[extractor.candidates]]
+id = "qwen3-8b-q4_k_m"
+repo = "Qwen/Qwen3-8B-GGUF"
+revision = "7c41481f57cb95916b40956ab2f0b139b296d974"
+gguf_filename = "Qwen3-8B-Q4_K_M.gguf"
+sha256 = "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+license = "Apache-2.0"
+quantization = "Q4_K_M"
+runtime_flags = ["--reasoning", "off"]
+role = "default"
+
+# Metadata supplied by Claude's verified probe; do not download at runtime.
+# Google's card google/gemma-4-E4B-it at
+# 4ecc2ba63bcac23ba4a767fc87025b1450f84c9c: apache-2.0, not gated.
+# Q4_0 versus Qwen Q4_K_M is a known quantization confound: ggml-org has
+# no official Q4_K_M. Text-only inference needs no mmproj file.
+# A-priori model-card settings; not chosen from Auris development results.
+[extractor.candidates.card_sampling]
+source_repo = "Qwen/Qwen3-8B-GGUF"
+revision = "7c41481f57cb95916b40956ab2f0b139b296d974"
+readme_sha256 = "913fd918b4afb4511accca0874f701248b024013e804fa7a463639ead74e4dcb"
+mode = "non-thinking"
+temperature = 0.7
+top_p = 0.8
+top_k = 20
+min_p = 0.0
+presence_penalty = 1.5
+
+
+
+# ---------------------------------------------------------------------------
+# JVM for the official HL7 FHIR validator.
+# ---------------------------------------------------------------------------
+
+[jvm]
+distribution = "temurin-21"
+heap_gb = 2
+
+# Local FHIR R4 test server for the integration proof: HAPI FHIR
+# JPA Server Starter, from the official image's application layer. Digests
+# from registry-1.docker.io (index for tag v8.12.0-2; the layer holding
+# /app/main.war, identical content on every platform), read 2026-11-13.
+# Runs on 127.0.0.1 only, in-memory database, MCP endpoint off.
+[fhir_server]
+software = "HAPI FHIR JPA Server Starter 8.12.0"
+image = "hapiproject/hapi"
+tag = "v8.12.0-2"
+index_digest = "sha256:0ff86aac4c7bd13a1ee226444a70263bb46ed1c28ef543c30a44f865b80ca04e"
+layer_digest = "sha256:b28305ea783714bdb632d4a4a6ac640f43113d31ac6a9bea7af3643df768f949"
+member = "app/main.war"
+war_bytes = 388197072
+war_sha256 = "d784462f9a5de7385c4f6b2fcfeec3d7d2316270d5bb2e6fb73cb6ed0c5de749"
+license = "Apache-2.0"
+heap_mb = 1024
+
+# Official release asset digest, verified at setup (Apache-2.0).
+[validator]
+artifact = "validator_cli.jar"
+version = "7.0.5"
+url = "https://github.com/hapifhir/org.hl7.fhir.core/releases/download/7.0.5/validator_cli.jar"
+sha256 = "9dfe9f305b0f9389eceade2a4a1c9a2740d7b0e614066fdf07a78b571c76d92f"
+bytes = 204856882
+license = "Apache-2.0"
+
+# ---------------------------------------------------------------------------
+# Reference machines, recorded as data.
+# ---------------------------------------------------------------------------
+
+[reference_machines.laptop]
+name = "laptop"
+chip = "Apple M2"
+memory_gb = 16
+pipeline_memory_budget_gb = 12
+runtime_target = "at most 20 minutes to process 10 minutes of audio (to be measured)"
+
+[reference_machines.server]
+name = "server"
+gpu_memory_gb = 24
+memory_gb = 64
+
+# Terminology: verified source archives, downloaded only during setup (A8).
+[terminology.rxnorm]
+release = "2026-11-02"
+url = "https://download.nlm.nih.gov/rxnorm/RxNorm_full_prescribe_11022026.zip"
+filename = "RxNorm_full_prescribe_11022026.zip"
+sha256 = "c742a6c4b2995194aa3479400e08a7c1ad707178bfc80fe9c8cd7afa693ae987"
+md5 = "cd240fc9655dcd2cb54b1e185f3d8702"
+license = "NLM Current Prescribable Content; no licence required"
+
+[terminology.icd10cm]
+release = "FY2027"
+url = "https://www.cms.gov/files/zip/2027-code-descriptions-tabular-order.zip"
+filename = "2027-code-descriptions-tabular-order.zip"
+sha256 = "91c6c9d1117764ce72375a0f3a5493b1725dafbc1ab283b55799076c9e194965"
+license = "Public domain (US Government)"
+valid_from = 2026-10-01
+valid_to = 2027-09-30

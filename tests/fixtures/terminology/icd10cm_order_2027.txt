@@ -1,0 +1,5 @@
+00001 A00     0 Cholera                                                      Cholera
+00002 A000    1 Cholera due to Vibrio cholerae 01, biovar cholerae           Cholera due to Vibrio cholerae 01, biovar cholerae
+04421 E119    1 Type 2 diabetes mellitus without complications               Type 2 diabetes mellitus without complications
+13486 J209    1 Acute bronchitis, unspecified                                Acute bronchitis, unspecified
+13622 J45909  1 Unspecified asthma, uncomplicated                            Unspecified asthma, uncomplicated

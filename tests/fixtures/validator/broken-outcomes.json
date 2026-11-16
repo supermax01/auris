@@ -1,0 +1,2372 @@
+{
+  "resourceType" : "Bundle",
+  "type" : "collection",
+  "entry" : [{
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Error</td><td>AllergyIntolerance</td><td>Validation rule failed</td><td>Constraint failed: ait-1: 'AllergyIntolerance.clinicalStatus SHALL be present if verificationStatus is not entered-in-error.'</td><td/><td>InstanceValidator</td></tr><tr><td>Warning</td><td>AllergyIntolerance</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0000-base.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 539
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/AllergyIntolerance#ait-1"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/AllergyIntolerance|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: ait-1: 'AllergyIntolerance.clinicalStatus SHALL be present if verificationStatus is not entered-in-error.'"
+        },
+        "expression" : ["AllergyIntolerance"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 539
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/AllergyIntolerance|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["AllergyIntolerance"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Error</td><td>AllergyIntolerance</td><td>Validation rule failed</td><td>Constraint failed: ait-1: 'AllergyIntolerance.clinicalStatus SHALL be present if verificationStatus is not entered-in-error.'</td><td/><td>InstanceValidator</td></tr><tr><td>Warning</td><td>AllergyIntolerance</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>AllergyIntolerance.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1186.8 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>AllergyIntolerance.reaction[0].manifestation[0]</td><td>Invalid Code</td><td>No code provided, and a code should be provided from the value set 'SNOMED CT Clinical Findings' (http://hl7.org/fhir/ValueSet/clinical-findings|4.0.1)</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0000-profile.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 640
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/AllergyIntolerance#ait-1"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/AllergyIntolerance|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: ait-1: 'AllergyIntolerance.clinicalStatus SHALL be present if verificationStatus is not entered-in-error.'"
+        },
+        "expression" : ["AllergyIntolerance"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 640
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/AllergyIntolerance|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["AllergyIntolerance"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 326
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1186.8 because there is no terminology service"
+        },
+        "expression" : ["AllergyIntolerance.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 636
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Terminology_TX_Code_ValueSet_Ext"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance|6.1.0"
+        }],
+        "severity" : "warning",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "No code provided, and a code should be provided from the value set 'SNOMED CT Clinical Findings' (http://hl7.org/fhir/ValueSet/clinical-findings|4.0.1)"
+        },
+        "expression" : ["AllergyIntolerance.reaction[0].manifestation[0]"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Observation.value.ofType(Quantity)</td><td>Business Rule Violation</td><td>Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation</td><td>Informational Note</td><td>Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation.value.ofType(Quantity)</td><td>Invalid Content</td><td>This element does not match any known slice defined in the profile http://hl7.org/fhir/StructureDefinition/bp|4.0.1 and slicing is CLOSED: Observation.value.ofType(Quantity): Does not match slice 'valueQuantity' (discriminator: $this.empty())</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.component: minimum required = 2, but only found 0 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:DiastolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have a performer</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0001-base.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 560
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Error_validating_code_running_without_terminology_services"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "business-rule",
+        "details" : {
+          "text" : "Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 561
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 561
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "VALIDATION_VAL_PROFILE_SIGNPOST_OBS"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "informational",
+        "details" : {
+          "text" : "Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 560
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_NotSlice"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "invalid",
+        "details" : {
+          "text" : "This element does not match any known slice defined in the profile http://hl7.org/fhir/StructureDefinition/bp|4.0.1 and slicing is CLOSED: Observation.value.ofType(Quantity): Does not match slice 'valueQuantity' (discriminator: $this.empty())"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 561
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.component: minimum required = 2, but only found 0 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 561
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 561
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:DiastolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 286
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 561
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_a_performer"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have a performer"
+        },
+        "expression" : ["Observation"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Observation.value.ofType(Quantity)</td><td>Business Rule Violation</td><td>Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation</td><td>Informational Note</td><td>Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation.value.ofType(Quantity)</td><td>Invalid Content</td><td>This element does not match any known slice defined in the profile http://hl7.org/fhir/StructureDefinition/bp|4.0.1 and slicing is CLOSED: Observation.value.ofType(Quantity): Does not match slice 'valueQuantity' (discriminator: $this.empty())</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.component: minimum required = 2, but only found 0 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:DiastolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have a performer</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.component: minimum required = 2, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:systolic': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:diastolic': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation.value.ofType(Quantity)</td><td>Invalid Code</td><td>Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated</td><td/><td>TerminologyEngine</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0001-profile.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 657
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Error_validating_code_running_without_terminology_services"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "business-rule",
+        "details" : {
+          "text" : "Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "VALIDATION_VAL_PROFILE_SIGNPOST_OBS"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "informational",
+        "details" : {
+          "text" : "Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 657
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_NotSlice"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "invalid",
+        "details" : {
+          "text" : "This element does not match any known slice defined in the profile http://hl7.org/fhir/StructureDefinition/bp|4.0.1 and slicing is CLOSED: Observation.value.ofType(Quantity): Does not match slice 'valueQuantity' (discriminator: $this.empty())"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.component: minimum required = 2, but only found 0 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:DiastolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 383
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_a_performer"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have a performer"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.component: minimum required = 2, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:systolic': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 658
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:diastolic': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 383
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 657
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "warning",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Observation.component[0].value.ofType(Quantity)</td><td>Business Rule Violation</td><td>Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation</td><td>Informational Note</td><td>Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.component: minimum required = 2, but only found 1 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Information</td><td>Observation.component[0].code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation.component[0].value.ofType(Quantity)</td><td>Invalid Code</td><td>Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have a performer</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0002-base.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 653
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Error_validating_code_running_without_terminology_services"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "business-rule",
+        "details" : {
+          "text" : "Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services"
+        },
+        "expression" : ["Observation.component[0].value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 656
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 656
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "VALIDATION_VAL_PROFILE_SIGNPOST_OBS"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "informational",
+        "details" : {
+          "text" : "Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 656
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.component: minimum required = 2, but only found 1 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 656
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 293
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 546
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.component[0].code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 653
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated"
+        },
+        "expression" : ["Observation.component[0].value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 656
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_a_performer"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have a performer"
+        },
+        "expression" : ["Observation"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Observation.component[0].value.ofType(Quantity)</td><td>Business Rule Violation</td><td>Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation</td><td>Informational Note</td><td>Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.component: minimum required = 2, but only found 1 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Information</td><td>Observation.component[0].code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation.component[0].value.ofType(Quantity)</td><td>Invalid Code</td><td>Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have a performer</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.component: minimum required = 2, but only found 1 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Slice 'Observation.component:systolic': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Information</td><td>Observation.component[0].code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service</td><td/><td>TerminologyEngine</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0002-profile.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 750
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Error_validating_code_running_without_terminology_services"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "business-rule",
+        "details" : {
+          "text" : "Unable to validate code 'mm[Hg]' in system 'http://unitsofmeasure.org' because the validator is running without terminology services"
+        },
+        "expression" : ["Observation.component[0].value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "VALIDATION_VAL_PROFILE_SIGNPOST_OBS"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "informational",
+        "details" : {
+          "text" : "Validate Observation against the Blood pressure systolic and diastolic profile (http://hl7.org/fhir/StructureDefinition/bp) which is required by the FHIR specification because the LOINC code 85354-9 was found"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.component: minimum required = 2, but only found 1 (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:SystolicBP': a matching slice is required, but not found (from http://hl7.org/fhir/StructureDefinition/bp|4.0.1). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 390
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 643
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.component[0].code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 750
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/bp|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated"
+        },
+        "expression" : ["Observation.component[0].value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_a_performer"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have a performer"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.component: minimum required = 2, but only found 1 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 753
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Observation.component:systolic': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 390
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 643
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service"
+        },
+        "expression" : ["Observation.component[0].code"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Error</td><td>MedicationRequest</td><td>Structural Issue</td><td>MedicationRequest.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Warning</td><td>MedicationRequest</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0003-base.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 589
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "MedicationRequest.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1)"
+        },
+        "expression" : ["MedicationRequest"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 589
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["MedicationRequest"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Error</td><td>MedicationRequest</td><td>Structural Issue</td><td>MedicationRequest.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Warning</td><td>MedicationRequest</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>MedicationRequest</td><td>Structural Issue</td><td>MedicationRequest.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest|6.1.0)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>MedicationRequest.medication.ofType(CodeableConcept)</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1010.4 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0003-profile.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 689
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "MedicationRequest.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1)"
+        },
+        "expression" : ["MedicationRequest"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 689
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/MedicationRequest|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["MedicationRequest"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 689
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "MedicationRequest.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest|6.1.0)"
+        },
+        "expression" : ["MedicationRequest"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 393
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1010.4 because there is no terminology service"
+        },
+        "expression" : ["MedicationRequest.medication.ofType(CodeableConcept)"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Condition</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0004-base.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 620
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Condition|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Condition"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Condition</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Condition</td><td>Structural Issue</td><td>Condition.category: minimum required = 1, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0)</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Condition</td><td>Structural Issue</td><td>Slice 'Condition.category:us-core': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0). Note that other slices are allowed in addition to this required slice</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Condition.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code because there is no terminology service</td><td/><td>TerminologyEngine</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0004-profile.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 732
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Condition|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Condition"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 732
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Condition.category: minimum required = 1, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0)"
+        },
+        "expression" : ["Condition"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 732
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum_SLICE"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Slice 'Condition.category:us-core': a matching slice is required, but not found (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0). Note that other slices are allowed in addition to this required slice"
+        },
+        "expression" : ["Condition"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 360
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-encounter-diagnosis|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code because there is no terminology service"
+        },
+        "expression" : ["Condition.code"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Observation.value.ofType(Quantity)</td><td>Business Rule Violation</td><td>Unable to validate code '/min' in system 'http://unitsofmeasure.org' because the validator is running without terminology services</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation</td><td>Informational Note</td><td>Validate Observation against the Heart rate profile (http://hl7.org/fhir/StructureDefinition/heartrate) which is required by the FHIR specification because the LOINC code 8867-4 was found</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.effective[x]: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have a performer</td><td/><td>InstanceValidator</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have an effective[x] ()</td><td/><td>InstanceValidator</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0005-base.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 515
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Error_validating_code_running_without_terminology_services"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "business-rule",
+        "details" : {
+          "text" : "Unable to validate code '/min' in system 'http://unitsofmeasure.org' because the validator is running without terminology services"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 516
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 516
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "VALIDATION_VAL_PROFILE_SIGNPOST_OBS"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "informational",
+        "details" : {
+          "text" : "Validate Observation against the Heart rate profile (http://hl7.org/fhir/StructureDefinition/heartrate) which is required by the FHIR specification because the LOINC code 8867-4 was found"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 516
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.effective[x]: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 296
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 516
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_a_performer"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have a performer"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 516
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_an_effectiveDateTime_or_an_effectivePeriod"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have an effective[x] ()"
+        },
+        "expression" : ["Observation"]
+      }]
+    }
+  },
+  {
+    "resource" : {
+      "resourceType" : "OperationOutcome",
+      "text" : {
+        "status" : "generated",
+        "div" : "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p class=\"res-header-id\"><b>OperationOutcome </b></p><table class=\"grid\"><tr><td><b>Severity</b></td><td><b>Location</b></td><td><b>Code</b></td><td><b>Details</b></td><td><b>Diagnostics</b></td><td><b>Source</b></td></tr><tr><td>Warning</td><td>Observation.value.ofType(Quantity)</td><td>Business Rule Violation</td><td>Unable to validate code '/min' in system 'http://unitsofmeasure.org' because the validator is running without terminology services</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Validation rule failed</td><td>Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation</td><td>Informational Note</td><td>Validate Observation against the Heart rate profile (http://hl7.org/fhir/StructureDefinition/heartrate) which is required by the FHIR specification because the LOINC code 8867-4 was found</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.effective[x]: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have a performer</td><td/><td>InstanceValidator</td></tr><tr><td>Warning</td><td>Observation</td><td>Invalid Content</td><td>Best Practice Recommendation: In general, all observations should have an effective[x] ()</td><td/><td>InstanceValidator</td></tr><tr><td>Error</td><td>Observation</td><td>Structural Issue</td><td>Observation.effective[x]: minimum required = 1, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate|6.1.0)</td><td/><td>InstanceValidator</td></tr><tr><td>Information</td><td>Observation.code</td><td>Invalid Code</td><td>Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service</td><td/><td>TerminologyEngine</td></tr><tr><td>Warning</td><td>Observation.value.ofType(Quantity)</td><td>Invalid Code</td><td>Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated</td><td/><td>TerminologyEngine</td></tr></table></div>"
+      },
+      "extension" : [{
+        "url" : "http://hl7.org/fhir/tools/StructureDefinition/validator-version",
+        "valueString" : "FHIR Validation tool Version 7.0.5 (Git# 17db3661806b). Built 2026-11-05T23:27:05.236Z (6 days old)"
+      },
+      {
+        "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-file",
+        "valueString" : "0005-profile.json"
+      }],
+      "issue" : [{
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 608
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Error_validating_code_running_without_terminology_services"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "business-rule",
+        "details" : {
+          "text" : "Unable to validate code '/min' in system 'http://unitsofmeasure.org' because the validator is running without terminology services"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 609
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "http://hl7.org/fhir/StructureDefinition/DomainResource#dom-6"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "warning",
+        "code" : "invariant",
+        "details" : {
+          "text" : "Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 609
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "VALIDATION_VAL_PROFILE_SIGNPOST_OBS"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/Observation|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "informational",
+        "details" : {
+          "text" : "Validate Observation against the Heart rate profile (http://hl7.org/fhir/StructureDefinition/heartrate) which is required by the FHIR specification because the LOINC code 8867-4 was found"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 609
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.effective[x]: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 389
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/StructureDefinition/heartrate|4.0.1"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 609
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_a_performer"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have a performer"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 609
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "All_observations_should_have_an_effectiveDateTime_or_an_effectivePeriod"
+        }],
+        "severity" : "warning",
+        "code" : "invalid",
+        "details" : {
+          "text" : "Best Practice Recommendation: In general, all observations should have an effective[x] ()"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 609
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "InstanceValidator"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "Validation_VAL_Profile_Minimum"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate|6.1.0"
+        }],
+        "severity" : "error",
+        "code" : "structure",
+        "details" : {
+          "text" : "Observation.effective[x]: minimum required = 1, but only found 0 (from http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate|6.1.0)"
+        },
+        "expression" : ["Observation"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 389
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-message-id",
+          "valueCode" : "TERMINOLOGY_TX_NOSVC_BOUND_EXT"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate|6.1.0"
+        }],
+        "severity" : "information",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/us/core/ValueSet/us-core-vital-signs because there is no terminology service"
+        },
+        "expression" : ["Observation.code"]
+      },
+      {
+        "extension" : [{
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
+          "valueInteger" : 1
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col",
+          "valueInteger" : 608
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-source",
+          "valueString" : "TerminologyEngine"
+        },
+        {
+          "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-context",
+          "valueString" : "http://hl7.org/fhir/us/core/StructureDefinition/us-core-heart-rate|6.1.0"
+        }],
+        "severity" : "warning",
+        "code" : "code-invalid",
+        "details" : {
+          "text" : "Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated"
+        },
+        "expression" : ["Observation.value.ofType(Quantity)"]
+      }]
+    }
+  }]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "auris-desktop",
+  "private": true,
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "npm --prefix ../ui run build && tauri dev",
+    "build": "npm --prefix ../ui run build && tauri build --bundles app"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.4"
+  }
+}

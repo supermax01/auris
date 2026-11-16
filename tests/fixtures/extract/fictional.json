@@ -1,0 +1,20 @@
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "{\"assertions\":[]}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 3,
+    "total_tokens": 13
+  },
+  "timings": {
+    "predicted_n": 3,
+    "predicted_ms": 2.0
+  }
+}

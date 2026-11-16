@@ -1,0 +1,28 @@
+[package]
+name = "auris-desktop"
+version = "0.0.1"
+description = "Auris desktop shell: starts the local engine and shows its interface"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+rust-version = "1.92"
+
+[lib]
+name = "auris_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.5", features = [] }
+serde_json = "1"
+# The macOS Save panel for exported files.
+rfd = "0.18"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

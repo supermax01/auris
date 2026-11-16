@@ -1,0 +1,437 @@
+rank	generic_name	weighted_fills	unweighted_records
+1	atorvastatin	115776198	8281
+2	metformin	82567253	5633
+3	levothyroxine	82380628	5525
+4	amlodipine	71348105	5143
+5	lisinopril	66711064	4794
+6	albuterol	62122938	4291
+7	losartan	59030486	4076
+8	metoprolol	58253383	4334
+9	rosuvastatin	53766324	3608
+10	omeprazole	49784461	3384
+11	gabapentin	46937114	3489
+12	sertraline	44634056	2591
+13	escitalopram	41800787	2444
+14	semaglutide	41184050	2553
+15	amphetamine-dextroamphetamine	36934740	1959
+16	pantoprazole	34940432	2395
+17	bupropion	34914025	2029
+18	hydrochlorothiazide	32023888	2295
+19	fluoxetine	29517276	1631
+20	trazodone	26159532	1688
+21	montelukast	25780477	1720
+22	amoxicillin	24971312	1370
+23	tamsulosin	22619048	1620
+24	apixaban	21857073	1695
+25	insulin glargine	21827210	1578
+26	simvastatin	21477296	1588
+27	empagliflozin	20797026	1532
+28	furosemide	20051956	1571
+29	meloxicam	19699162	1304
+30	acetaminophen-hydrocodone	19172779	1456
+31	tirzepatide	18827849	1110
+32	fluticasone nasal	18595664	1190
+33	methylphenidate	18572946	967
+34	duloxetine	17860264	1378
+35	prednisone	17833597	1177
+36	carvedilol	17059037	1366
+37	famotidine	17038530	1216
+38	ibuprofen	16850357	1038
+39	buspirone	16718781	1049
+40	venlafaxine	16273306	972
+41	tramadol	14950505	1083
+42	potassium chloride	14921462	1149
+43	allopurinol	14857746	1080
+44	hydroxyzine	14857241	961
+45	clopidogrel	14613274	1105
+46	ergocalciferol	14478963	980
+47	cetirizine	14363215	995
+48	ondansetron	13794024	798
+49	cyclobenzaprine	13771868	1017
+50	spironolactone	13427857	910
+51	oxycodone	13425058	1003
+52	glipizide	12855415	939
+53	aspirin	12818518	1007
+54	zolpidem	12744221	870
+55	lamotrigine	12624285	744
+56	alprazolam	12541990	830
+57	citalopram	12504000	864
+58	pregabalin	12188941	790
+59	cholecalciferol	12037123	836
+60	clonazepam	11861003	797
+61	azithromycin	11404300	659
+62	pravastatin	11270968	833
+63	valsartan	10971525	772
+64	ezetimibe	10693932	778
+65	insulin lispro	10412617	683
+66	ethinyl estradiol-norethindrone	10330394	424
+67	propranolol	10263170	644
+68	latanoprost ophthalmic	10260351	738
+69	lisdexamfetamine	9944999	513
+70	atenolol	9934162	725
+71	doxycycline	9807852	648
+72	amoxicillin-clavulanate	9700116	575
+73	estradiol	9224737	539
+74	dulaglutide	9211040	645
+75	hydrochlorothiazide-lisinopril	9175153	724
+76	fluticasone-salmeterol	9171728	659
+77	lorazepam	9095808	579
+78	insulin aspart	8979716	617
+79	celecoxib	8925992	600
+80	finasteride	8845007	616
+81	quetiapine	8669046	589
+82	clonidine	8409025	516
+83	aripiprazole	8246932	521
+84	cephalexin	8216857	544
+85	alendronate	8209513	647
+86	topiramate	8077537	495
+87	tizanidine	8036601	584
+88	dapagliflozin	8017363	588
+89	acetaminophen-oxycodone	7971731	505
+90	testosterone	7843493	439
+91	hydrochlorothiazide-losartan	7718798	572
+92	olmesartan	7659035	490
+93	amitriptyline	7533046	518
+94	folic acid	7503346	582
+95	rivaroxaban	7423624	556
+96	fenofibrate	7367061	491
+97	triamcinolone topical	7324454	470
+98	paroxetine	7173802	446
+99	ferrous sulfate	7114661	575
+100	budesonide-formoterol	6984509	526
+101	loratadine	6962604	526
+102	valacyclovir	6960962	402
+103	warfarin	6951089	520
+104	ethinyl estradiol-norgestimate	6753928	272
+105	fluticasone/umeclidinium/vilanterol	6694201	530
+106	methocarbamol	6573638	446
+107	acetaminophen	6458242	442
+108	diltiazem	6250457	454
+109	thyroid desiccated	6060183	327
+110	baclofen	6027670	414
+111	diclofenac	5906808	388
+112	naproxen	5874206	372
+113	sumatriptan	5831978	375
+114	esomeprazole	5677193	396
+115	mirtazapine	5605882	469
+116	levetiracetam	5508579	355
+117	norethindrone	5482819	254
+118	tadalafil	5478136	329
+119	nifedipine	5474488	392
+120	progesterone	5468709	322
+121	insulin degludec	5466073	345
+122	cyanocobalamin	5432401	400
+123	hydralazine	5391649	412
+124	adalimumab	5198809	351
+125	sitagliptin	5147491	443
+126	glimepiride	5109702	403
+127	chlorthalidone	4931283	336
+128	oxybutynin	4908780	389
+129	pioglitazone	4851830	336
+130	ketoconazole topical	4820502	283
+131	irbesartan	4753050	343
+132	azelastine nasal	4718576	287
+133	hydroxychloroquine	4708302	327
+134	nitrofurantoin	4676985	332
+135	sulfamethoxazole-trimethoprim	4636825	310
+136	benzonatate	4617061	314
+137	isosorbide mononitrate	4599942	338
+138	prednisolone ophthalmic	4588290	311
+139	diclofenac topical	4579933	340
+140	methylprednisolone	4523154	280
+141	hydrochlorothiazide-triamterene	4440460	331
+142	levocetirizine	4423399	315
+143	fluticasone	4377588	261
+144	atomoxetine	4208254	186
+145	dexmethylphenidate	4033754	174
+146	methotrexate	4014150	328
+147	donepezil	3938045	345
+148	desvenlafaxine	3875578	190
+149	ropinirole	3839678	232
+150	clobetasol topical	3823176	279
+151	fluticasone-vilanterol	3798121	312
+152	albuterol-ipratropium	3785663	296
+153	phentermine	3766803	213
+154	mupirocin topical	3716448	226
+155	verapamil	3686373	199
+156	estradiol topical	3666617	268
+157	ethinyl estradiol-etonogestrel	3645671	143
+158	olanzapine	3642411	239
+159	prazosin	3554064	191
+160	sildenafil	3545862	213
+161	ethinyl estradiol-levonorgestrel	3541217	172
+162	evolocumab	3521049	223
+163	mesalamine	3392014	176
+164	memantine	3378923	288
+165	diazepam	3346944	225
+166	lithium	3301040	168
+167	nortriptyline	3297511	177
+168	timolol ophthalmic	3283754	246
+169	cefdinir	3282421	205
+170	meclizine	3246112	266
+171	cyclosporine ophthalmic	3231769	241
+172	tretinoin topical	3161133	173
+173	magnesium oxide	3158982	242
+174	fluconazole	3157604	216
+175	rimegepant	3155303	158
+176	lovastatin	3113074	254
+177	drospirenone-ethinyl estradiol	3110100	109
+178	tiotropium	3084835	230
+179	docusate	3058223	243
+180	temazepam	3020872	194
+181	benazepril	3009943	222
+182	brimonidine ophthalmic	2999164	232
+183	nirmatrelvir-ritonavir	2963343	173
+184	ofloxacin ophthalmic	2872657	157
+185	sacubitril-valsartan	2846805	220
+186	divalproex sodium	2837435	185
+187	nebivolol	2808667	157
+188	acyclovir	2696268	194
+189	morphine	2684280	220
+190	doxazosin	2661286	186
+191	amlodipine-benazepril	2639447	196
+192	ciprofloxacin	2625154	172
+193	emtricitabine-tenofovir	2603697	130
+194	budesonide	2597711	184
+195	dupilumab	2557602	158
+196	enalapril	2548322	181
+197	anastrozole	2505483	178
+198	melatonin	2474198	179
+199	torsemide	2417567	192
+200	polyethylene glycol 3350	2410528	153
+201	ocular lubricant	2395797	179
+202	nitroglycerin	2390280	182
+203	flecainide	2344552	184
+204	liothyronine	2328558	159
+205	clindamycin topical	2303434	133
+206	telmisartan	2293871	168
+207	risperidone	2272519	154
+208	omega-3 polyunsaturated fatty acids	2254124	160
+209	colchicine	2253946	168
+210	lansoprazole	2231385	154
+211	insulin isophane-insulin regular	2227310	163
+212	oxcarbazepine	2224621	134
+213	promethazine	2216343	166
+214	dicyclomine	2210375	159
+215	metronidazole	2196665	140
+216	minoxidil	2173805	125
+217	linaclotide	2163073	179
+218	metoclopramide	2134983	126
+219	clindamycin	2083495	129
+220	rizatriptan	2077661	134
+221	oseltamivir	2075218	89
+222	dorzolamide-timolol ophthalmic	2069605	163
+223	budesonide/formoterol/glycopyrrolate	2060690	148
+224	terazosin	2049140	147
+225	dexlansoprazole	2022254	112
+226	dorzolamide ophthalmic	1977879	148
+227	multivitamin	1976323	110
+228	acetaminophen-codeine	1974976	132
+229	calcium carbonate	1973123	150
+230	hydrocortisone topical	1946974	116
+231	bisoprolol	1943970	144
+232	solifenacin	1910370	121
+233	carbamazepine	1893437	140
+234	erythromycin ophthalmic	1887994	112
+235	betamethasone-clotrimazole topical	1880842	113
+236	dextroamphetamine	1853912	110
+237	epinephrine	1835103	117
+238	levofloxacin	1796203	128
+239	tacrolimus	1784213	83
+240	dextromethorphan-promethazine	1773420	102
+241	ramipril	1772326	124
+242	loperamide	1765231	80
+243	mirabegron	1764668	142
+244	medroxyprogesterone	1762492	93
+245	dexamethasone	1742201	112
+246	sucralfate	1625940	124
+247	ubrogepant	1621728	85
+248	pramipexole	1619372	121
+249	nystatin topical	1589238	102
+250	calcitriol	1578255	82
+251	ipratropium nasal	1571183	119
+252	ticagrelor	1556746	119
+253	fexofenadine	1556204	115
+254	multivitamin, prenatal	1518898	73
+255	pancrelipase	1512707	72
+256	polymyxin b-trimethoprim ophthalmic	1481036	80
+257	bumetanide	1462843	108
+258	labetalol	1425357	80
+259	alfuzosin	1406964	95
+260	metronidazole topical	1402717	95
+261	docusate-senna	1398549	104
+262	moxifloxacin ophthalmic	1396789	112
+263	ketorolac	1373981	74
+264	clotrimazole topical	1373600	76
+265	terbinafine	1372774	84
+266	isotretinoin	1369346	70
+267	multivitamin with iron	1338056	82
+268	insulin isophane (nph)	1314871	89
+269	calcium-vitamin d	1313968	132
+270	insulin detemir	1310971	117
+271	letrozole	1296963	89
+272	acetaminophen/butalbital/caffeine	1242180	85
+273	ciclopirox topical	1228558	75
+274	prednisolone	1223301	67
+275	cyproheptadine	1222741	57
+276	amiodarone	1201280	87
+277	ethinyl estradiol-norelgestromin	1194977	50
+278	desogestrel-ethinyl estradiol	1194184	56
+279	multivitamin with minerals	1082469	93
+280	lidocaine topical	1055304	76
+281	chlorhexidine topical	1048173	60
+282	nabumetone	1038360	76
+283	ketorolac ophthalmic	1037791	87
+284	hydroquinone topical	1025108	57
+285	codeine-guaifenesin	1017179	63
+286	dexamethasone/neomycin/polymyxin b ophthalmic	1009977	67
+287	polyethylene glycol 3350 with electrolytes	993989	61
+288	penicillin v potassium	985827	59
+289	ofloxacin otic	943597	48
+290	fluoride topical	939797	67
+291	ciprofloxacin ophthalmic	922288	57
+292	diphenhydramine	913286	62
+293	angiotensin converting enzyme (ace) inhibitors	901619	58
+294	levalbuterol	897717	50
+295	thiazide and thiazide-like diuretics	882414	72
+296	ammonium lactate topical	869413	64
+297	liraglutide	826310	60
+298	guanfacine	826202	41
+299	betamethasone topical	810822	53
+300	tacrolimus topical	808338	55
+301	fluorouracil topical	798275	65
+302	loratadine-pseudoephedrine	754456	39
+303	multivitamin with fluoride	742715	31
+304	ascorbic acid	741625	59
+305	beclomethasone	741319	50
+306	mycophenolate mofetil	735030	61
+307	indomethacin	720259	60
+308	brompheniramine/dextromethorphan/pseudoephedrine	702500	34
+309	olopatadine ophthalmic	697399	60
+310	ciprofloxacin-dexamethasone otic	683923	32
+311	benzoyl peroxide topical	666497	37
+312	phenazopyridine	640512	41
+313	fluoride	636313	34
+314	cefuroxime	609282	39
+315	thiamine	607640	44
+316	sodium bicarbonate	583770	44
+317	hmg-coa reductase inhibitors (statins)	583482	34
+318	ethinyl estradiol-norgestrel	582945	19
+319	sulfacetamide sodium-sulfur topical	558534	20
+320	sodium chloride	527023	38
+321	senna	522264	19
+322	glp-1 receptor agonists	501543	39
+323	carbidopa-levodopa	500748	40
+324	lactulose	500694	39
+325	nystatin	484854	34
+326	electrolyte replacement solutions, oral	471126	24
+327	tobramycin ophthalmic	469216	26
+328	ketotifen ophthalmic	454881	29
+329	etodolac	436916	36
+330	azelastine ophthalmic	430120	31
+331	bisacodyl	427768	31
+332	atropine-diphenoxylate	424572	26
+333	benzoyl peroxide-clindamycin topical	424144	18
+334	mometasone nasal	411555	31
+335	desloratadine	409405	23
+336	mometasone topical	397680	26
+337	magnesium sulfate/potassium chloride/sodium sulfate	393303	17
+338	guaifenesin	391105	34
+339	ivermectin topical	385246	19
+340	niacin	382100	28
+341	pseudoephedrine	371195	37
+342	menthol topical	345732	13
+343	chlorpheniramine	335410	16
+344	tazarotene topical	333693	16
+345	dextromethorphan	326898	17
+346	ubiquinone	321115	24
+347	sodium chloride nasal	313883	23
+348	psyllium	280601	14
+349	alpha-lipoic acid	277213	16
+350	l-methylfolate	276944	10
+351	pyridoxine	261973	17
+352	emollients, topical	221418	13
+353	azelastine-fluticasone nasal	217018	11
+354	sulindac	207810	16
+355	chromium picolinate-cinnamon	205061	15
+356	vitamin e	193141	12
+357	citric acid/magnesium oxide/sodium picosulfate	189571	8
+358	lactobacillus acidophilus	177532	14
+359	azelaic acid topical	174372	8
+360	oxymetazoline topical	171903	8
+361	potassium gluconate	152264	13
+362	riboflavin	146055	7
+363	triprolidine	145452	12
+364	ethinyl estradiol-ethynodiol	144272	6
+365	urea topical	143670	11
+366	petrolatum topical	143229	15
+367	polycarbophil	142360	5
+368	dapsone topical	137587	14
+369	homatropine-hydrocodone	128787	8
+370	salicylic acid topical	115959	8
+371	adapalene topical	114784	9
+372	potassium phosphate-sodium phosphate	109385	7
+373	magnesium amino acids chelate	101849	3
+374	potassium bicarbonate-potassium chloride	98918	6
+375	saccharomyces boulardii lyo	96308	10
+376	mometasone-olopatadine nasal	91393	6
+377	calcium citrate	88479	10
+378	phenylephrine	82249	2
+379	gentamicin topical	81741	10
+380	garlic	80803	5
+381	dextromethorphan-triprolidine	79404	3
+382	adapalene-benzoyl peroxide topical	79368	4
+383	erythromycin topical	78944	5
+384	zinc sulfate	77201	4
+385	oxymetazoline nasal	70604	6
+386	chlorpheniramine/dextromethorphan/phenylephrine	69747	9
+387	permethrin topical	64056	4
+388	benzoyl peroxide-erythromycin topical	62636	6
+389	chlophedianol-pyrilamine	62607	4
+390	magnesium sulfate	58708	4
+391	codeine	57087	4
+392	multivitamin with iron and fluoride	55146	2
+393	budesonide nasal	53781	3
+394	methylcobalamin	47870	2
+395	magnesium gluconate	47315	3
+396	dextromethorphan-guaifenesin	45121	3
+397	sodium biphosphate-sodium phosphate	44217	3
+398	calcifediol	41966	3
+399	fexofenadine-pseudoephedrine	40611	2
+400	bacitracin topical	39549	2
+401	adapalene/benzoyl peroxide/clindamycin topical	39468	1
+402	codeine-promethazine	39189	5
+403	carbinoxamine	36467	2
+404	bepotastine ophthalmic	36151	2
+405	dexbrompheniramine	33859	4
+406	piroxicam	33436	2
+407	chlorpheniramine-phenylephrine	30160	2
+408	bacitracin/neomycin/polymyxin b topical	29941	2
+409	hydrocodone	29180	10
+410	bacitracin-polymyxin b topical	28977	2
+411	brompheniramine/dextromethorphan/phenylephrine	28853	1
+412	olopatadine nasal	27639	3
+413	diphenhydramine-zinc acetate topical	27555	1
+414	ampicillin	26403	3
+415	glutathione	23455	1
+416	ascorbic acid-carbonyl iron	22227	1
+417	flunisolide nasal	20912	1
+418	oxaprozin	20503	1
+419	dexbrompheniramine/dextromethorphan/phenylephrine	19157	1
+420	spinosad topical	18911	1
+421	dextromethorphan/guaifenesin/phenylephrine	18373	1
+422	dextromethorphan/phenylephrine/pyrilamine	17542	1
+423	diclofenac-misoprostol	16244	1
+424	povidone iodine topical	15133	1
+425	chlorpheniramine-hydrocodone	14274	2
+426	bacitracin/neomycin/polymyxin b/pramoxine topical	13707	1
+427	beta blockers, non-cardioselective	13383	1
+428	sodium hypochlorite topical	13349	1
+429	beclomethasone nasal	13256	2
+430	potassium bicarbonate	9863	2
+431	dextromethorphan/guaifenesin/pseudoephedrine	6963	1
+432	red yeast rice	6733	1
+433	triamcinolone nasal	5728	1
+434	chlophedianol/dexbrompheniramine/pseudoephedrine	5097	1
+435	guaifenesin-phenylephrine	3269	1
+436	dextromethorphan/phenylephrine/triprolidine	2319	1
