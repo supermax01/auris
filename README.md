@@ -20,7 +20,9 @@
 </p>
 
 <p align="center">
-  <img alt="Reviewing a fact next to the words it came from" src="docs/screenshots/review.png" width="900">
+  <img alt="A fictional visit in Auris, from the day's schedule to the FHIR export, sped up" src="docs/media/walkthrough.gif" width="900"><br>
+  <sub>A fictional visit from the day's schedule to the FHIR export, sped up.
+  <a href="docs/media/walkthrough.mp4">Watch it in full quality (MP4)</a>.</sub>
 </p>
 
 > [!IMPORTANT]
@@ -93,6 +95,204 @@ note. Items that should not become records, such as a symptom or a denied
 allergy, stay in the note.
 
 <img alt="Export" src="docs/screenshots/export.png" width="900">
+
+## From conversation to FHIR R4
+
+Here is part of the fictional demo visit and what Auris exported from it after
+the clinician approved each fact.
+
+> **Patient** (1:57): I am allergic to sulfa; it gave me a rash years ago. I
+> cannot remember the name on the bottle, but I remember the rash.
+>
+> **Clinician** (2:36): Your blood pressure is 126 over 78. You can relax your arm now.
+>
+> **Clinician** (3:39): Start acetaminophen 500 milligrams by mouth every eight
+> hours as needed. Let me write that down so you have the instructions at home.
+
+| What was said | FHIR R4 resource | What it contains |
+|---|---|---|
+| "allergic to sulfa; it gave me a rash" | `AllergyIntolerance` (US Core) | the substance as spoken ("sulfa"), the reaction ("rash"), marked *unconfirmed* until a clinician confirms it |
+| "blood pressure is 126 over 78" | `Observation` (US Core Blood Pressure) | LOINC 85354-9, with systolic 126 mm[Hg] and diastolic 78 mm[Hg] as separate components |
+| "Start acetaminophen 500 milligrams…" | `MedicationRequest` (US Core) | RxNorm 161 (acetaminophen), the dosage exactly as said, and status *draft*: Auris never signs or sends an order |
+
+The export is a FHIR `Bundle` of type `collection`. For this visit it holds
+3 `Condition`, 2 `Observation`, 1 `AllergyIntolerance` and 1 `MedicationRequest`
+resources, plus the `Patient`, `Practitioner` and `Encounter` they refer to.
+Things that are not records, such as symptoms, denials and family history, stay
+in the visit note.
+
+<details>
+<summary><b>Observation</b>: blood pressure 126/78</summary>
+
+```json
+{
+  "category": [
+    {
+      "coding": [
+        {
+          "code": "vital-signs",
+          "system": "http://terminology.hl7.org/CodeSystem/observation-category"
+        }
+      ]
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "code": "85354-9",
+        "system": "http://loinc.org"
+      }
+    ]
+  },
+  "component": [
+    {
+      "code": {
+        "coding": [
+          {
+            "code": "8480-6",
+            "system": "http://loinc.org"
+          }
+        ]
+      },
+      "valueQuantity": {
+        "code": "mm[Hg]",
+        "system": "http://unitsofmeasure.org",
+        "unit": "mmHg",
+        "value": 126
+      }
+    },
+    {
+      "code": {
+        "coding": [
+          {
+            "code": "8462-4",
+            "system": "http://loinc.org"
+          }
+        ]
+      },
+      "valueQuantity": {
+        "code": "mm[Hg]",
+        "system": "http://unitsofmeasure.org",
+        "unit": "mmHg",
+        "value": 78
+      }
+    }
+  ],
+  "effectiveDateTime": "2026-11-16T08:30:00-05:00",
+  "encounter": {
+    "reference": "urn:uuid:19b3e431-c0c9-5985-82e8-7e63847e12f8"
+  },
+  "id": "805b73c6-5cc6-5706-85c9-ddd3931c31c4",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-blood-pressure"
+    ]
+  },
+  "resourceType": "Observation",
+  "status": "preliminary",
+  "subject": {
+    "reference": "urn:uuid:7f7cae25-8a11-5e8b-9c64-304be9a70b46"
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>AllergyIntolerance</b>: sulfa, reaction rash</summary>
+
+```json
+{
+  "clinicalStatus": {
+    "coding": [
+      {
+        "code": "active",
+        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"
+      }
+    ]
+  },
+  "code": {
+    "text": "sulfa"
+  },
+  "encounter": {
+    "reference": "urn:uuid:19b3e431-c0c9-5985-82e8-7e63847e12f8"
+  },
+  "id": "88d69937-7b0f-5561-812b-004f45adf7a3",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance"
+    ]
+  },
+  "patient": {
+    "reference": "urn:uuid:7f7cae25-8a11-5e8b-9c64-304be9a70b46"
+  },
+  "reaction": [
+    {
+      "manifestation": [
+        {
+          "text": "rash"
+        }
+      ]
+    }
+  ],
+  "resourceType": "AllergyIntolerance",
+  "verificationStatus": {
+    "coding": [
+      {
+        "code": "unconfirmed",
+        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification"
+      }
+    ]
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>MedicationRequest</b>: acetaminophen 500 mg, draft</summary>
+
+```json
+{
+  "authoredOn": "2026-11-16T08:30:00-05:00",
+  "dosageInstruction": [
+    {
+      "text": "500 milligrams by mouth every eight hours as needed"
+    }
+  ],
+  "encounter": {
+    "reference": "urn:uuid:19b3e431-c0c9-5985-82e8-7e63847e12f8"
+  },
+  "id": "5a7a6415-e0d0-5373-8f89-82042562f681",
+  "intent": "proposal",
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "code": "161",
+        "display": "acetaminophen",
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm"
+      }
+    ],
+    "text": "acetaminophen"
+  },
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest"
+    ]
+  },
+  "reportedBoolean": false,
+  "requester": {
+    "reference": "urn:uuid:192f4b09-66eb-5d03-a351-dd8286a7164d"
+  },
+  "resourceType": "MedicationRequest",
+  "status": "draft",
+  "subject": {
+    "reference": "urn:uuid:7f7cae25-8a11-5e8b-9c64-304be9a70b46"
+  }
+}
+```
+
+</details>
 
 ## Quick start
 
