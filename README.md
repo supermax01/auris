@@ -470,11 +470,36 @@ Auris is pre-alpha. Today it can:
 - show every fact with its source for review, in the desktop app or a browser
 - export approved records and the note
 
-Not yet available:
+## Roadmap
 
-- live listening in the desktop app (it works from transcript files for now)
-- a packaged, signed desktop app (it runs from source)
-- sign-in and multi-user support
+Planned work, not built yet:
+
+### End-to-end SMART on FHIR integration
+
+Today Auris exports a FHIR file that you load into your EHR yourself. The next
+major step is to connect it to the EHR directly with
+[SMART on FHIR](https://hl7.org/fhir/smart-app-launch/), the standard way apps
+plug into Epic, Oracle Health (Cerner) and other FHIR-enabled systems:
+
+- **Launch from the EHR.** Open Auris from inside the patient's chart (SMART
+  EHR launch) or on its own (standalone launch), with sign-in through the
+  EHR's OAuth 2.0 and OpenID Connect.
+- **Visit details from the chart.** Take the patient, the encounter and the
+  clinician from the launch context instead of typing them in.
+- **Write back what was approved.** After review, send the approved records
+  (conditions, vital signs, allergies, draft medication orders) to the EHR
+  through its FHIR API, using only the permissions the clinician grants. Orders
+  stay drafts for the clinician to sign in the EHR.
+- **Still local first.** Audio and transcripts stay on the clinician's
+  computer. Only the records the clinician approved are sent, and only when
+  they choose to.
+- **Tested end to end** against public SMART sandboxes before any real EHR.
+
+### Also planned
+
+- Live listening in the desktop app (today it works from transcript files)
+- A packaged, signed desktop app (today it runs from source)
+- Sign-in and support for several clinicians on one installation
 
 ## Repository layout
 
